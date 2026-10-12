@@ -1,6 +1,6 @@
 [project]
 name = "printpicker"
-version = "0.5.0"
+version = "0.6.0"
 description = "Pick the best shots from your photo archive and get them ready for print."
 readme = "README.md"
 license = "MIT"

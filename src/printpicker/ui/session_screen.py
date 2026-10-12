@@ -254,6 +254,10 @@ class SessionScreen(QWidget):
 
     def _on_failed(self, message: str) -> None:
         if self.sender() is self.thread:
+            if self.source is not None and not self.source.is_available:
+                self.thread = None
+                self._source_changed()  # drive disconnected during the analysis
+                return
             self.show_message(self.tr("The analysis failed:\n%1").replace("%1", message))
 
     def _on_analysed(self, items: list) -> None:
@@ -368,6 +372,9 @@ class SessionScreen(QWidget):
             self.selection.apply_choice(self.source, group, self.group_view.picked())
         except (OSError, ImageLoadError) as exc:
             QApplication.restoreOverrideCursor()
+            if not self.source.is_available:
+                self._source_changed()  # shows "folder not found" with retry / relink
+                return
             QMessageBox.warning(
                 self,
                 self.tr("Copy failed"),

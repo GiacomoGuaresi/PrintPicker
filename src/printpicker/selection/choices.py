@@ -24,6 +24,12 @@ class ChoicesMixin:
         others removed from the selection folder (if they had been exported before)."""
         for photo in group.photos:
             is_selected = photo.rel_path in selected
+            # Copy first: if it fails (drive disconnected...) the photo is not marked as seen,
+            # so the group is proposed again.
+            if is_selected:
+                self.export(source, photo.rel_path)
+            else:
+                self.unexport(source, photo.rel_path)
             with self.conn:
                 self.conn.execute(
                     "INSERT INTO photos (source_id, rel_path, seen, selected) VALUES (?, ?, 1, ?) "
@@ -31,10 +37,6 @@ class ChoicesMixin:
                     "seen = 1, selected = excluded.selected",
                     (source.id, photo.rel_path, int(is_selected)),
                 )
-            if is_selected:
-                self.export(source, photo.rel_path)
-            else:
-                self.unexport(source, photo.rel_path)
 
     def _paths_where(self, source: Source, column: str) -> set[str]:
         rows = self.conn.execute(

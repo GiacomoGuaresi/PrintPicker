@@ -1,3 +1,3 @@
 """PrintPicker: pick the best shots from your photo archive and get them ready for print."""
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"

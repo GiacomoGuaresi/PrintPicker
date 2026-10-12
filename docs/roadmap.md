@@ -94,7 +94,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 |---|---|---|---|
 | 6.1 | **Origine non trovata**: finestra per riprovare o indicare la nuova posizione | `feat(ui): relink missing source` | ✅ |
 | 6.2 | **Traduzioni** italiano / inglese in base alla lingua di sistema | `feat(i18n): italian and english translations` | ✅ |
-| 6.3 | Gestione errori: file corrotti o illeggibili, disco scollegato durante l'analisi | `fix: handle unreadable files and disconnected drives` | ⬜ |
+| 6.3 | Gestione errori: file corrotti o illeggibili, disco scollegato durante l'analisi | `fix: handle unreadable files and disconnected drives` | ✅ |
 
 ## M7 — Distribuzione → `v1.0.0`
 

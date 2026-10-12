@@ -140,97 +140,97 @@ Collega il disco e premi Riprova, oppure indica dove si trova ora la cartella.</
         <translation>%1 di %2 foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="257" />
+        <location filename="../ui/session_screen.py" line="261" />
         <source>The analysis failed:
 %1</source>
         <translation>L'analisi non è riuscita:
 %1</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="286" />
+        <location filename="../ui/session_screen.py" line="290" />
         <source>Confirm and continue →</source>
         <translation>Conferma e continua →</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="290" />
-        <location filename="../ui/session_screen.py" line="386" />
+        <location filename="../ui/session_screen.py" line="294" />
+        <location filename="../ui/session_screen.py" line="393" />
         <source>← Previous group</source>
         <translation>← Gruppo precedente</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="291" />
+        <location filename="../ui/session_screen.py" line="295" />
         <source>Backspace</source>
         <translation>Backspace</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="292" />
+        <location filename="../ui/session_screen.py" line="296" />
         <source>Enter</source>
         <translation>Invio</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="295" />
+        <location filename="../ui/session_screen.py" line="299" />
         <source>Arrows move · Space/1–9 pick · Enter confirm · Backspace back · F preview · C crop</source>
         <translation>Frecce muovi · Spazio/1–9 scegli · Invio conferma · Backspace indietro · F anteprima · C ritaglio</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="306" />
+        <location filename="../ui/session_screen.py" line="310" />
         <source>How different two photos can be to end up in the same group</source>
         <translation>Quanto possono essere diverse due foto per finire nello stesso gruppo</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="314" />
+        <location filename="../ui/session_screen.py" line="318" />
         <source>Grouping: strict</source>
         <translation>Raggruppamento: rigido</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="316" />
+        <location filename="../ui/session_screen.py" line="320" />
         <source>loose</source>
         <translation>permissivo</translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/session_screen.py" line="352" />
+        <location filename="../ui/session_screen.py" line="356" />
         <source>&lt;b&gt;%1&lt;/b&gt; — group %2 of %3 · %n photo(s)</source>
         <translation><numerusform>&lt;b&gt;%1&lt;/b&gt; — gruppo %2 di %3 · %n foto</numerusform><numerusform>&lt;b&gt;%1&lt;/b&gt; — gruppo %2 di %3 · %n foto</numerusform></translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="373" />
+        <location filename="../ui/session_screen.py" line="380" />
         <source>Copy failed</source>
         <translation>Copia non riuscita</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="374" />
+        <location filename="../ui/session_screen.py" line="381" />
         <source>Could not copy the photo:
 %1</source>
         <translation>Impossibile copiare la foto:
 %1</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="383" />
+        <location filename="../ui/session_screen.py" line="390" />
         <source>Open the selection folder</source>
         <translation>Apri la cartella della selezione</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="388" />
+        <location filename="../ui/session_screen.py" line="395" />
         <source>Add another source…</source>
         <translation>Aggiungi un'altra origine…</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="400" />
+        <location filename="../ui/session_screen.py" line="407" />
         <source>&lt;h2&gt;Done!&lt;/h2&gt;All the photos of “%1” have been reviewed.&lt;br&gt;&lt;br&gt;%2</source>
         <translation>&lt;h2&gt;Fatto!&lt;/h2&gt;Hai visto tutte le foto di “%1”.&lt;br&gt;&lt;br&gt;%2</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="411" />
+        <location filename="../ui/session_screen.py" line="418" />
         <source>Photos to print: &lt;b&gt;%1&lt;/b&gt;</source>
         <translation>Foto da stampare: &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="415" />
+        <location filename="../ui/session_screen.py" line="422" />
         <source>Estimate with “%1”: %2 per photo</source>
         <translation>Stima con “%1”: %2 a foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="477" />
+        <location filename="../ui/session_screen.py" line="484" />
         <source>Selected in this group: %1</source>
         <translation>Scelte in questo gruppo: %1</translation>
     </message>

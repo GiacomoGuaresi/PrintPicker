@@ -213,3 +213,21 @@ def test_relink_moved_source(qtbot, session, photos, tmp_path, monkeypatch):
     wait_groups(qtbot, session)
     assert session.index == 1  # progress kept
     assert session.source.path == moved.resolve()
+
+
+def test_drive_unplugged_while_confirming(qtbot, session, photos, tmp_path):
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    pick(session, 0)
+    photos.rename(tmp_path / "unplugged")
+    session.confirm_button.click()
+    assert session.pages.currentWidget() is session.message_page
+    assert not session.relink_button.isHidden()
+
+
+def test_unreadable_photo_is_shown_alone(qtbot, session, photos):
+    (photos / "broken.jpg").write_bytes(b"not a photo")
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    names = [[p.name for p in g.photos] for g in session.groups]
+    assert ["broken.jpg"] in names

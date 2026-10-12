@@ -67,3 +67,17 @@ def test_first_unseen_group_partial():
     assert first_unseen_group(groups, {"a"}) == 0
     assert first_unseen_group(groups, {"a", "b", "c"}) == 2
     assert first_unseen_group([], set()) == 0
+
+
+def test_failed_copy_leaves_group_unseen(env, monkeypatch):
+    sel, source, groups = env
+    from printpicker.selection import exports
+
+    def boom(*_a, **_k):
+        raise OSError("drive disconnected")
+
+    monkeypatch.setattr(exports, "export_photo", boom)
+    with pytest.raises(OSError):
+        sel.apply_choice(source, groups[0], {"a1.jpg"})
+    assert "a1.jpg" not in sel.seen_photos(source)
+    assert first_unseen_group(groups, sel.seen_photos(source)) == 0

@@ -48,6 +48,10 @@ def thumb_name(rel_path: str) -> str:
     return hashlib.sha1(rel_path.encode()).hexdigest() + ".jpg"
 
 
+class SourceUnavailableError(OSError):
+    """The source folder disappeared (e.g. the drive was disconnected) while working on it."""
+
+
 class PhotosMixin:
     """Photo scanning and hash caching for :class:`~printpicker.selection.store.Selection`."""
 
@@ -103,6 +107,12 @@ class PhotosMixin:
             thumb_for = lambda p: self.thumb_path(source, p.rel_path)  # noqa: E731
             for photo, h in hash_photos(source.path, photo_iter, thumb_for=thumb_for):
                 st = stats[photo.rel_path]
+                if h is None and (st is None or not source.is_available):
+                    # Not readable because the drive went away, not because the file is
+                    # broken: do not remember it as unreadable.
+                    if not source.is_available:
+                        raise SourceUnavailableError(str(source.path))
+                    continue
                 self.conn.execute(
                     "INSERT INTO photos (source_id, rel_path, size, mtime_ns, hash, hashed) "
                     "VALUES (?, ?, ?, ?, ?, 1) ON CONFLICT(source_id, rel_path) DO UPDATE SET "

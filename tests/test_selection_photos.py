@@ -104,3 +104,34 @@ def test_thumbnails_are_saved_during_analysis(setup):
     with Image.open(thumb) as img:
         assert max(img.size) <= 512
     assert not sel.thumb_path(source, "bad.jpg").exists()
+
+
+def test_disconnected_drive_is_not_cached_as_unreadable(setup, monkeypatch, tmp_path):
+    from printpicker.selection.photos import SourceUnavailableError
+
+    sel, source, src = setup
+    real = analysis.hash_file
+    moved = tmp_path / "unplugged"
+
+    import threading
+
+    lock = threading.Lock()
+
+    def unplug_after_first(path, thumb_path=None):
+        with lock:  # hashing runs on several threads
+            if not moved.exists():
+                h = real(path, thumb_path)
+                src.rename(moved)  # the drive goes away
+                return h
+        return None
+
+    monkeypatch.setattr(analysis, "hash_file", unplug_after_first)
+    with pytest.raises(SourceUnavailableError):
+        sel.analyze_source(source)
+    rows = sel.conn.execute("SELECT COUNT(*) FROM photos WHERE hashed = 1").fetchone()[0]
+    assert rows <= 1  # only the photo read before unplugging
+
+    moved.rename(src)
+    monkeypatch.setattr(analysis, "hash_file", real)
+    result = dict((p.rel_path, h) for p, h in sel.analyze_source(source))
+    assert all(h is not None for rel, h in result.items() if rel != "bad.jpg")

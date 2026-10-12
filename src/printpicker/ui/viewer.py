@@ -30,16 +30,17 @@ class _Relay(QObject):
 
 
 class _FullLoad(QRunnable):
-    def __init__(self, relay: _Relay, token: int, path: Path) -> None:
+    def __init__(self, relay: _Relay, row: int, path: Path) -> None:
         super().__init__()
-        self.relay, self.token, self.path = relay, token, path
+        self.setAutoDelete(False)  # kept in PhotoViewer._requests, so tryTake() is safe
+        self.relay, self.row, self.path = relay, row, path
 
     def run(self) -> None:
         try:
             image = to_qimage(load_image(self.path))
         except ImageLoadError:
             image = QImage()
-        self.relay.loaded.emit(self.token, image)
+        self.relay.loaded.emit(self.row, image)
 
 
 ZOOM_STEP = 1.25
@@ -154,6 +155,15 @@ class ImageView(QGraphicsView):
                 painter, self.item.sceneBoundingRect(), pixmap.width(), pixmap.height()
             )
 
+    def mouseDoubleClickEvent(self, event) -> None:
+        """Toggle between "fit" and 100% (at least twice the fit), zooming on the click."""
+        if event.button() != Qt.MouseButton.LeftButton:
+            return
+        if self.fitted:
+            self.set_zoom(max(1.0, self.fit_zoom() * 2))
+        else:
+            self.fit()
+
     def wheelEvent(self, event) -> None:
         steps = event.angleDelta().y() / 120
         if steps:
@@ -192,7 +202,10 @@ class PhotoViewer(QDialog):
         self.thumbnail_for = thumbnail_for
         self.picked = set(picked)
         self.row = row
-        self._token = 0
+        self.full_image: QImage | None = None
+        self._cache: dict[int, QImage] = {}  # full images of the current photo and neighbours
+        self._requests: dict[int, _FullLoad] = {}  # queued or running loads
+        self._closed = False
         self.pool = QThreadPool(self)
         self.pool.setMaxThreadCount(1)
         self._relay = _Relay()
@@ -253,22 +266,44 @@ class PhotoViewer(QDialog):
     def show_row(self, row: int) -> None:
         if not 0 <= row < len(self.photos):
             return
+        step = row - self.row
         self.row = row
-        self._token += 1
         self.view.reset_view()
-        photo = self.photos[row]
-        thumb = self.thumbnail_for(photo)
-        if thumb is not None and not thumb.isNull():
-            self.view.set_image(thumb)
+        self.full_image = None
+        cached = self._cache.get(row)
+        if cached is not None and not cached.isNull():
+            self.full_image = cached
+            self.view.set_image(cached)
         else:
-            self.view.set_image(QImage())
-        self.full_image: QImage | None = None
-        self.pool.clear()
-        self.pool.start(_FullLoad(self._relay, self._token, self.paths_for(photo)[0]))
+            thumb = self.thumbnail_for(self.photos[row])
+            self.view.set_image(thumb if thumb is not None else QImage())
+        self._preload(ahead=-1 if step < 0 else 1)
         self._update_caption()
 
-    def _on_loaded(self, token: int, image: QImage) -> None:
-        if token == self._token and not image.isNull():
+    def _wanted(self, ahead: int) -> list[int]:
+        """Rows to keep loaded, most urgent first: current, next in browsing direction, previous."""
+        rows = [self.row, self.row + ahead, self.row - ahead]
+        return [r for r in rows if 0 <= r < len(self.photos)]
+
+    def _preload(self, ahead: int) -> None:
+        wanted = self._wanted(ahead)
+        self._cache = {r: img for r, img in self._cache.items() if r in wanted}
+        # Unqueue the loads not started yet, then queue what is missing by urgency.
+        for r, job in list(self._requests.items()):
+            if self.pool.tryTake(job):
+                del self._requests[r]
+        for priority, r in zip((2, 1, 0), wanted, strict=False):
+            if r not in self._cache and r not in self._requests:
+                job = _FullLoad(self._relay, r, self.paths_for(self.photos[r])[0])
+                self._requests[r] = job
+                self.pool.start(job, priority)
+
+    def _on_loaded(self, row: int, image: QImage) -> None:
+        self._requests.pop(row, None)
+        if self._closed or abs(row - self.row) > 1:
+            return
+        self._cache[row] = image
+        if row == self.row and not image.isNull():
             self.full_image = image
             self.view.set_image(image)
             self._update_caption()
@@ -293,7 +328,7 @@ class PhotoViewer(QDialog):
         self.caption.setText(f"{self.row + 1} / {len(self.photos)}  ·  {photo.name}{mark}{zoom}")
 
     def done(self, result: int) -> None:
-        self._token += 1
+        self._closed = True
         self.pool.clear()
         self.pool.waitForDone()
         super().done(result)

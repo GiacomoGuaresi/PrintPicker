@@ -109,3 +109,24 @@ def test_crop_toggle_and_warning(qtbot, tmp_path):
     qtbot.keyClick(viewer, Qt.Key.Key_C)
     assert viewer.view.show_crop and toggles == [True]
     viewer.grab()  # paints the overlay without errors
+
+
+def test_preloads_neighbours(qtbot, tmp_path):
+    viewer = make_viewer(qtbot, tmp_path)
+    qtbot.waitUntil(lambda: 1 in viewer._cache, timeout=5000)  # next photo is preloaded
+    qtbot.keyClick(viewer, Qt.Key.Key_Right)
+    assert viewer.full_image is not None  # shown at once, no thumbnail step
+    assert viewer.view.item.pixmap().width() == 900
+    assert set(viewer._cache) <= {0, 1}
+
+
+def test_double_click_toggles_fit_and_actual_size(qtbot, tmp_path):
+    viewer = make_viewer(qtbot, tmp_path)
+    viewer.resize(400, 300)
+    qtbot.waitUntil(lambda: viewer.full_image is not None, timeout=5000)
+    view = viewer.view
+    center = view.viewport().rect().center()
+    qtbot.mouseDClick(view.viewport(), Qt.MouseButton.LeftButton, pos=center)
+    assert not view.fitted and abs(view.zoom() - 1.0) < 0.01
+    qtbot.mouseDClick(view.viewport(), Qt.MouseButton.LeftButton, pos=center)
+    assert view.fitted

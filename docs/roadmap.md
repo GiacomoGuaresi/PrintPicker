@@ -72,7 +72,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 
 | # | Step | Commit | Stato |
 |---|---|---|---|
-| 4.1 | **Scorciatoie da tastiera** per selezione e navigazione | `feat(ui): keyboard shortcuts` | ⬜ |
+| 4.1 | **Scorciatoie da tastiera** per selezione e navigazione | `feat(ui): keyboard shortcuts` | ✅ |
 | 4.2 | **Cursore soglia live** con ricalcolo dei gruppi al volo | `feat(ui): live similarity threshold slider` | ⬜ |
 | 4.3 | **Anteprima a schermo intero** con frecce tra le foto del gruppo | `feat(ui): full-screen preview` | ⬜ |
 | 4.4 | **Zoom e spostamento** (adatta, 100%, zoom libero) | `feat(ui): zoom and pan` | ⬜ |

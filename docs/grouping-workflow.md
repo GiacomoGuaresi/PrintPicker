@@ -51,12 +51,13 @@ Servono solo a **guardare bene** le foto e scegliere la migliore: **non modifica
 
 - Visti tutti i gruppi di un'origine, l'app mostra un **messaggio di fine** con il totale (foto e costo stimato) e un pulsante per **aprire la cartella** della selezione.
 
-### Scorciatoie da tastiera (proposta)
+### Scorciatoie da tastiera
 
 | Tasto | Azione |
 |---|---|
 | Frecce | Spostarsi tra le foto del gruppo |
 | Spazio | Seleziona / deseleziona la foto corrente |
+| `1`–`9` | Seleziona / deseleziona la foto n-esima del gruppo |
 | Invio | Conferma e passa al gruppo successivo |
 | Backspace | Torna al gruppo precedente |
 | `F` / `Z` | Anteprima a schermo intero |

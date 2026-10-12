@@ -217,6 +217,8 @@ class SessionScreen(QWidget):
         self.group_title = QLabel()
         self.group_view = GroupView(self.loader)
         self.group_view.picked_changed.connect(self._update_counters)
+        self.group_view.confirm_requested.connect(self.confirm_group)
+        self.group_view.back_requested.connect(self.previous_group)
         self.picked_label = QLabel()
         self.total_label = QLabel()
         self.confirm_button = QPushButton(self.tr("Confirm and continue →"))
@@ -224,6 +226,12 @@ class SessionScreen(QWidget):
         self.confirm_button.clicked.connect(self.confirm_group)
 
         self.previous_button = QPushButton(self.tr("← Previous group"))
+        self.previous_button.setToolTip(self.tr("Backspace"))
+        self.confirm_button.setToolTip(self.tr("Enter"))
+        self.help_label = QLabel(
+            self.tr("Arrows: move · Space or 1–9: pick · Enter: confirm · Backspace: back")
+        )
+        self.help_label.setEnabled(False)
         self.previous_button.clicked.connect(self.previous_group)
 
         bottom = QHBoxLayout()
@@ -240,6 +248,7 @@ class SessionScreen(QWidget):
         layout.addWidget(self.group_title)
         layout.addWidget(self.group_view, 1)
         layout.addLayout(bottom)
+        layout.addWidget(self.help_label, 0, Qt.AlignmentFlag.AlignHCenter)
         return page
 
     def _paths_for(self, photo: PhotoFile) -> tuple[Path, Path]:

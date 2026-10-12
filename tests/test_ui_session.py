@@ -139,3 +139,25 @@ def test_reopen_resumes_where_left(qtbot, tmp_path, photos):
     assert again.source.name == "Foto"  # last used source
     assert again.index == 1
     again.close_selection()
+
+
+def test_keyboard_flow(qtbot, session, photos):
+    from PySide6.QtCore import Qt
+
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    view = session.group_view
+    qtbot.keyClick(view, Qt.Key.Key_Right)
+    assert view.picked() == set()  # moving does not pick
+    assert view.currentIndex().row() == 1
+    qtbot.keyClick(view, Qt.Key.Key_Space)
+    assert view.picked() == {"a2.jpg"}
+    qtbot.keyClick(view, Qt.Key.Key_1)
+    assert view.picked() == {"a1.jpg", "a2.jpg"}
+    qtbot.keyClick(view, Qt.Key.Key_Space)  # current is a1 again: unpick
+    assert view.picked() == {"a2.jpg"}
+    qtbot.keyClick(view, Qt.Key.Key_Return)
+    assert session.index == 1
+    assert exported(session) == ["Foto - a2.jpg"]
+    qtbot.keyClick(session.group_view, Qt.Key.Key_Backspace)
+    assert session.index == 0

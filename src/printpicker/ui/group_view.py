@@ -145,6 +145,8 @@ class GroupView(QListView):
     """Click selects one photo, Ctrl/Cmd+click adds or removes photos."""
 
     picked_changed = Signal()
+    confirm_requested = Signal()
+    back_requested = Signal()
 
     def __init__(self, loader: ThumbnailLoader, parent=None) -> None:
         super().__init__(parent)
@@ -181,6 +183,49 @@ class GroupView(QListView):
             self.photo_model.photos[i.row()].rel_path
             for i in self.selectionModel().selectedIndexes()
         }
+
+    _MOVES = {
+        Qt.Key.Key_Left: QListView.CursorAction.MoveLeft,
+        Qt.Key.Key_Right: QListView.CursorAction.MoveRight,
+        Qt.Key.Key_Up: QListView.CursorAction.MoveUp,
+        Qt.Key.Key_Down: QListView.CursorAction.MoveDown,
+        Qt.Key.Key_Home: QListView.CursorAction.MoveHome,
+        Qt.Key.Key_End: QListView.CursorAction.MoveEnd,
+    }
+
+    def keyPressEvent(self, event) -> None:
+        key = event.key()
+        if key in self._MOVES and not event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+            # Arrows move the cursor without changing the picked photos.
+            index = self.moveCursor(self._MOVES[key], event.modifiers())
+            if index.isValid():
+                self.selectionModel().setCurrentIndex(
+                    index, QItemSelectionModel.SelectionFlag.NoUpdate
+                )
+            return
+        if key == Qt.Key.Key_Space:
+            self.toggle_current()
+            return
+        if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.confirm_requested.emit()
+            return
+        if key == Qt.Key.Key_Backspace:
+            self.back_requested.emit()
+            return
+        if Qt.Key.Key_1 <= key <= Qt.Key.Key_9:
+            row = key - Qt.Key.Key_1
+            if row < self.photo_model.rowCount():
+                self.selectionModel().setCurrentIndex(
+                    self.photo_model.index(row), QItemSelectionModel.SelectionFlag.NoUpdate
+                )
+                self.toggle_current()
+            return
+        super().keyPressEvent(event)
+
+    def toggle_current(self) -> None:
+        index = self.currentIndex()
+        if index.isValid():
+            self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Toggle)
 
     def _update_grid(self) -> None:
         # Measure the full widget area: the cell size is chosen so that everything fits, so

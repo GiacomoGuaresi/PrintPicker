@@ -48,7 +48,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 2.3 | **Cache hash** nel database (ricalcolo solo se il file cambia: dimensione + data modifica) | `feat(selection): cache hashes in selection db` | ✅ |
 | 2.4 | **Nomi in uscita**: prefisso con percorso completo, nome cartella sorgente per i file nella root | `feat(export): output file naming` | ✅ |
 | 2.5 | **Copia**: duplicati identici saltati, suffisso `_2`, `_3` per nomi in conflitto | `feat(export): copy with duplicate handling` | ✅ |
-| 2.6 | **Conversione JPG** per HEIC / RAW / TIFF / WebP | `feat(export): convert non-JPG formats to JPG` | ⬜ |
+| 2.6 | **Conversione JPG** per HEIC / RAW / TIFF / WebP | `feat(export): convert non-JPG formats to JPG` | ✅ |
 | 2.7 | **Rimozione** di una foto deselezionata dalla cartella della selezione | `feat(export): remove deselected photos` | ⬜ |
 | 2.8 | **Avanzamento**: salvataggio delle scelte per foto e del punto raggiunto per ogni origine | `feat(selection): persist progress and choices` | ⬜ |
 

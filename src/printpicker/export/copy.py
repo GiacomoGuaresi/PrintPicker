@@ -9,6 +9,11 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from PIL import Image
+
+from printpicker.core.images import load_image
+from printpicker.export.naming import needs_conversion
+
 # writer(destination) creates the file at ``destination``.
 Writer = Callable[[Path], None]
 
@@ -53,3 +58,40 @@ def copy_photo(source: Path, dest_dir: Path, name: str) -> ExportResult:
         if filecmp.cmp(source, target, shallow=False):
             return ExportResult(target, skipped=True)
     raise AssertionError("unreachable")
+
+
+def convert_photo(source: Path, dest_dir: Path, name: str) -> ExportResult:
+    """Save ``source`` (HEIC, RAW, TIFF, WebP, ...) as a high-quality JPG named ``name``.
+
+    The orientation is applied to the pixels, and the colour profile is kept. Duplicate
+    handling is the same as :func:`copy_photo`, comparing the converted output.
+    """
+    tmp = dest_dir / f".{name}.part"
+    try:
+        save_as_jpeg(load_image(source), tmp)
+        for target in candidates(dest_dir, name):
+            if not target.exists():
+                os.replace(tmp, target)
+                return ExportResult(target, skipped=False)
+            if filecmp.cmp(tmp, target, shallow=False):
+                return ExportResult(target, skipped=True)
+    finally:
+        tmp.unlink(missing_ok=True)
+    raise AssertionError("unreachable")
+
+
+JPEG_QUALITY = 95
+
+
+def save_as_jpeg(img: Image.Image, path: Path) -> None:
+    kwargs = {}
+    if icc := img.info.get("icc_profile"):
+        kwargs["icc_profile"] = icc
+    img.save(path, format="JPEG", quality=JPEG_QUALITY, subsampling=0, optimize=True, **kwargs)
+
+
+def export_photo(source: Path, dest_dir: Path, name: str) -> ExportResult:
+    """Copy or convert ``source``, depending on its format."""
+    if needs_conversion(source.name):
+        return convert_photo(source, dest_dir, name)
+    return copy_photo(source, dest_dir, name)

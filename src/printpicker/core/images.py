@@ -58,5 +58,6 @@ def _to_rgb(img: Image.Image) -> Image.Image:
         rgba = img.convert("RGBA")
         background = Image.new("RGB", rgba.size, (255, 255, 255))
         background.paste(rgba, mask=rgba.getchannel("A"))
+        background.info = dict(img.info)
         return background
     return img.convert("RGB")

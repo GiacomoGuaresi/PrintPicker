@@ -29,6 +29,7 @@ from printpicker.selection.choices import first_unseen_group
 from printpicker.ui.group_view import GroupView
 from printpicker.ui.money import format_money
 from printpicker.ui.settings import AppSettings
+from printpicker.ui.settings_dialog import SettingsDialog
 from printpicker.ui.thumbnails import ThumbnailLoader
 from printpicker.ui.viewer import PhotoViewer
 from printpicker.ui.workers import AnalysisThread
@@ -79,6 +80,9 @@ class SessionScreen(QWidget):
         top.addWidget(QLabel(self.tr("Source:")))
         top.addWidget(self.source_combo)
         top.addWidget(self.add_source_button)
+        self.settings_button = QPushButton(self.tr("Settings…"))
+        self.settings_button.clicked.connect(self.open_settings)
+        top.addWidget(self.settings_button)
 
         # Pages.
         self.pages = QStackedWidget()
@@ -367,6 +371,10 @@ class SessionScreen(QWidget):
             .replace("%2", format_money(estimate.unit_price, price_list.currency))
         )
         return text
+
+    def open_settings(self) -> None:
+        if SettingsDialog(self.settings, self).exec():
+            self._update_counters()
 
     def open_folder(self) -> None:
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.selection.folder)))

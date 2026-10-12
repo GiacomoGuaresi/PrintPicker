@@ -86,7 +86,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 5.1 | **Motore prezzi**: scaglioni, costi fissi, listino PhotoSì 10×15 predefinito (solo logica + test) | `feat(pricing): tiered price calculation` | ✅ |
 | 5.2 | **Contatore live** nella barra in basso (`34 foto · ~10,20 €`) | `feat(ui): live photo count and cost` | ✅ |
 | 5.3 | **Impostazioni globali**: cartella base delle selezioni | `feat(settings): base folder setting` | ✅ |
-| 5.4 | **Editor del listino** (tabella scaglioni + costi fissi) nelle impostazioni | `feat(settings): price list editor` | ⬜ |
+| 5.4 | **Editor del listino** (tabella scaglioni + costi fissi) nelle impostazioni | `feat(settings): price list editor` | ✅ |
 
 ## M6 — Robustezza e lingue → `v0.6.0`
 

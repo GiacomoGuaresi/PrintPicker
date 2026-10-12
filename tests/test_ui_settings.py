@@ -37,3 +37,53 @@ def test_settings_dialog_changes_base_dir(qtbot, tmp_path):
     dialog.base_dir_edit.setText(str(tmp_path / "Stampe"))
     dialog.accept()
     assert s.base_dir == tmp_path / "Stampe"
+
+
+def make_dialog(qtbot, tmp_path):
+    from printpicker.ui.settings_dialog import SettingsDialog
+
+    s = AppSettings(QSettings(str(tmp_path / "s.ini"), QSettings.Format.IniFormat))
+    dialog = SettingsDialog(s)
+    qtbot.addWidget(dialog)
+    return s, dialog
+
+
+def test_price_editor_loads_default_and_saves_changes(qtbot, tmp_path):
+    from PySide6.QtWidgets import QTableWidgetItem
+
+    s, dialog = make_dialog(qtbot, tmp_path)
+    assert dialog.tiers_table.rowCount() == 5
+    assert dialog.price_list() == DEFAULT_PRICE_LIST
+    dialog.tiers_table.item(1, 1).setText("0,28")
+    dialog._add_row(dialog.fixed_table, "Spedizione", "")
+    dialog.fixed_table.setItem(0, 1, QTableWidgetItem("4,90 €"))
+    dialog.price_name.setText("PhotoSì promo")
+    dialog.accept()
+    saved = s.price_list
+    assert saved.name == "PhotoSì promo"
+    assert saved.unit_price(50) == Decimal("0.28")
+    assert saved.estimate(50).total == Decimal("18.90")
+
+
+def test_invalid_price_list_is_rejected(qtbot, tmp_path, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    s, dialog = make_dialog(qtbot, tmp_path)
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a))
+    dialog.tiers_table.item(0, 0).setText("5")  # no tier from 1 photo
+    assert "color:#c33" in dialog.examples.text()
+    dialog.accept()
+    assert warnings
+    assert s.price_list == DEFAULT_PRICE_LIST
+
+
+def test_parse_decimal():
+    import pytest
+
+    from printpicker.ui.settings_dialog import parse_decimal
+
+    assert parse_decimal("0,35") == Decimal("0.35")
+    assert parse_decimal(" 4.90 € ") == Decimal("4.90")
+    with pytest.raises(ValueError):
+        parse_decimal("abc")

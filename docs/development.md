@@ -11,6 +11,21 @@ Per lo sviluppo si usa una chiavetta USB con un campione dell'archivio reale (su
 
 Il campione non contiene ancora HEIC, RAW, TIFF o WebP: per testare quei formati servono file aggiuntivi.
 
+### Foto di esempio
+
+Un set di foto libere, utilizzabile anche per gli screenshot del README, si genera con:
+
+```sh
+uv run python scripts/make_samples.py          # --force per rigenerarlo
+```
+
+Scarica ~45 foto da [Lorem Picsum](https://picsum.photos) (licenza Unsplash) e crea in
+`samples/` (ignorata da git, ~85 MB) 80 foto in cartelle-viaggio: raffiche di scatti quasi
+identici (spostamenti, esposizione, uno sfocato) che formano 21 gruppi con la soglia 14,
+foto verticali, 4:3 e quadrate per l'anteprima di ritaglio, HEIC/PNG/WebP/TIFF e una cartella
+`Edge cases` (orientamento EXIF, panorama, file illeggibili, video e file nascosti da ignorare).
+Gli autori sono in `samples/CREDITS.md`. RAW non incluso.
+
 ## Ambiente di sviluppo
 
 Il progetto usa [uv](https://docs.astral.sh/uv/) per gestire Python (3.12) e le dipendenze.

@@ -214,8 +214,8 @@ class GroupView(QListView):
     """Click picks or unpicks a photo (no modifier keys needed), double-click previews it."""
 
     picked_changed = Signal()
-    confirm_requested = Signal()
-    back_requested = Signal()
+    next_requested = Signal()
+    previous_requested = Signal()
     preview_requested = Signal(int)
     crop_toggled = Signal(bool)
 
@@ -229,6 +229,7 @@ class GroupView(QListView):
         self.setUniformItemSizes(True)
         self.setSelectionMode(QListView.SelectionMode.MultiSelection)
         self.setMouseTracking(True)
+        self.setTabKeyNavigation(True)
         self.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover)
         self.setFrameShape(QListView.Shape.NoFrame)
         self.show_crop = False
@@ -259,9 +260,8 @@ class GroupView(QListView):
             for i in self.selectionModel().selectedIndexes()
         }
 
+    # ← → switch group (see keyPressEvent); these move between the photos of the group.
     _MOVES = {
-        Qt.Key.Key_Left: QListView.CursorAction.MoveLeft,
-        Qt.Key.Key_Right: QListView.CursorAction.MoveRight,
         Qt.Key.Key_Up: QListView.CursorAction.MoveUp,
         Qt.Key.Key_Down: QListView.CursorAction.MoveDown,
         Qt.Key.Key_Home: QListView.CursorAction.MoveHome,
@@ -270,6 +270,21 @@ class GroupView(QListView):
 
     def keyPressEvent(self, event) -> None:
         key = event.key()
+        if key in (Qt.Key.Key_Right, Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.next_requested.emit()
+            return
+        if key in (Qt.Key.Key_Left, Qt.Key.Key_Backspace):
+            self.previous_requested.emit()
+            return
+        if key in (Qt.Key.Key_Tab, Qt.Key.Key_Backtab):
+            count = self.photo_model.rowCount()
+            if count:
+                step = 1 if key == Qt.Key.Key_Tab else -1
+                row = (max(self.currentIndex().row(), 0) + step) % count
+                self.selectionModel().setCurrentIndex(
+                    self.photo_model.index(row), QItemSelectionModel.SelectionFlag.NoUpdate
+                )
+            return
         if key in self._MOVES and not event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
             # Arrows move the cursor without changing the picked photos.
             index = self.moveCursor(self._MOVES[key], event.modifiers())
@@ -281,18 +296,12 @@ class GroupView(QListView):
         if key == Qt.Key.Key_Space:
             self.toggle_current()
             return
-        if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            self.confirm_requested.emit()
-            return
         if key == Qt.Key.Key_C:
             self.set_show_crop(not self.show_crop)
             self.crop_toggled.emit(self.show_crop)
             return
         if key in (Qt.Key.Key_F, Qt.Key.Key_Z):
             self.preview_requested.emit(max(self.currentIndex().row(), 0))
-            return
-        if key == Qt.Key.Key_Backspace:
-            self.back_requested.emit()
             return
         if Qt.Key.Key_1 <= key <= Qt.Key.Key_9:
             row = key - Qt.Key.Key_1

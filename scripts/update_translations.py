@@ -75,13 +75,12 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     ),
     "%1 of %2 photos": "%1 di %2 foto",
     "The analysis failed:\n%1": "L'analisi non è riuscita:\n%1",
-    "Confirm and continue →": "Conferma e continua →",
+    "Next group →": "Gruppo successivo →",
     "← Previous group": "← Gruppo precedente",
-    "Backspace": "Backspace",
-    "Enter": "Invio",
-    "Arrows move · Space/1–9 pick · Enter confirm · Backspace back · F preview · C crop": (
-        "Frecce muovi · Spazio/1–9 scegli · Invio conferma · Backspace indietro · "
-        "F anteprima · C ritaglio"
+    "← or Backspace · your picks are kept": "← o Backspace · le scelte restano salvate",
+    "→ or Enter · your picks are kept": "→ o Invio · le scelte restano salvate",
+    "Click or Space/1–9 pick · ← → groups · ↑ ↓ Tab photos · F preview · C crop": (
+        "Clic o Spazio/1–9 scegli · ← → gruppi · ↑ ↓ Tab foto · F anteprima · C ritaglio"
     ),
     "How different two photos can be to end up in the same group": (
         "Quanto possono essere diverse due foto per finire nello stesso gruppo"

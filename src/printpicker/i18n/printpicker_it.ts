@@ -3,7 +3,7 @@
 <context>
     <name>GroupView</name>
     <message>
-        <location filename="../ui/group_view.py" line="111" />
+        <location filename="../ui/group_view.py" line="119" />
         <source>Unreadable</source>
         <translation>Illeggibile</translation>
     </message>
@@ -11,7 +11,7 @@
 <context>
     <name>PhotoModel</name>
     <message>
-        <location filename="../ui/group_view.py" line="64" />
+        <location filename="../ui/group_view.py" line="71" />
         <source>%1
 Will be cropped to fit a 10×15 print</source>
         <translation>%1
@@ -21,72 +21,72 @@ Verrà ritagliata per la stampa 10×15</translation>
 <context>
     <name>PhotoViewer</name>
     <message>
-        <location filename="../ui/viewer.py" line="271" />
+        <location filename="../ui/viewer.py" line="392" />
         <source>Preview</source>
         <translation>Anteprima</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="290" />
+        <location filename="../ui/viewer.py" line="411" />
         <source>Picked</source>
         <translation>Scelta</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="294" />
+        <location filename="../ui/viewer.py" line="415" />
         <source>← → browse · Space pick · +/− zoom · 0 fit · 1 100% · R rotate · C crop · Esc</source>
         <translation>← → sfoglia · Spazio scegli · +/− zoom · 0 adatta · 1 100% · R ruota · C ritaglio · Esc</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="300" />
+        <location filename="../ui/viewer.py" line="421" />
         <source>Previous photo (←)</source>
         <translation>Foto precedente (←)</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="302" />
+        <location filename="../ui/viewer.py" line="423" />
         <source>Next photo (→)</source>
         <translation>Foto successiva (→)</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="304" />
+        <location filename="../ui/viewer.py" line="425" />
         <source>Close (Esc)</source>
         <translation>Chiudi (Esc)</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="312" />
+        <location filename="../ui/viewer.py" line="433" />
         <source>Pick</source>
         <translation>Scegli</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="312" />
+        <location filename="../ui/viewer.py" line="433" />
         <source>Pick (Space)</source>
         <translation>Scegli (Spazio)</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="315" />
+        <location filename="../ui/viewer.py" line="436" />
         <source>Zoom out (−)</source>
         <translation>Riduci (−)</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="317" />
+        <location filename="../ui/viewer.py" line="438" />
         <source>Fit</source>
         <translation>Adatta</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="317" />
+        <location filename="../ui/viewer.py" line="438" />
         <source>Fit to screen (0)</source>
         <translation>Adatta allo schermo (0)</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="319" />
+        <location filename="../ui/viewer.py" line="440" />
         <source>Zoom in (+)</source>
         <translation>Ingrandisci (+)</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="321" />
+        <location filename="../ui/viewer.py" line="442" />
         <source>Rotate (R)</source>
         <translation>Ruota (R)</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="493" />
+        <location filename="../ui/viewer.py" line="622" />
         <source>will be cropped to 10×15</source>
         <translation>verrà ritagliata per il 10×15</translation>
     </message>
@@ -241,47 +241,47 @@ Collega il disco e premi Riprova, oppure indica dove si trova ora la cartella.</
     </message>
     <message>
         <location filename="../ui/session_screen.py" line="290" />
-        <source>Confirm and continue →</source>
-        <translation>Conferma e continua →</translation>
+        <source>Next group →</source>
+        <translation>Gruppo successivo →</translation>
+    </message>
+    <message>
+        <location filename="../ui/session_screen.py" line="295" />
+        <source>← or Backspace · your picks are kept</source>
+        <translation>← o Backspace · le scelte restano salvate</translation>
+    </message>
+    <message>
+        <location filename="../ui/session_screen.py" line="296" />
+        <source>→ or Enter · your picks are kept</source>
+        <translation>→ o Invio · le scelte restano salvate</translation>
+    </message>
+    <message>
+        <location filename="../ui/session_screen.py" line="298" />
+        <source>Click or Space/1–9 pick · ← → groups · ↑ ↓ Tab photos · F preview · C crop</source>
+        <translation>Clic o Spazio/1–9 scegli · ← → gruppi · ↑ ↓ Tab foto · F anteprima · C ritaglio</translation>
     </message>
     <message>
         <location filename="../ui/session_screen.py" line="294" />
-        <location filename="../ui/session_screen.py" line="393" />
+        <location filename="../ui/session_screen.py" line="397" />
         <source>← Previous group</source>
         <translation>← Gruppo precedente</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="295" />
-        <source>Backspace</source>
-        <translation>Backspace</translation>
-    </message>
-    <message>
-        <location filename="../ui/session_screen.py" line="296" />
-        <source>Enter</source>
-        <translation>Invio</translation>
-    </message>
-    <message>
-        <location filename="../ui/session_screen.py" line="299" />
-        <source>Arrows move · Space/1–9 pick · Enter confirm · Backspace back · F preview · C crop</source>
-        <translation>Frecce muovi · Spazio/1–9 scegli · Invio conferma · Backspace indietro · F anteprima · C ritaglio</translation>
-    </message>
-    <message>
-        <location filename="../ui/session_screen.py" line="310" />
+        <location filename="../ui/session_screen.py" line="308" />
         <source>How different two photos can be to end up in the same group</source>
         <translation>Quanto possono essere diverse due foto per finire nello stesso gruppo</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="318" />
+        <location filename="../ui/session_screen.py" line="316" />
         <source>Grouping: strict</source>
         <translation>Raggruppamento: rigido</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="320" />
+        <location filename="../ui/session_screen.py" line="318" />
         <source>loose</source>
         <translation>permissivo</translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/session_screen.py" line="356" />
+        <location filename="../ui/session_screen.py" line="354" />
         <source>&lt;b&gt;%1&lt;/b&gt; — group %2 of %3 · %n photo(s)</source>
         <translation><numerusform>&lt;b&gt;%1&lt;/b&gt; — gruppo %2 di %3 · %n foto</numerusform><numerusform>&lt;b&gt;%1&lt;/b&gt; — gruppo %2 di %3 · %n foto</numerusform></translation>
     </message>
@@ -298,32 +298,32 @@ Collega il disco e premi Riprova, oppure indica dove si trova ora la cartella.</
 %1</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="390" />
+        <location filename="../ui/session_screen.py" line="394" />
         <source>Open the selection folder</source>
         <translation>Apri la cartella della selezione</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="395" />
+        <location filename="../ui/session_screen.py" line="399" />
         <source>Add another source…</source>
         <translation>Aggiungi un'altra origine…</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="407" />
+        <location filename="../ui/session_screen.py" line="411" />
         <source>&lt;h2&gt;Done!&lt;/h2&gt;All the photos of “%1” have been reviewed.&lt;br&gt;&lt;br&gt;%2</source>
         <translation>&lt;h2&gt;Fatto!&lt;/h2&gt;Hai visto tutte le foto di “%1”.&lt;br&gt;&lt;br&gt;%2</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="418" />
+        <location filename="../ui/session_screen.py" line="422" />
         <source>Photos to print: &lt;b&gt;%1&lt;/b&gt;</source>
         <translation>Foto da stampare: &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="422" />
+        <location filename="../ui/session_screen.py" line="426" />
         <source>Estimate with “%1”: %2 per photo</source>
         <translation>Stima con “%1”: %2 a foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="484" />
+        <location filename="../ui/session_screen.py" line="491" />
         <source>Selected in this group: %1</source>
         <translation>Scelte in questo gruppo: %1</translation>
     </message>

@@ -282,22 +282,20 @@ class SessionScreen(QWidget):
         self.group_title = QLabel()
         self.group_view = GroupView(self.loader)
         self.group_view.picked_changed.connect(self._update_counters)
-        self.group_view.confirm_requested.connect(self.confirm_group)
-        self.group_view.back_requested.connect(self.previous_group)
+        self.group_view.next_requested.connect(self.next_group)
+        self.group_view.previous_requested.connect(self.previous_group)
         self.group_view.preview_requested.connect(self.open_preview)
         self.picked_label = QLabel()
         self.total_label = QLabel()
-        self.confirm_button = QPushButton(self.tr("Confirm and continue →"))
-        self.confirm_button.setDefault(True)
-        self.confirm_button.clicked.connect(self.confirm_group)
+        self.next_button = QPushButton(self.tr("Next group →"))
+        self.next_button.setDefault(True)
+        self.next_button.clicked.connect(self.next_group)
 
         self.previous_button = QPushButton(self.tr("← Previous group"))
-        self.previous_button.setToolTip(self.tr("Backspace"))
-        self.confirm_button.setToolTip(self.tr("Enter"))
+        self.previous_button.setToolTip(self.tr("← or Backspace · your picks are kept"))
+        self.next_button.setToolTip(self.tr("→ or Enter · your picks are kept"))
         self.help_label = QLabel(
-            self.tr(
-                "Arrows move · Space/1–9 pick · Enter confirm · Backspace back · F preview · C crop"
-            )
+            self.tr("Click or Space/1–9 pick · ← → groups · ↑ ↓ Tab photos · F preview · C crop")
         )
         self.help_label.setEnabled(False)
         self.previous_button.clicked.connect(self.previous_group)
@@ -328,7 +326,7 @@ class SessionScreen(QWidget):
         bottom.addStretch()
         bottom.addLayout(similarity)
         bottom.addSpacing(24)
-        bottom.addWidget(self.confirm_button)
+        bottom.addWidget(self.next_button)
 
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -364,7 +362,9 @@ class SessionScreen(QWidget):
         self.pages.setCurrentWidget(self.groups_page)
         self.group_view.setFocus()
 
-    def confirm_group(self) -> None:
+    def save_group(self) -> bool:
+        """Store the picks of the group on screen: picked photos are copied into the
+        selection, unpicked ones removed. False if a copy failed."""
         assert self.source is not None
         group = self.groups[self.index]
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
@@ -374,15 +374,19 @@ class SessionScreen(QWidget):
             QApplication.restoreOverrideCursor()
             if not self.source.is_available:
                 self._source_changed()  # shows "folder not found" with retry / relink
-                return
+                return False
             QMessageBox.warning(
                 self,
                 self.tr("Copy failed"),
                 self.tr("Could not copy the photo:\n%1").replace("%1", str(exc)),
             )
-            return
+            return False
         QApplication.restoreOverrideCursor()
-        self.show_group(self.index + 1)
+        return True
+
+    def next_group(self) -> None:
+        if self.index < len(self.groups) and self.save_group():
+            self.show_group(self.index + 1)
 
     def _build_end_page(self) -> QWidget:
         self.end_label = QLabel()
@@ -475,9 +479,12 @@ class SessionScreen(QWidget):
         self.show_group(index)
 
     def previous_group(self) -> None:
-        """Go back without saving the current group; its previous choice is kept."""
-        if self.index > 0:
-            self.show_group(min(self.index, len(self.groups)) - 1)
+        """Go back, keeping the picks of the current group."""
+        if self.index >= len(self.groups):
+            if self.groups:
+                self.show_group(len(self.groups) - 1)  # from the end page
+        elif self.index > 0 and self.save_group():
+            self.show_group(self.index - 1)
 
     def _update_counters(self) -> None:
         self.picked_label.setText(

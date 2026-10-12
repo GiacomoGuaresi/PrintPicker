@@ -82,14 +82,14 @@ def test_confirm_copies_and_advances(qtbot, session, photos):
     assert len(session.group_view.photo_model.photos) == 2
     pick(session, 1)
     assert session.group_view.picked() == {"a2.jpg"}
-    session.confirm_button.click()
+    session.next_button.click()
     assert exported(session) == ["Foto - a2.jpg"]
     assert session.index == 1
     assert "<b>1</b>" in session.total_label.text()
     assert "~" in session.total_label.text() and "0,35" in session.total_label.text().replace(
         ".", ","
     )
-    session.confirm_button.click()  # nothing picked in the last group
+    session.next_button.click()  # nothing picked in the last group
     assert session.pages.currentWidget() is session.end_page
     assert "Photos to print: <b>1</b>" in session.end_label.text()
     session.previous_group()
@@ -110,7 +110,7 @@ def test_go_back_and_change_choice(qtbot, session, photos):
     wait_groups(qtbot, session)
     assert not session.previous_button.isEnabled()
     pick(session, 0, 1)
-    session.confirm_button.click()
+    session.next_button.click()
     assert exported(session) == ["Foto - a1.jpg", "Foto - a2.jpg"]
     assert session.previous_button.isEnabled()
 
@@ -118,7 +118,7 @@ def test_go_back_and_change_choice(qtbot, session, photos):
     assert session.index == 0
     assert session.group_view.picked() == {"a1.jpg", "a2.jpg"}  # previous choice restored
     pick(session, 0)
-    session.confirm_button.click()
+    session.next_button.click()
     assert exported(session) == ["Foto - a1.jpg"]
     assert session.index == 1
 
@@ -133,7 +133,7 @@ def test_reopen_resumes_where_left(qtbot, tmp_path, photos):
     wait_groups(qtbot, first)
     first.add_source(photos)
     wait_groups(qtbot, first)
-    first.confirm_button.click()  # first group of "Foto" reviewed
+    first.next_button.click()  # first group of "Foto" reviewed
     first.close_selection()
 
     again = SessionScreen(tmp_path / "R")
@@ -150,7 +150,9 @@ def test_keyboard_flow(qtbot, session, photos):
     session.add_source(photos)
     wait_groups(qtbot, session)
     view = session.group_view
-    qtbot.keyClick(view, Qt.Key.Key_Right)
+    session.show()  # Tab reaches a hidden view only as focus change
+    qtbot.waitExposed(session)
+    qtbot.keyClick(view, Qt.Key.Key_Tab)
     assert view.picked() == set()  # moving does not pick
     assert view.currentIndex().row() == 1
     qtbot.keyClick(view, Qt.Key.Key_Space)
@@ -159,11 +161,32 @@ def test_keyboard_flow(qtbot, session, photos):
     assert view.picked() == {"a1.jpg", "a2.jpg"}
     qtbot.keyClick(view, Qt.Key.Key_Space)  # current is a1 again: unpick
     assert view.picked() == {"a2.jpg"}
-    qtbot.keyClick(view, Qt.Key.Key_Return)
+    qtbot.keyClick(view, Qt.Key.Key_Right)
     assert session.index == 1
     assert exported(session) == ["Foto - a2.jpg"]
+    qtbot.keyClick(session.group_view, Qt.Key.Key_Left)
+    assert session.index == 0
+    assert session.group_view.picked() == {"a2.jpg"}
+    qtbot.keyClick(session.group_view, Qt.Key.Key_Return)
+    assert session.index == 1
     qtbot.keyClick(session.group_view, Qt.Key.Key_Backspace)
     assert session.index == 0
+
+
+def test_going_back_keeps_picks(qtbot, session, photos):
+    from PySide6.QtCore import Qt
+
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    qtbot.keyClick(session.group_view, Qt.Key.Key_Right)
+    qtbot.keyClick(session.group_view, Qt.Key.Key_1)  # pick b.jpg, then go back
+    qtbot.keyClick(session.group_view, Qt.Key.Key_Left)
+    assert session.index == 0
+    assert exported(session) == ["Foto - b.jpg"]
+    qtbot.keyClick(session.group_view, Qt.Key.Key_Left)  # first group: nothing happens
+    assert session.index == 0
+    qtbot.keyClick(session.group_view, Qt.Key.Key_Right)
+    assert session.group_view.picked() == {"b.jpg"}
 
 
 def test_threshold_slider_regroups_and_keeps_position(qtbot, session, photos):
@@ -173,7 +196,7 @@ def test_threshold_slider_regroups_and_keeps_position(qtbot, session, photos):
     session.items = [(p, h) for (p, _), h in zip(session.items, [0, 0b111, 2**64 - 1], strict=True)]
     session.regroup()
     assert len(session.groups) == 2
-    session.confirm_button.click()  # now on group with b.jpg
+    session.next_button.click()  # now on group with b.jpg
     session.threshold_slider.setValue(0)
     qtbot.waitUntil(lambda: session.selection.threshold == 0, timeout=2000)
     assert len(session.groups) == 3
@@ -195,7 +218,7 @@ def test_relink_moved_source(qtbot, session, photos, tmp_path, monkeypatch):
 
     session.add_source(photos)
     wait_groups(qtbot, session)
-    session.confirm_button.click()
+    session.next_button.click()
     moved = tmp_path / "F" / "Foto"
     moved.parent.mkdir()
     photos.rename(moved)
@@ -220,7 +243,7 @@ def test_drive_unplugged_while_confirming(qtbot, session, photos, tmp_path):
     wait_groups(qtbot, session)
     pick(session, 0)
     photos.rename(tmp_path / "unplugged")
-    session.confirm_button.click()
+    session.next_button.click()
     assert session.pages.currentWidget() is session.message_page
     assert not session.relink_button.isHidden()
 

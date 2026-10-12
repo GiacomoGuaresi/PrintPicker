@@ -72,3 +72,23 @@ def test_zoom_keys(qtbot, tmp_path):
     qtbot.keyClick(viewer, Qt.Key.Key_Plus)
     qtbot.keyClick(viewer, Qt.Key.Key_Right)  # next photo starts fitted
     assert view.fitted
+
+
+def test_rotation_is_view_only(qtbot, tmp_path):
+    viewer = make_viewer(qtbot, tmp_path)
+    viewer.resize(800, 600)
+    qtbot.waitUntil(lambda: viewer.full_image is not None, timeout=5000)
+    before = (tmp_path / "a.jpg").read_bytes()
+    landscape_fit = viewer.view.zoom()
+    qtbot.keyClick(viewer, Qt.Key.Key_R)
+    assert viewer.view.angle == 90
+    assert viewer.view.zoom() < landscape_fit  # a portrait-oriented 900x600 fits smaller
+    qtbot.keyClick(viewer, Qt.Key.Key_R, Qt.KeyboardModifier.ShiftModifier)
+    assert viewer.view.angle == 0
+    qtbot.keyClick(viewer, Qt.Key.Key_R)
+    qtbot.keyClick(viewer, Qt.Key.Key_Plus)
+    qtbot.keyClick(viewer, Qt.Key.Key_1)
+    assert abs(viewer.view.zoom() - 1.0) < 0.01  # zoom is correct while rotated
+    qtbot.keyClick(viewer, Qt.Key.Key_Right)
+    assert viewer.view.angle == 0
+    assert (tmp_path / "a.jpg").read_bytes() == before

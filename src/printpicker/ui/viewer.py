@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, Signal
@@ -65,6 +66,7 @@ class ImageView(QGraphicsView):
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.fitted = True
+        self.angle = 0  # view rotation in degrees, never applied to the files
 
     def set_image(self, image: QImage, natural_size=None) -> None:
         """Show ``image``; ``natural_size`` lets a thumbnail stand in for the full photo."""
@@ -82,12 +84,15 @@ class ImageView(QGraphicsView):
 
     def zoom(self) -> float:
         """Current zoom: 1.0 means one photo pixel per screen pixel."""
-        return self.transform().m11() * self.devicePixelRatioF()
+        t = self.transform()
+        return math.hypot(t.m11(), t.m12()) * self.devicePixelRatioF()
 
     def fit_zoom(self) -> float:
         rect = self.item.sceneBoundingRect()
         if rect.isEmpty():
             return 1.0
+        if self.angle % 180:
+            rect = rect.transposed()
         view = self.viewport().rect()
         return min(view.width() / rect.width(), view.height() / rect.height()) * (
             self.devicePixelRatioF()
@@ -96,6 +101,7 @@ class ImageView(QGraphicsView):
     def fit(self) -> None:
         self.fitted = True
         self.resetTransform()
+        self.rotate(self.angle)
         if not self.item.pixmap().isNull():
             self.fitInView(self.item, Qt.AspectRatioMode.KeepAspectRatio)
         self.zoom_changed.emit()
@@ -122,6 +128,18 @@ class ImageView(QGraphicsView):
 
     def actual_size(self) -> None:
         self.set_zoom(1.0)
+
+    def rotate_by(self, degrees: int) -> None:
+        self.angle = (self.angle + degrees) % 360
+        if self.fitted:
+            self.fit()
+        else:
+            self.rotate(degrees)
+            self.zoom_changed.emit()
+
+    def reset_view(self) -> None:
+        self.angle = 0
+        self.fitted = True
 
     def wheelEvent(self, event) -> None:
         steps = event.angleDelta().y() / 120
@@ -170,7 +188,7 @@ class PhotoViewer(QDialog):
         self.caption = QLabel()
         self.caption.setStyleSheet("color: #ddd; padding: 6px;")
         self.help = QLabel(
-            self.tr("← → browse · Space pick · +/− zoom · 0 fit · 1 100% · Esc close")
+            self.tr("← → browse · Space pick · +/− zoom · 0 fit · 1 100% · R rotate · Esc close")
         )
         self.help.setStyleSheet("color: #888; padding: 6px;")
         bar = QHBoxLayout()
@@ -205,6 +223,9 @@ class PhotoViewer(QDialog):
             self.view.fit()
         elif key == Qt.Key.Key_1:
             self.view.actual_size()
+        elif key == Qt.Key.Key_R:
+            shift = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+            self.view.rotate_by(-90 if shift else 90)
         elif key in (Qt.Key.Key_Escape, Qt.Key.Key_F, Qt.Key.Key_Z):
             self.accept()
         else:
@@ -215,7 +236,7 @@ class PhotoViewer(QDialog):
             return
         self.row = row
         self._token += 1
-        self.view.fitted = True
+        self.view.reset_view()
         photo = self.photos[row]
         thumb = self.thumbnail_for(photo)
         if thumb is not None and not thumb.isNull():

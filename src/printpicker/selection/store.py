@@ -138,7 +138,9 @@ class Selection(SourcesMixin, PhotosMixin, ExportsMixin, ChoicesMixin):
 
 
 def _connect(db_path: Path) -> sqlite3.Connection:
-    conn = sqlite3.connect(os.fspath(db_path), check_same_thread=False)
+    conn = sqlite3.connect(os.fspath(db_path), check_same_thread=False, timeout=10)
     conn.execute("PRAGMA foreign_keys = ON")
+    # WAL lets the UI read while a background analysis writes through its own connection.
+    conn.execute("PRAGMA journal_mode = WAL")
     migrate(conn)
     return conn

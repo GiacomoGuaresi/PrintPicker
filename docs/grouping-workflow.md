@@ -9,9 +9,8 @@ Flusso principale dell'app.
 3. I gruppi vengono proposti **uno alla volta**.
 4. Per ogni gruppo l'utente può selezionare:
    - **nessuna** foto,
-   - **una** foto (click),
-   - **più** foto (Ctrl+click / Cmd+click su macOS).
-5. Confermando, le foto selezionate vengono [copiate](export.md) nella cartella della selezione e l'app **passa al gruppo successivo**.
+   - **una o più** foto: un **click** sceglie o toglie la foto (nessun Ctrl/Shift); ogni miniatura ha una **casella di spunta** sempre visibile.
+5. Passando al gruppo successivo (→ o Invio) **o tornando indietro** (←), le scelte del gruppo vengono salvate: le foto scelte sono [copiate](export.md) nella cartella della selezione, nulla va perso.
 
 ## Scansione e raggruppamento
 
@@ -29,9 +28,9 @@ Flusso principale dell'app.
 
 ## Navigazione e revisione
 
-- **Avanti / indietro** tra i gruppi; si può modificare la scelta di un gruppo già confermato.
+- **Avanti / indietro** tra i gruppi con le frecce ← →; si può modificare la scelta di un gruppo già visto.
   - Se si deseleziona una foto già copiata, viene **rimossa dalla cartella della selezione**.
-- **Anteprima a schermo intero** (doppio click o tasto) con frecce per confrontare le foto del gruppo:
+- **Anteprima a schermo intero** (doppio click, tasto `F` o lente 🔍 che compare sulla miniatura al passaggio del mouse; il doppio click non cambia la scelta) con frecce per confrontare le foto del gruppo:
   - le foto vicine sono **precaricate**, così sfogliando si vede subito la foto a piena risoluzione;
   - una foto scelta ha una **cornice colorata** e il badge **✓ Scelta** in alto a destra;
   - **controlli col mouse**: ‹ › ai lati e ✕ in alto, che si nascondono col cursore dopo 2 s di mouse fermo; nella barra in basso *Scegli*, zoom e rotazione;
@@ -60,11 +59,14 @@ Servono solo a **guardare bene** le foto e scegliere la migliore: **non modifica
 
 | Tasto | Azione |
 |---|---|
-| Frecce | Spostarsi tra le foto del gruppo |
+| Click | Seleziona / deseleziona la foto |
+| → / Invio | Gruppo successivo (scelte salvate) |
+| ← / Backspace | Gruppo precedente (scelte salvate) |
+| ↑ ↓ / Tab | Spostarsi tra le foto del gruppo |
 | Spazio | Seleziona / deseleziona la foto corrente |
 | `1`–`9` | Seleziona / deseleziona la foto n-esima del gruppo |
-| Invio | Conferma e passa al gruppo successivo |
-| Backspace | Torna al gruppo precedente |
+| `A` | Seleziona tutte / nessuna |
+| Tasti avanti / indietro del mouse | Gruppo successivo / precedente |
 | `F` / `Z` | Anteprima a schermo intero |
 | `R` / `Shift+R` | Ruota la vista a destra / sinistra |
 | `+` / `-` / `0` | Zoom avanti / indietro / adatta |

@@ -11,7 +11,7 @@ PrintPicker is a small cross-platform desktop utility for people who keep their 
 ## Features
 
 - **Similar-photo groups** — photos are grouped by visual similarity (perceptual hashing), so bursts and near-duplicates are shown side by side and you pick the best one(s).
-- **Fast keyboard-driven review** — arrows to move, Space to pick, Enter to confirm and move on, Backspace to go back. Ctrl/Cmd+click for multiple picks.
+- **Fast review** — click a photo to pick or unpick it (each one has a checkbox), ← → to move between groups: your picks are saved as you go, also when going back.
 - **Live similarity threshold** — a slider regroups photos on the fly, from strict to loose.
 - **Full-screen preview** with zoom and rotation to check focus and closed eyes, a filmstrip of the group and on-screen controls; neighbouring photos are preloaded for instant browsing — view only, files are never altered.
 - **Crop preview** — warns when a photo's aspect ratio doesn't match the print format (3:2 for 10×15) and shows what will be printed.
@@ -45,7 +45,7 @@ The builds are not signed, so the first launch needs one extra step:
 
 1. **Create a print selection.** The start screen shows your selections as cards (cover, photos, estimated cost, last change). Click *New selection* and give it a name (e.g. `Print 2026-10-12`): it becomes a folder in `Documents/PrintPicker/`. The **⋯** button on a card (or a right click) opens, renames or deletes a selection.
 2. **Add a source.** Choose a folder of your archive (sub-folders included). The first analysis reads every photo once — on a USB stick about 2 minutes for 500 photos — then it is cached.
-3. **Review the groups.** Each screen shows one group of similar photos from the same folder. Pick none, one or more, then confirm: the picked photos are copied into the selection and the next group appears.
+3. **Review the groups.** Each screen shows one group of similar photos from the same folder. Click the photos to pick (none, one or more), then go to the next group with → or *Next group*: the picked photos are copied into the selection. Going back with ← keeps your picks too.
 4. **Check the total.** The bottom bar shows how many photos you picked and the estimated cost.
 5. **Print.** Open the selection folder, upload the photos to your print service, and delete the folder when you're done.
 
@@ -53,11 +53,13 @@ The builds are not signed, so the first launch needs one extra step:
 
 | Key | Action |
 |---|---|
-| ← → ↑ ↓ | Move between the photos of the group |
+| Click | Pick / unpick a photo |
+| → or Enter | Next group (picks are saved) |
+| ← or Backspace | Previous group (picks are saved) |
+| ↑ ↓, Tab | Move between the photos of the group |
 | Space, `1`–`9` | Pick / unpick the current (or n-th) photo |
-| Enter | Confirm the group and go to the next one |
-| Backspace | Previous group |
-| `F` or double-click | Full-screen preview |
+| `A` | Pick all / none |
+| `F`, double-click or 🔍 on the photo | Full-screen preview |
 | `C` | Show / hide the crop preview |
 
 In the full-screen preview: ← → to browse, Space to pick, `+` / `−` / mouse wheel to zoom, `0` fit, `1` 100%, double-click to switch between fit and 100%, `R` / `Shift+R` rotate, `Esc` to close. With the mouse: the ‹ › arrows and ✕ appear when you move it, the bottom bar has *Pick*, zoom and rotate buttons, and a click on the filmstrip jumps to that photo.

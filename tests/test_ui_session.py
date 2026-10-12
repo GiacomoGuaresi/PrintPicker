@@ -188,3 +188,28 @@ def test_crop_preview_toggle_in_grid(qtbot, session, photos):
     qtbot.keyClick(session.group_view, Qt.Key.Key_C)
     assert session.group_view.show_crop
     session.group_view.grab()
+
+
+def test_relink_moved_source(qtbot, session, photos, tmp_path, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    session.confirm_button.click()
+    moved = tmp_path / "F" / "Foto"
+    moved.parent.mkdir()
+    photos.rename(moved)
+    session._source_changed()
+    assert session.pages.currentWidget() is session.message_page
+    assert not session.relink_button.isHidden()
+
+    # A folder without the known photos needs confirmation.
+    wrong = tmp_path / "wrong"
+    wrong.mkdir()
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.No)
+    assert not session.relink(wrong)
+
+    assert session.relink(moved)
+    wait_groups(qtbot, session)
+    assert session.index == 1  # progress kept
+    assert session.source.path == moved.resolve()

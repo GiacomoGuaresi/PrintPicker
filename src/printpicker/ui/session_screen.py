@@ -99,7 +99,13 @@ class SessionScreen(QWidget):
         self.message_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.retry_button = QPushButton(self.tr("Retry"))
         self.retry_button.clicked.connect(self._source_changed)
-        self.message_page = _centered(self.message_label, self.retry_button)
+        self.relink_button = QPushButton(self.tr("The folder has moved: choose it…"))
+        self.relink_button.clicked.connect(self.choose_relink)
+        message_buttons = QWidget()
+        row = QHBoxLayout(message_buttons)
+        row.addWidget(self.retry_button)
+        row.addWidget(self.relink_button)
+        self.message_page = _centered(self.message_label, message_buttons)
         self.groups_page = self._build_groups_page()
         self.end_page = self._build_end_page()
         pages = (self.empty_page, self.progress_page, self.message_page, self.groups_page)
@@ -145,6 +151,44 @@ class SessionScreen(QWidget):
             source = existing
         self._reload_sources(source.id)
 
+    def choose_relink(self) -> None:
+        folder = QFileDialog.getExistingDirectory(
+            self, self.tr("Where is “%1” now?").replace("%1", self.source.name)
+        )
+        if folder:
+            self.relink(Path(folder))
+
+    def relink(self, folder: Path, confirm: bool = True) -> bool:
+        """Point the current source to ``folder``. Asks for confirmation when none of the
+        photos seen before are there (probably the wrong folder)."""
+        assert self.source is not None
+        known = self.selection.known_photos(self.source)
+        found = any(folder.joinpath(*rel.split("/")).exists() for rel in known[:200])
+        if known and not found and confirm:
+            answer = QMessageBox.question(
+                self,
+                self.tr("Different folder?"),
+                self.tr(
+                    "None of the photos analysed before are in “%1”.\n"
+                    "Use this folder for “%2” anyway?"
+                )
+                .replace("%1", str(folder))
+                .replace("%2", self.source.name),
+            )
+            if answer != QMessageBox.StandardButton.Yes:
+                return False
+        try:
+            self.source = self.selection.relink_source(self.source.id, folder)
+        except SourceExistsError:
+            QMessageBox.warning(
+                self,
+                self.tr("Source"),
+                self.tr("This folder is already another source of the selection."),
+            )
+            return False
+        self._source_changed()
+        return True
+
     def _source_changed(self, *_args) -> None:
         source_id = self.source_combo.currentData()
         if source_id is None:
@@ -155,9 +199,11 @@ class SessionScreen(QWidget):
         self.selection.set_meta("last_source", str(source_id))
         if not self.source.is_available:
             self.show_message(
-                self.tr("The folder “%1” cannot be found.\nIs the drive connected?").replace(
-                    "%1", str(self.source.path)
-                )
+                self.tr(
+                    "The folder “%1” cannot be found.\n\n"
+                    "Connect the drive and press Retry, or choose where the folder is now."
+                ).replace("%1", str(self.source.path)),
+                relink=True,
             )
             return
         self.start_analysis()
@@ -189,8 +235,9 @@ class SessionScreen(QWidget):
         self.cancel_analysis()
         self.show_message(self.tr("Analysis interrupted. Photos analysed so far are kept."))
 
-    def show_message(self, text: str) -> None:
+    def show_message(self, text: str, relink: bool = False) -> None:
         self.message_label.setText(text)
+        self.relink_button.setVisible(relink)
         self.pages.setCurrentWidget(self.message_page)
 
     def _on_progress(self, done: int, total: int) -> None:

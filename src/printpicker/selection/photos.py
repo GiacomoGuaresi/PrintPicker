@@ -51,6 +51,13 @@ def thumb_name(rel_path: str) -> str:
 class PhotosMixin:
     """Photo scanning and hash caching for :class:`~printpicker.selection.store.Selection`."""
 
+    def known_photos(self, source: Source) -> list[str]:
+        """Relative paths of the photos recorded for a source."""
+        rows = self.conn.execute(
+            "SELECT rel_path FROM photos WHERE source_id = ? ORDER BY id", (source.id,)
+        )
+        return [r[0] for r in rows]
+
     def thumb_path(self, source: Source, rel_path: str) -> Path:
         """Cached thumbnail of a photo (it may not exist yet)."""
         return self.thumbs_dir / str(source.id) / thumb_name(rel_path)

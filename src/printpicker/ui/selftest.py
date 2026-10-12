@@ -41,7 +41,10 @@ def run_self_test(app: QApplication) -> int:
 
     translators = install_translations(app, QLocale(QLocale.Language.Italian))
     checks.append(
-        ("italian translation", QCoreApplication.translate("StartScreen", "Open") == "Apri")
+        (
+            "italian translation",
+            QCoreApplication.translate("StartScreen", "Settings…") == "Impostazioni…",
+        )
     )
     for t in translators:
         app.removeTranslator(t)

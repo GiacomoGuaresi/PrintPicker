@@ -49,4 +49,5 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event) -> None:
         if self.session is not None:
             self.session.close_selection()
+        self.start_screen.shutdown()
         super().closeEvent(event)

@@ -125,11 +125,21 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "%1 photos ≈ %2": "%1 foto ≈ %2",
     "Examples: ": "Esempi: ",
     # Start screen
-    "New selection…": "Nuova selezione…",
-    "Open": "Apri",
-    "Delete…": "Elimina…",
-    "Print selections": "Selezioni per la stampa",
-    "%1  ·  %n photo(s)": ("%1  ·  %n foto", "%1  ·  %n foto"),
+    "Selections in %1": "Selezioni in %1",
+    "<b>Welcome!</b> A print selection is a folder on your computer where the "
+    "photos you choose from your archive are copied, ready to be sent to print. "
+    "Create your first one to start.": (
+        "<b>Benvenuto!</b> Una selezione per la stampa è una cartella sul tuo computer in cui "
+        "vengono copiate le foto che scegli dal tuo archivio, pronte da mandare in stampa. "
+        "Crea la prima per iniziare."
+    ),
+    "Create a new print selection": "Crea una nuova selezione per la stampa",
+    "No photos yet": "Ancora nessuna foto",
+    "%n photo(s)": ("%n foto", "%n foto"),
+    "Updated today": "Modificata oggi",
+    "Updated yesterday": "Modificata ieri",
+    "Updated %n day(s) ago": ("Modificata %n giorno fa", "Modificata %n giorni fa"),
+    "Updated on %1": "Modificata il %1",
     "Print": "Stampa",
     "New selection": "Nuova selezione",
     "Name of the selection:": "Nome della selezione:",

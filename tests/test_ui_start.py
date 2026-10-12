@@ -1,10 +1,21 @@
+import datetime as dt
+
 import pytest
 from PySide6.QtCore import QSettings
 
 from printpicker.selection import Selection, is_selection
 from printpicker.ui.main_window import MainWindow
+from printpicker.ui.selection_cards import (
+    COVER_ROLE,
+    DETAILS_ROLE,
+    SelectionCardModel,
+    cover_tiles,
+    days_ago,
+)
 from printpicker.ui.settings import AppSettings
 from printpicker.ui.start_screen import StartScreen
+
+from helpers import make_photo
 
 
 @pytest.fixture
@@ -14,20 +25,57 @@ def settings(tmp_path):
     return s
 
 
-def test_lists_existing_selections(qtbot, settings):
+@pytest.fixture
+def screen_for(qtbot, settings):
+    def make():
+        screen = StartScreen(settings)
+        qtbot.addWidget(screen)
+        return screen
+
+    return make
+
+
+def test_lists_existing_selections(settings, screen_for):
     settings.base_dir.mkdir()
     for name in ["A", "B"]:
         Selection.create(settings.base_dir, name).close()
-    (settings.base_dir / "A" / "x.jpg").write_bytes(b"")
-    screen = StartScreen(settings)
-    qtbot.addWidget(screen)
-    assert screen.list.count() == 2
-    assert screen.open_button.isEnabled()
+    screen = screen_for()
+    assert screen.selection_count() == 2
+    assert screen.cards.model().rowCount() == 3  # "New selection" + 2
+    assert screen.selected_path() is not None
+    assert screen.welcome.isHidden()
 
 
-def test_create_selection_creates_base_dir(qtbot, settings):
-    screen = StartScreen(settings)
-    qtbot.addWidget(screen)
+def test_empty_state(screen_for):
+    screen = screen_for()
+    assert screen.selection_count() == 0
+    assert not screen.welcome.isHidden()
+    assert screen.selected_path() is None
+
+
+def test_card_shows_photos_cost_and_cover(qtbot, tmp_path, settings, screen_for):
+    src = tmp_path / "Foto"
+    for i in range(3):
+        make_photo(src / f"{i}.jpg", pattern=i)
+    with Selection.create(settings.base_dir, "S") as sel:
+        source = sel.add_source(src)
+        for i in range(3):
+            sel.export(source, f"{i}.jpg")
+    screen = screen_for()
+    model = screen.cards.model()
+    index = model.index(1)
+    details = model.data(index, DETAILS_ROLE)
+    assert details.startswith("3 photo")
+    assert "1.05" in details or "1,05" in details  # 3 × 0.35
+    model.data(index, COVER_ROLE)
+    qtbot.waitUntil(lambda: all(model.data(index, COVER_ROLE)), timeout=5000)
+    assert len(model.data(index, COVER_ROLE)) == 3
+    screen.cards.grab()  # paints without errors
+    screen.shutdown()
+
+
+def test_create_selection_creates_base_dir(screen_for, settings):
+    screen = screen_for()
     path = screen.create_selection("Stampa Natale")
     assert path == settings.base_dir / "Stampa Natale"
     assert is_selection(path)
@@ -38,14 +86,23 @@ def test_opening_switches_screen(qtbot, settings):
     Selection.create(settings.base_dir, "A").close()
     window = MainWindow(settings)
     qtbot.addWidget(window)
+    cards = window.start_screen.cards
     with qtbot.waitSignal(window.start_screen.selection_opened):
-        window.start_screen.open_button.click()
+        cards.open_requested.emit(cards.model().index(1))
     assert window.current_selection == settings.base_dir / "A"
     assert window.stack.currentWidget() is not window.start_screen
 
 
+def test_new_card_starts_new_selection(screen_for, monkeypatch):
+    screen = screen_for()
+    calls = []
+    monkeypatch.setattr(screen, "new_selection", lambda: calls.append(True))
+    screen.cards.open_requested.emit(screen.cards.model().index(0))
+    assert calls == [True]
+
+
 @pytest.mark.parametrize(("answer", "deleted"), [("Yes", True), ("Cancel", False)])
-def test_delete_selection(qtbot, settings, monkeypatch, answer, deleted):
+def test_delete_selection(settings, screen_for, monkeypatch, answer, deleted):
     import shutil
 
     from PySide6.QtWidgets import QMessageBox
@@ -61,9 +118,34 @@ def test_delete_selection(qtbot, settings, monkeypatch, answer, deleted):
     monkeypatch.setattr(
         QMessageBox, "question", lambda *a, **k: getattr(QMessageBox.StandardButton, answer)
     )
-    screen = StartScreen(settings)
-    qtbot.addWidget(screen)
+    screen = screen_for()
     screen.delete_selection()
     assert (trashed == [settings.base_dir / "Old"]) is deleted
-    assert screen.list.count() == (0 if deleted else 1)
-    assert screen.delete_button.isEnabled() is not deleted
+    assert screen.selection_count() == (0 if deleted else 1)
+
+
+def test_updated_text(qtbot):
+    from printpicker.ui.thumbnails import ThumbnailLoader
+
+    model = SelectionCardModel(ThumbnailLoader())
+    today = dt.date(2026, 10, 12)
+
+    def ts(days):
+        return dt.datetime.combine(today - dt.timedelta(days=days), dt.time(12)).timestamp()
+
+    assert days_ago(ts(3), today) == 3
+    assert model.updated_text(ts(0), today) == "Updated today"
+    assert model.updated_text(ts(1), today) == "Updated yesterday"
+    assert model.updated_text(ts(3), today) == "Updated 3 day(s) ago"
+    assert model.updated_text(ts(30), today).startswith("Updated on ")
+    assert model.updated_text(0, today) == ""
+
+
+@pytest.mark.parametrize("count", [0, 1, 2, 3, 4])
+def test_cover_tiles_stay_inside(count):
+    from PySide6.QtCore import QRect
+
+    rect = QRect(10, 20, 240, 160)
+    tiles = cover_tiles(rect, count)
+    assert len(tiles) == count
+    assert all(rect.contains(t) for t in tiles)

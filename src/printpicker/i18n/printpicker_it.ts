@@ -42,6 +42,49 @@ Verrà ritagliata per la stampa 10×15</translation>
     </message>
 </context>
 <context>
+    <name>SelectionCardModel</name>
+    <message>
+        <location filename="../ui/selection_cards.py" line="72" />
+        <source>New selection</source>
+        <translation>Nuova selezione</translation>
+    </message>
+    <message>
+        <location filename="../ui/selection_cards.py" line="74" />
+        <source>Create a new print selection</source>
+        <translation>Crea una nuova selezione per la stampa</translation>
+    </message>
+    <message>
+        <location filename="../ui/selection_cards.py" line="93" />
+        <source>No photos yet</source>
+        <translation>Ancora nessuna foto</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../ui/selection_cards.py" line="94" />
+        <source>%n photo(s)</source>
+        <translation><numerusform>%n foto</numerusform><numerusform>%n foto</numerusform></translation>
+    </message>
+    <message>
+        <location filename="../ui/selection_cards.py" line="105" />
+        <source>Updated today</source>
+        <translation>Modificata oggi</translation>
+    </message>
+    <message>
+        <location filename="../ui/selection_cards.py" line="107" />
+        <source>Updated yesterday</source>
+        <translation>Modificata ieri</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../ui/selection_cards.py" line="109" />
+        <source>Updated %n day(s) ago</source>
+        <translation><numerusform>Modificata %n giorno fa</numerusform><numerusform>Modificata %n giorni fa</numerusform></translation>
+    </message>
+    <message>
+        <location filename="../ui/selection_cards.py" line="112" />
+        <source>Updated on %1</source>
+        <translation>Modificata il %1</translation>
+    </message>
+</context>
+<context>
     <name>SessionScreen</name>
     <message>
         <location filename="../ui/session_screen.py" line="67" />
@@ -358,74 +401,60 @@ Collega il disco e premi Riprova, oppure indica dove si trova ora la cartella.</
 <context>
     <name>StartScreen</name>
     <message>
-        <location filename="../ui/start_screen.py" line="74" />
-        <source>New selection…</source>
-        <translation>Nuova selezione…</translation>
-    </message>
-    <message>
-        <location filename="../ui/start_screen.py" line="77" />
-        <source>Open</source>
-        <translation>Apri</translation>
-    </message>
-    <message>
-        <location filename="../ui/start_screen.py" line="80" />
-        <source>Delete…</source>
-        <translation>Elimina…</translation>
-    </message>
-    <message>
-        <location filename="../ui/start_screen.py" line="83" />
+        <location filename="../ui/selftest.py" line="46" />
+        <location filename="../ui/start_screen.py" line="54" />
         <source>Settings…</source>
         <translation>Impostazioni…</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="96" />
-        <source>Print selections</source>
-        <translation>Selezioni per la stampa</translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../ui/start_screen.py" line="109" />
-        <source>%1  ·  %n photo(s)</source>
-        <translation><numerusform>%1  ·  %n foto</numerusform><numerusform>%1  ·  %n foto</numerusform></translation>
+        <location filename="../ui/start_screen.py" line="67" />
+        <source>&lt;b&gt;Welcome!&lt;/b&gt; A print selection is a folder on your computer where the photos you choose from your archive are copied, ready to be sent to print. Create your first one to start.</source>
+        <translation>&lt;b&gt;Benvenuto!&lt;/b&gt; Una selezione per la stampa è una cartella sul tuo computer in cui vengono copiate le foto che scegli dal tuo archivio, pronte da mandare in stampa. Crea la prima per iniziare.</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="130" />
+        <location filename="../ui/start_screen.py" line="89" />
+        <source>Selections in %1</source>
+        <translation>Selezioni in %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/start_screen.py" line="118" />
         <source>Print</source>
         <translation>Stampa</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="133" />
-        <location filename="../ui/start_screen.py" line="155" />
+        <location filename="../ui/start_screen.py" line="121" />
+        <location filename="../ui/start_screen.py" line="143" />
         <source>New selection</source>
         <translation>Nuova selezione</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="133" />
+        <location filename="../ui/start_screen.py" line="121" />
         <source>Name of the selection:</source>
         <translation>Nome della selezione:</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="150" />
+        <location filename="../ui/start_screen.py" line="138" />
         <source>A selection with this name already exists.</source>
         <translation>Esiste già una selezione con questo nome.</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="152" />
+        <location filename="../ui/start_screen.py" line="140" />
         <source>This name cannot be used for a folder.</source>
         <translation>Questo nome non può essere usato per una cartella.</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="154" />
+        <location filename="../ui/start_screen.py" line="142" />
         <source>Could not create the selection: %1</source>
         <translation>Impossibile creare la selezione: %1</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="168" />
-        <location filename="../ui/start_screen.py" line="181" />
+        <location filename="../ui/start_screen.py" line="156" />
+        <location filename="../ui/start_screen.py" line="169" />
         <source>Delete selection</source>
         <translation>Elimina selezione</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="170" />
+        <location filename="../ui/start_screen.py" line="158" />
         <source>Move the selection “%1” and the photos it contains to the trash?
 
 The original photos in your archive are not touched.</source>
@@ -434,7 +463,7 @@ The original photos in your archive are not touched.</source>
 Le foto originali del tuo archivio non vengono toccate.</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="182" />
+        <location filename="../ui/start_screen.py" line="170" />
         <source>Could not move “%1” to the trash.</source>
         <translation>Impossibile spostare “%1” nel Cestino.</translation>
     </message>

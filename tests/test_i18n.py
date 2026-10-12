@@ -42,12 +42,9 @@ def test_italian_is_loaded(qtbot):
         app, QLocale(QLocale.Language.Italian, QLocale.Country.Italy)
     )
     try:
-        assert QCoreApplication.translate("StartScreen", "Open") == "Apri"
-        assert (
-            QCoreApplication.translate("StartScreen", "%1  ·  %n photo(s)", "", 3)
-            == "%1  ·  3 foto"
-        )
+        assert QCoreApplication.translate("StartScreen", "Settings…") == "Impostazioni…"
+        assert QCoreApplication.translate("SelectionCardModel", "%n photo(s)", "", 3) == "3 foto"
     finally:
         for t in translators:
             app.removeTranslator(t)
-    assert QCoreApplication.translate("StartScreen", "Open") == "Open"
+    assert QCoreApplication.translate("StartScreen", "Settings…") == "Settings…"

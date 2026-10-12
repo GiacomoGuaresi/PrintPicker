@@ -40,8 +40,14 @@ class _FullLoad(QRunnable):
         self.relay.loaded.emit(self.token, image)
 
 
+ZOOM_STEP = 1.25
+MAX_ZOOM = 8.0  # relative to actual pixels
+
+
 class ImageView(QGraphicsView):
-    """Shows one image, fitted to the view."""
+    """Shows one image: fitted by default, with zoom (wheel, +/-), 100% and hand-drag panning."""
+
+    zoom_changed = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -54,7 +60,11 @@ class ImageView(QGraphicsView):
         self.setRenderHints(QPainter.RenderHint.SmoothPixmapTransform)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
+        self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.fitted = True
 
     def set_image(self, image: QImage, natural_size=None) -> None:
         """Show ``image``; ``natural_size`` lets a thumbnail stand in for the full photo."""
@@ -65,16 +75,63 @@ class ImageView(QGraphicsView):
         else:
             self.item.setScale(1.0)
         self.scene().setSceneRect(self.item.sceneBoundingRect())
-        self.fit()
+        if self.fitted:
+            self.fit()
+
+    # Zoom ---------------------------------------------------------------------------------
+
+    def zoom(self) -> float:
+        """Current zoom: 1.0 means one photo pixel per screen pixel."""
+        return self.transform().m11() * self.devicePixelRatioF()
+
+    def fit_zoom(self) -> float:
+        rect = self.item.sceneBoundingRect()
+        if rect.isEmpty():
+            return 1.0
+        view = self.viewport().rect()
+        return min(view.width() / rect.width(), view.height() / rect.height()) * (
+            self.devicePixelRatioF()
+        )
 
     def fit(self) -> None:
+        self.fitted = True
         self.resetTransform()
         if not self.item.pixmap().isNull():
             self.fitInView(self.item, Qt.AspectRatioMode.KeepAspectRatio)
+        self.zoom_changed.emit()
+
+    def set_zoom(self, zoom: float) -> None:
+        """Zoom to an absolute level, never below "fit" nor above :data:`MAX_ZOOM`."""
+        if self.item.pixmap().isNull():
+            return
+        fit = self.fit_zoom()
+        if zoom <= fit * 1.001:
+            self.fit()
+            return
+        zoom = min(zoom, MAX_ZOOM)
+        factor = zoom / self.zoom()
+        self.fitted = False
+        self.scale(factor, factor)
+        self.zoom_changed.emit()
+
+    def zoom_in(self) -> None:
+        self.set_zoom(self.zoom() * ZOOM_STEP)
+
+    def zoom_out(self) -> None:
+        self.set_zoom(self.zoom() / ZOOM_STEP)
+
+    def actual_size(self) -> None:
+        self.set_zoom(1.0)
+
+    def wheelEvent(self, event) -> None:
+        steps = event.angleDelta().y() / 120
+        if steps:
+            self.set_zoom(self.zoom() * ZOOM_STEP**steps)
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
-        self.fit()
+        if self.fitted:
+            self.fit()
 
 
 class PhotoViewer(QDialog):
@@ -109,9 +166,12 @@ class PhotoViewer(QDialog):
         self._relay.loaded.connect(self._on_loaded)
 
         self.view = ImageView()
+        self.view.zoom_changed.connect(self._update_caption)
         self.caption = QLabel()
         self.caption.setStyleSheet("color: #ddd; padding: 6px;")
-        self.help = QLabel(self.tr("← → browse · Space pick · Esc close"))
+        self.help = QLabel(
+            self.tr("← → browse · Space pick · +/− zoom · 0 fit · 1 100% · Esc close")
+        )
         self.help.setStyleSheet("color: #888; padding: 6px;")
         bar = QHBoxLayout()
         bar.addWidget(self.caption)
@@ -137,6 +197,14 @@ class PhotoViewer(QDialog):
             self.show_row(self.row + 1)
         elif key == Qt.Key.Key_Space:
             self._toggle()
+        elif key in (Qt.Key.Key_Plus, Qt.Key.Key_Equal):
+            self.view.zoom_in()
+        elif key == Qt.Key.Key_Minus:
+            self.view.zoom_out()
+        elif key == Qt.Key.Key_0:
+            self.view.fit()
+        elif key == Qt.Key.Key_1:
+            self.view.actual_size()
         elif key in (Qt.Key.Key_Escape, Qt.Key.Key_F, Qt.Key.Key_Z):
             self.accept()
         else:
@@ -147,6 +215,7 @@ class PhotoViewer(QDialog):
             return
         self.row = row
         self._token += 1
+        self.view.fitted = True
         photo = self.photos[row]
         thumb = self.thumbnail_for(photo)
         if thumb is not None and not thumb.isNull():
@@ -162,6 +231,7 @@ class PhotoViewer(QDialog):
         if token == self._token and not image.isNull():
             self.full_image = image
             self.view.set_image(image)
+            self._update_caption()
 
     def _toggle(self) -> None:
         rel = self.photos[self.row].rel_path
@@ -176,7 +246,8 @@ class PhotoViewer(QDialog):
     def _update_caption(self) -> None:
         photo = self.photos[self.row]
         mark = "  ✓ " + self.tr("picked") if photo.rel_path in self.picked else ""
-        self.caption.setText(f"{self.row + 1} / {len(self.photos)}  ·  {photo.name}{mark}")
+        zoom = "" if self.view.fitted else f"  ·  {self.view.zoom():.0%}"
+        self.caption.setText(f"{self.row + 1} / {len(self.photos)}  ·  {photo.name}{mark}{zoom}")
 
     def done(self, result: int) -> None:
         self._token += 1

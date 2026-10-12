@@ -50,3 +50,25 @@ def test_escape_closes(qtbot, tmp_path):
     viewer = make_viewer(qtbot, tmp_path)
     with qtbot.waitSignal(viewer.finished, timeout=2000):
         qtbot.keyClick(viewer, Qt.Key.Key_Escape)
+
+
+def test_zoom_keys(qtbot, tmp_path):
+    viewer = make_viewer(qtbot, tmp_path)
+    viewer.resize(800, 600)
+    qtbot.waitUntil(lambda: viewer.full_image is not None, timeout=5000)
+    view = viewer.view
+    assert view.fitted
+    fit = view.zoom()
+    qtbot.keyClick(viewer, Qt.Key.Key_Plus)
+    assert not view.fitted and view.zoom() > fit
+    qtbot.keyClick(viewer, Qt.Key.Key_1)
+    assert abs(view.zoom() - 1.0) < 0.01
+    assert "100%" in viewer.caption.text()
+    qtbot.keyClick(viewer, Qt.Key.Key_0)
+    assert view.fitted
+    for _ in range(3):
+        qtbot.keyClick(viewer, Qt.Key.Key_Minus)  # cannot go below fit
+    assert view.fitted
+    qtbot.keyClick(viewer, Qt.Key.Key_Plus)
+    qtbot.keyClick(viewer, Qt.Key.Key_Right)  # next photo starts fitted
+    assert view.fitted

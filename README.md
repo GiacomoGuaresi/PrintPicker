@@ -8,6 +8,8 @@
 
 PrintPicker is a small cross-platform desktop utility for people who keep their photos on an external drive, organized in folders. Point it at a folder, and it walks you through groups of visually similar photos one at a time: pick the ones you want, and they're copied into a print-ready folder on your computer, with a running estimate of what the print order will cost.
 
+![Reviewing a group of similar photos](docs/screenshots/group.png)
+
 ## Features
 
 - **Similar-photo groups** — photos are grouped by visual similarity (perceptual hashing), so bursts and near-duplicates are shown side by side and you pick the best one(s).
@@ -21,6 +23,21 @@ PrintPicker is a small cross-platform desktop utility for people who keep their 
 - **Print-ready output** — flat folder, file names prefixed with their source path, HEIC/RAW/TIFF/WebP converted to JPG.
 - **Cost estimate** — configurable tiered price list (PhotoSì 10×15 prices by default) with a live total.
 - **Never touches your archive** — read-only on the source, always.
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/start.png" alt="Start screen with the print selections"></td>
+    <td><img src="docs/screenshots/preview.png" alt="Full-screen preview with filmstrip"></td>
+    <td><img src="docs/screenshots/crop.png" alt="Crop preview for 10×15 prints"></td>
+  </tr>
+  <tr>
+    <td align="center">Print selections</td>
+    <td align="center">Full-screen preview</td>
+    <td align="center">Crop preview</td>
+  </tr>
+</table>
+
+<sub>Sample photos from <a href="https://unsplash.com">Unsplash</a> via <a href="https://picsum.photos">Lorem Picsum</a>.</sub>
 
 Supported formats: JPG, PNG, HEIC, RAW (CR2, NEF, ARW, DNG, …), TIFF, WebP. Videos are ignored.
 Interface in English and Italian (follows the system language).

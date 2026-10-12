@@ -26,6 +26,13 @@ foto verticali, 4:3 e quadrate per l'anteprima di ritaglio, HEIC/PNG/WebP/TIFF e
 `Edge cases` (orientamento EXIF, panorama, file illeggibili, video e file nascosti da ignorare).
 Gli autori sono in `samples/CREDITS.md`. RAW non incluso.
 
+Gli screenshot del README (`docs/screenshots/`) si rigenerano dall'app vera, con le foto di
+esempio, in inglese e con tema chiaro (le impostazioni dell'utente non vengono toccate):
+
+```sh
+uv run python scripts/make_screenshots.py
+```
+
 ## Ambiente di sviluppo
 
 Il progetto usa [uv](https://docs.astral.sh/uv/) per gestire Python (3.12) e le dipendenze.

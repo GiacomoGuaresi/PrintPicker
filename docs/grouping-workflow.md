@@ -47,8 +47,7 @@ Servono solo a **guardare bene** le foto e scegliere la migliore: **non modifica
 
 ### Avviso proporzioni e ritaglio
 
-- Le foto con proporzioni diverse dal formato di stampa (10×15 = **3:2**) mostrano un'**icona d'avviso** nella griglia.
-- Un'**anteprima del ritaglio** sovrappone alla foto l'area che verrà effettivamente stampata (parti escluse oscurate).
+- L'**anteprima del ritaglio**, attiva di default (`C` per nasconderla), oscura nelle foto con proporzioni diverse dal formato di stampa (10×15 = **3:2**) le parti che non verranno stampate; il suggerimento della miniatura lo segnala anche a parole.
 - È solo un'indicazione: la foto viene copiata intera, il ritaglio lo fa il servizio di stampa.
 
 ### Fine dell'origine
@@ -70,7 +69,7 @@ Servono solo a **guardare bene** le foto e scegliere la migliore: **non modifica
 | `F` / `Z` | Anteprima a schermo intero |
 | `R` / `Shift+R` | Ruota la vista a destra / sinistra |
 | `+` / `-` / `0` | Zoom avanti / indietro / adatta |
-| `C` | Mostra / nascondi anteprima ritaglio |
+| `C` | Nascondi / mostra anteprima ritaglio (attiva di default) |
 
 ## Schermata di selezione
 

@@ -135,7 +135,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 10.3 | **Pulsante anteprima** sulla miniatura, `A` tutte / nessuna, tasti avanti / indietro del mouse | `feat(ui): group view shortcuts` | ✅ |
 | 10.4 | Traduzioni e documentazione della vista gruppo | `docs: group view` | ✅ |
 | 10.5 | **Tasti come chip** (`[Spazio]` scegli · …) nella vista gruppo e nell'anteprima | `feat(ui): key hint chips` | ✅ |
-| 10.6 | **Anteprima ritaglio attiva di default**, niente icona forbice sulle miniature | `feat(ui): crop preview on by default` | ⬜ |
+| 10.6 | **Anteprima ritaglio attiva di default**, niente icona forbice sulle miniature | `feat(ui): crop preview on by default` | ✅ |
 
 ---
 

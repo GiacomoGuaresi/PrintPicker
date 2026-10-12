@@ -116,11 +116,8 @@ class PhotoDelegate(QStyledItemDelegate):
             painter.setPen(palette.color(QPalette.ColorRole.PlaceholderText))
             painter.drawText(frame, Qt.AlignmentFlag.AlignCenter, text)
 
-        if image is not None and not image.isNull():
-            if self.view.show_crop:
-                draw_crop_overlay(painter, QRectF(frame), image.width(), image.height())
-            if needs_crop(image.width(), image.height()):
-                draw_crop_badge(painter, frame)
+        if image is not None and not image.isNull() and self.view.show_crop:
+            draw_crop_overlay(painter, QRectF(frame), image.width(), image.height())
 
         if selected or hovered:
             color = accent if selected else palette.color(QPalette.ColorRole.Mid)
@@ -210,21 +207,6 @@ def draw_crop_overlay(painter: QPainter, frame: QRectF, width: int, height: int)
     painter.restore()
 
 
-def draw_crop_badge(painter: QPainter, frame: QRect) -> None:
-    """Small warning in the bottom-left corner: the photo will be cropped when printed."""
-    painter.save()
-    badge = QRect(frame.left() + 6, frame.bottom() - 28, 24, 22)
-    painter.setPen(Qt.PenStyle.NoPen)
-    painter.setBrush(QColor(255, 176, 32, 230))
-    painter.drawRoundedRect(badge, 5, 5)
-    painter.setPen(QColor(40, 30, 0))
-    font = painter.font()
-    font.setBold(True)
-    painter.setFont(font)
-    painter.drawText(badge, Qt.AlignmentFlag.AlignCenter, "✂")
-    painter.restore()
-
-
 def best_cell_size(count: int, width: int, height: int) -> int:
     """Largest square cell so that ``count`` cells fit in ``width`` × ``height``."""
     if count <= 0:
@@ -259,7 +241,7 @@ class GroupView(QListView):
         self.setTabKeyNavigation(True)
         self.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover)
         self.setFrameShape(QListView.Shape.NoFrame)
-        self.show_crop = False
+        self.show_crop = True
         self._last_press: tuple[int, bool, float] = (-1, False, 0.0)
         self.photo_model = PhotoModel(loader, self)
         self.setModel(self.photo_model)

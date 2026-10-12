@@ -208,9 +208,10 @@ def test_crop_preview_toggle_in_grid(qtbot, session, photos):
 
     session.add_source(photos)
     wait_groups(qtbot, session)
-    qtbot.keyClick(session.group_view, Qt.Key.Key_C)
-    assert session.group_view.show_crop
+    assert session.group_view.show_crop  # on by default
     session.group_view.grab()
+    qtbot.keyClick(session.group_view, Qt.Key.Key_C)
+    assert not session.group_view.show_crop
 
 
 def test_relink_moved_source(qtbot, session, photos, tmp_path, monkeypatch):

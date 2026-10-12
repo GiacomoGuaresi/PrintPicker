@@ -60,7 +60,7 @@ The builds are not signed, so the first launch needs one extra step:
 | Space, `1`–`9` | Pick / unpick the current (or n-th) photo |
 | `A` | Pick all / none |
 | `F`, double-click or 🔍 on the photo | Full-screen preview |
-| `C` | Show / hide the crop preview |
+| `C` | Hide / show the crop preview (on by default) |
 
 In the full-screen preview: ← → to browse, Space to pick, `+` / `−` / mouse wheel to zoom, `0` fit, `1` 100%, double-click to switch between fit and 100%, `R` / `Shift+R` rotate, `Esc` to close. With the mouse: the ‹ › arrows and ✕ appear when you move it, the bottom bar has *Pick*, zoom and rotate buttons, and a click on the filmstrip jumps to that photo.
 

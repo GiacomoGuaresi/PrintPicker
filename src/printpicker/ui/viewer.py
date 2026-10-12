@@ -387,7 +387,7 @@ class PhotoViewer(QDialog):
         picked: set[str],
         row: int = 0,
         parent: QWidget | None = None,
-        show_crop: bool = False,
+        show_crop: bool = True,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Preview"))

@@ -118,11 +118,12 @@ def test_crop_toggle_and_warning(qtbot, tmp_path):
     viewer.show()
     qtbot.waitUntil(lambda: viewer.full_image is not None, timeout=5000)
     assert "cropped" in viewer.caption.text()
+    assert viewer.view.show_crop  # on by default
+    viewer.grab()  # paints the overlay without errors
     toggles = []
     viewer.crop_toggled.connect(toggles.append)
     qtbot.keyClick(viewer, Qt.Key.Key_C)
-    assert viewer.view.show_crop and toggles == [True]
-    viewer.grab()  # paints the overlay without errors
+    assert not viewer.view.show_crop and toggles == [False]
 
 
 def test_preloads_neighbours(qtbot, tmp_path):

@@ -1,5 +1,6 @@
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QImage
+from PySide6.QtCore import QEvent, QPointF, Qt
+from PySide6.QtGui import QImage, QMouseEvent
+from PySide6.QtWidgets import QApplication
 
 from printpicker.core.scanner import PhotoFile
 from printpicker.ui.viewer import PhotoViewer
@@ -171,8 +172,19 @@ def test_controls_hide_with_the_cursor(qtbot, tmp_path):
     viewer._hide_controls()
     assert not viewer.close_button.isVisible() and not viewer.next_button.isVisible()
     assert viewport.cursor().shape() == Qt.CursorShape.BlankCursor
-    qtbot.mouseMove(viewport, viewport.rect().center())
-    qtbot.waitUntil(viewer.close_button.isVisible, timeout=2000)
+    # A real event: QTest's mouseMove moves the system cursor, which the offscreen platform
+    # does not turn into events on every system (Windows).
+    center = QPointF(viewport.rect().center())
+    move = QMouseEvent(
+        QEvent.Type.MouseMove,
+        center,
+        viewport.mapToGlobal(center),
+        Qt.MouseButton.NoButton,
+        Qt.MouseButton.NoButton,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    QApplication.sendEvent(viewport, move)
+    assert viewer.close_button.isVisible()
     assert viewer.next_button.isVisible() and not viewer.prev_button.isVisible()
     assert viewport.cursor().shape() != Qt.CursorShape.BlankCursor
     assert viewer._hide_timer.isActive()

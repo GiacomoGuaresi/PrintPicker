@@ -10,6 +10,7 @@ requires-python = ">=3.11"
 dependencies = [
     "pillow>=11",
     "pillow-heif>=0.18",
+    "rawpy>=0.21",
 ]
 
 [project.urls]

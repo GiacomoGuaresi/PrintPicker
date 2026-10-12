@@ -6,6 +6,10 @@ from pathlib import Path
 
 from PIL import Image, ImageOps
 from pillow_heif import register_heif_opener
+from rawpy import LibRawError
+
+from printpicker.core.formats import is_raw
+from printpicker.core.raw import load_raw
 
 register_heif_opener()
 
@@ -23,6 +27,14 @@ def load_image(path: Path, max_size: int | None = None) -> Image.Image:
     With ``max_size``, the result fits in a ``max_size`` × ``max_size`` box; decoding is
     accelerated where the format allows it (JPEG draft mode).
     """
+    if is_raw(Path(path).name):
+        try:
+            img = load_raw(path, max_size)
+        except (OSError, LibRawError) as exc:
+            raise ImageLoadError(f"{path}: {exc}") from exc
+        if max_size is not None:
+            img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+        return img
     try:
         with Image.open(path) as img:
             if max_size is not None and img.format == "JPEG":

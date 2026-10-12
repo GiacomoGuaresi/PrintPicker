@@ -31,7 +31,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 
 | # | Step | Commit | Stato |
 |---|---|---|---|
-| 1.1 | **Scanner**: scansione ricorsiva, filtro formati supportati, video ignorati, ordine per cartella e nome file | `feat(core): recursive photo scanner` | ⬜ |
+| 1.1 | **Scanner**: scansione ricorsiva, filtro formati supportati, video ignorati, ordine per cartella e nome file | `feat(core): recursive photo scanner` | ✅ |
 | 1.2 | **Caricamento immagini**: JPG/PNG/TIFF/WebP con Pillow, orientamento EXIF applicato | `feat(core): image loader with EXIF orientation` | ⬜ |
 | 1.3 | Supporto **HEIC** (pillow-heif) | `feat(core): HEIC support` | ⬜ |
 | 1.4 | Supporto **RAW** (rawpy, usando l'anteprima incorporata quando disponibile) | `feat(core): RAW support` | ⬜ |

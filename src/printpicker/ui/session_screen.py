@@ -349,11 +349,10 @@ class SessionScreen(QWidget):
             return
         group = self.groups[index]
         self.group_title.setText(
-            self.tr("<b>%1</b> — group %2 of %3 · %4 photo(s)")
+            self.tr("<b>%1</b> — group %2 of %3 · %n photo(s)", "", len(group.photos))
             .replace("%1", group.folder or self.source.name)
             .replace("%2", str(index + 1))
             .replace("%3", str(len(self.groups)))
-            .replace("%4", str(len(group.photos)))
         )
         picked = self.selection.selected_photos(self.source)
         self.group_view.set_photos(list(group.photos), self._paths_for, picked)

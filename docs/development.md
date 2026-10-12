@@ -33,3 +33,13 @@ uv run python -m printpicker.cli /Volumes/<chiavetta> -t 14 --cache hashes.json 
 - `-t` soglia (distanza di Hamming massima, 0–64)
 - `--cache` riusa gli hash tra un'esecuzione e l'altra (la prima analisi della chiavetta richiede ~2 minuti)
 - `--sheets` salva un foglio provini per ogni gruppo con 2+ foto
+
+## Traduzioni
+
+L'interfaccia è scritta in inglese (`self.tr("...")`) e tradotta in italiano con i file Qt
+in `src/printpicker/i18n/`. Dopo aver aggiunto o cambiato testi nell'interfaccia:
+
+1. aggiungere la traduzione nel dizionario `ITALIAN` di `scripts/update_translations.py`;
+2. eseguire `uv run python scripts/update_translations.py` (aggiorna `.ts` e compila `.qm`).
+
+Un test verifica che ogni testo sia tradotto e che i file siano aggiornati.

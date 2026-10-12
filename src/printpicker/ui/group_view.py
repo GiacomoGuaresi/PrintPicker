@@ -8,6 +8,7 @@ from pathlib import Path
 
 from PySide6.QtCore import (
     QAbstractListModel,
+    QCoreApplication,
     QItemSelection,
     QItemSelectionModel,
     QModelIndex,
@@ -107,7 +108,8 @@ class PhotoDelegate(QStyledItemDelegate):
         else:
             frame = image_area
             painter.fillRect(frame, palette.color(QPalette.ColorRole.AlternateBase))
-            text = self.view.tr("Unreadable") if image is not None else "…"
+            unreadable = QCoreApplication.translate("GroupView", "Unreadable")
+            text = unreadable if image is not None else "…"
             painter.setPen(palette.color(QPalette.ColorRole.PlaceholderText))
             painter.drawText(frame, Qt.AlignmentFlag.AlignCenter, text)
 

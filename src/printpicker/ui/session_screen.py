@@ -6,10 +6,12 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
+    QApplication,
     QComboBox,
     QFileDialog,
     QHBoxLayout,
     QLabel,
+    QMessageBox,
     QProgressBar,
     QPushButton,
     QStackedWidget,
@@ -18,8 +20,11 @@ from PySide6.QtWidgets import (
 )
 
 from printpicker.core.grouping import Group, group_photos
+from printpicker.core.images import ImageLoadError
 from printpicker.core.scanner import PhotoFile
 from printpicker.selection import Selection, Source, SourceExistsError
+from printpicker.ui.group_view import GroupView
+from printpicker.ui.thumbnails import ThumbnailLoader
 from printpicker.ui.workers import AnalysisThread
 
 
@@ -43,6 +48,7 @@ class SessionScreen(QWidget):
         self.items: list[tuple[PhotoFile, int | None]] = []
         self.groups: list[Group] = []
         self.thread: AnalysisThread | None = None
+        self.index = 0
 
         # Top bar.
         self.back_button = QPushButton(self.tr("← Selections"))
@@ -78,7 +84,7 @@ class SessionScreen(QWidget):
         self.retry_button = QPushButton(self.tr("Retry"))
         self.retry_button.clicked.connect(self._source_changed)
         self.message_page = _centered(self.message_label, self.retry_button)
-        self.groups_page = _centered(QLabel())
+        self.groups_page = self._build_groups_page()
         for page in (self.empty_page, self.progress_page, self.message_page, self.groups_page):
             self.pages.addWidget(page)
 
@@ -123,6 +129,7 @@ class SessionScreen(QWidget):
         if source_id is None:
             return
         self.cancel_analysis()
+        self.loader.reset()
         self.source = self.selection.source(source_id)
         if not self.source.is_available:
             self.show_message(
@@ -191,17 +198,92 @@ class SessionScreen(QWidget):
         self.show_groups()
 
     def show_groups(self) -> None:
-        label = self.groups_page.findChild(QLabel)
-        label.setText(
-            self.tr("%1 photos in %2 groups")
-            .replace("%1", str(len(self.items)))
-            .replace("%2", str(len(self.groups)))
+        self.show_group(0)
+
+    # Group review ------------------------------------------------------------------------
+
+    def _build_groups_page(self) -> QWidget:
+        self.loader = ThumbnailLoader(self)
+        self.group_title = QLabel()
+        self.group_view = GroupView(self.loader)
+        self.group_view.picked_changed.connect(self._update_counters)
+        self.picked_label = QLabel()
+        self.total_label = QLabel()
+        self.confirm_button = QPushButton(self.tr("Confirm and continue →"))
+        self.confirm_button.setDefault(True)
+        self.confirm_button.clicked.connect(self.confirm_group)
+
+        bottom = QHBoxLayout()
+        bottom.addWidget(self.picked_label)
+        bottom.addSpacing(24)
+        bottom.addWidget(self.total_label)
+        bottom.addStretch()
+        bottom.addWidget(self.confirm_button)
+
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.addWidget(self.group_title)
+        layout.addWidget(self.group_view, 1)
+        layout.addLayout(bottom)
+        return page
+
+    def _paths_for(self, photo: PhotoFile) -> tuple[Path, Path]:
+        assert self.source is not None
+        return (
+            photo.absolute(self.source.path),
+            self.selection.thumb_path(self.source, photo.rel_path),
         )
+
+    def show_group(self, index: int) -> None:
+        assert self.source is not None
+        self.index = index
+        if index >= len(self.groups):
+            self.show_message(
+                self.tr("All groups of “%1” have been reviewed.").replace("%1", self.source.name)
+            )
+            return
+        group = self.groups[index]
+        self.group_title.setText(
+            self.tr("<b>%1</b> — group %2 of %3 · %4 photo(s)")
+            .replace("%1", group.folder or self.source.name)
+            .replace("%2", str(index + 1))
+            .replace("%3", str(len(self.groups)))
+            .replace("%4", str(len(group.photos)))
+        )
+        picked = self.selection.selected_photos(self.source)
+        self.group_view.set_photos(list(group.photos), self._paths_for, picked)
         self.pages.setCurrentWidget(self.groups_page)
+        self.group_view.setFocus()
+
+    def confirm_group(self) -> None:
+        assert self.source is not None
+        group = self.groups[self.index]
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            self.selection.apply_choice(self.source, group, self.group_view.picked())
+        except (OSError, ImageLoadError) as exc:
+            QApplication.restoreOverrideCursor()
+            QMessageBox.warning(
+                self,
+                self.tr("Copy failed"),
+                self.tr("Could not copy the photo:\n%1").replace("%1", str(exc)),
+            )
+            return
+        QApplication.restoreOverrideCursor()
+        self.show_group(self.index + 1)
+
+    def _update_counters(self) -> None:
+        self.picked_label.setText(
+            self.tr("Selected in this group: %1").replace("%1", str(len(self.group_view.picked())))
+        )
+        self.total_label.setText(
+            self.tr("Photos to print: %1").replace("%1", str(self.selection.selected_count()))
+        )
 
     # Lifecycle ---------------------------------------------------------------------------
 
     def close_selection(self) -> None:
         self.cancel_analysis()
+        self.loader.shutdown()
         self.selection.close()
         self.closed.emit()

@@ -54,3 +54,46 @@ def test_cancel_shows_message_and_retry_resumes(qtbot, session, photos):
     assert session.pages.currentWidget() is session.message_page
     session.retry_button.click()
     qtbot.waitUntil(lambda: session.pages.currentWidget() is session.groups_page, timeout=10000)
+
+
+def wait_groups(qtbot, session):
+    qtbot.waitUntil(lambda: session.pages.currentWidget() is session.groups_page, timeout=10000)
+
+
+def pick(session, *rows):
+    from PySide6.QtCore import QItemSelectionModel
+
+    sm = session.group_view.selectionModel()
+    sm.clearSelection()
+    for row in rows:
+        sm.select(
+            session.group_view.photo_model.index(row), QItemSelectionModel.SelectionFlag.Select
+        )
+
+
+def exported(session):
+    return sorted(p.name for p in session.selection.folder.iterdir() if not p.name.startswith("."))
+
+
+def test_confirm_copies_and_advances(qtbot, session, photos):
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    assert session.index == 0
+    assert len(session.group_view.photo_model.photos) == 2
+    pick(session, 1)
+    assert session.group_view.picked() == {"a2.jpg"}
+    session.confirm_button.click()
+    assert exported(session) == ["Foto - a2.jpg"]
+    assert session.index == 1
+    assert "1" in session.total_label.text()
+    session.confirm_button.click()  # nothing picked in the last group
+    assert session.pages.currentWidget() is session.message_page
+
+
+def test_best_cell_size():
+    from printpicker.ui.group_view import MIN_CELL, best_cell_size
+
+    assert best_cell_size(1, 1000, 600) == 600
+    assert best_cell_size(3, 1200, 700) == 400
+    assert best_cell_size(4, 800, 800) == 400
+    assert best_cell_size(500, 800, 600) == MIN_CELL

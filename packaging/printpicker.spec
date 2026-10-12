@@ -1,0 +1,76 @@
+# PyInstaller spec: builds a windowed PrintPicker app for the current platform.
+#
+#     uv run pyinstaller packaging/printpicker.spec --noconfirm
+#
+# Output: dist/PrintPicker/ (Windows, Linux) or dist/PrintPicker.app (macOS).
+
+import sys
+from pathlib import Path
+
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
+
+ROOT = Path(SPECPATH).parent
+SRC = ROOT / "src"
+
+sys.path.insert(0, str(SRC))
+from printpicker import __version__  # noqa: E402
+
+# Qt modules PrintPicker does not use: leaving them out saves a lot of space.
+QT_EXCLUDES = [
+    f"PySide6.{m}"
+    for m in (
+        "Qt3DAnimation", "Qt3DCore", "Qt3DExtras", "Qt3DInput", "Qt3DLogic", "Qt3DRender",
+        "QtBluetooth", "QtCharts", "QtConcurrent", "QtDataVisualization", "QtDesigner",
+        "QtGraphs", "QtHelp", "QtLocation", "QtMultimedia", "QtMultimediaWidgets", "QtNetworkAuth",
+        "QtNfc", "QtOpenGL", "QtOpenGLWidgets", "QtPdf", "QtPdfWidgets", "QtPositioning",
+        "QtQml", "QtQuick", "QtQuick3D", "QtQuickControls2", "QtQuickWidgets", "QtRemoteObjects",
+        "QtScxml", "QtSensors", "QtSerialBus", "QtSerialPort", "QtSpatialAudio", "QtSql",
+        "QtStateMachine", "QtSvgWidgets", "QtTest", "QtTextToSpeech", "QtUiTools",
+        "QtWebChannel", "QtWebEngineCore", "QtWebEngineQuick", "QtWebEngineWidgets",
+        "QtWebSockets", "QtWebView", "QtXml",
+    )
+]
+
+a = Analysis(
+    [str(SRC / "printpicker" / "__main__.py")],
+    pathex=[str(SRC)],
+    binaries=collect_dynamic_libs("rawpy") + collect_dynamic_libs("pillow_heif"),
+    datas=[(str(SRC / "printpicker" / "i18n" / "*.qm"), "printpicker/i18n")]
+    + collect_data_files("pillow_heif"),
+    hiddenimports=["pillow_heif"],
+    excludes=["tkinter", "unittest", "pydoc", *QT_EXCLUDES],
+    noarchive=False,
+)
+pyz = PYZ(a.pure)
+
+icon_dir = ROOT / "packaging" / "icons"
+icon = None
+if sys.platform == "darwin" and (icon_dir / "printpicker.icns").exists():
+    icon = str(icon_dir / "printpicker.icns")
+elif sys.platform == "win32" and (icon_dir / "printpicker.ico").exists():
+    icon = str(icon_dir / "printpicker.ico")
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
+    name="PrintPicker",
+    console=False,
+    icon=icon,
+)
+coll = COLLECT(exe, a.binaries, a.datas, name="PrintPicker")
+
+if sys.platform == "darwin":
+    app = BUNDLE(
+        coll,
+        name="PrintPicker.app",
+        icon=icon,
+        bundle_identifier="io.github.giacomoguaresi.printpicker",
+        version=__version__,
+        info_plist={
+            "CFBundleShortVersionString": __version__,
+            "NSHighResolutionCapable": True,
+            "NSHumanReadableCopyright": "© 2026 Giacomo Guaresi — MIT License",
+        },
+    )

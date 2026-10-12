@@ -43,3 +43,19 @@ in `src/printpicker/i18n/`. Dopo aver aggiunto o cambiato testi nell'interfaccia
 2. eseguire `uv run python scripts/update_translations.py` (aggiorna `.ts` e compila `.qm`).
 
 Un test verifica che ogni testo sia tradotto e che i file siano aggiornati.
+
+## Build dell'eseguibile
+
+```sh
+uv sync --all-groups
+uv run pyinstaller packaging/printpicker.spec --noconfirm
+```
+
+Risultato in `dist/`: `PrintPicker.app` su macOS, cartella `PrintPicker/` su Windows e Linux
+(~135 MB, quasi tutto Qt). Per verificare che l'eseguibile contenga tutto (formati HEIC/RAW,
+traduzioni, interfaccia):
+
+```sh
+dist/PrintPicker.app/Contents/MacOS/PrintPicker --self-test   # macOS
+dist/PrintPicker/PrintPicker --self-test                      # Linux (PrintPicker.exe su Windows)
+```

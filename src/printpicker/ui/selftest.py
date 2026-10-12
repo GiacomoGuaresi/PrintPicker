@@ -1,0 +1,56 @@
+"""``PrintPicker --self-test``: checks that a packaged build has everything it needs."""
+
+from __future__ import annotations
+
+import tempfile
+from pathlib import Path
+
+from PIL import Image
+from PySide6.QtCore import QCoreApplication, QLocale
+from PySide6.QtWidgets import QApplication
+
+
+def run_self_test(app: QApplication) -> int:
+    from printpicker.core.analysis import hash_file
+    from printpicker.core.images import load_image
+    from printpicker.ui.app import install_translations
+    from printpicker.ui.main_window import MainWindow
+
+    checks: list[tuple[str, bool]] = []
+    with tempfile.TemporaryDirectory() as tmp:
+        for ext, fmt in (
+            ("jpg", "JPEG"),
+            ("png", "PNG"),
+            ("heic", "HEIF"),
+            ("tiff", "TIFF"),
+            ("webp", "WEBP"),
+        ):
+            path = Path(tmp) / f"x.{ext}"
+            try:
+                Image.new("RGB", (32, 24), (10, 20, 30)).save(path, format=fmt)
+                ok = load_image(path).size == (32, 24) and hash_file(path) is not None
+            except Exception:
+                ok = False
+            checks.append((f"format {ext}", ok))
+    try:
+        import rawpy
+
+        checks.append(("rawpy / LibRaw " + str(rawpy.libraw_version), True))
+    except Exception:
+        checks.append(("rawpy / LibRaw", False))
+
+    translators = install_translations(app, QLocale(QLocale.Language.Italian))
+    checks.append(
+        ("italian translation", QCoreApplication.translate("StartScreen", "Open") == "Apri")
+    )
+    for t in translators:
+        app.removeTranslator(t)
+    try:
+        MainWindow().close()
+        checks.append(("main window", True))
+    except Exception:
+        checks.append(("main window", False))
+
+    for name, ok in checks:
+        print(f"{'ok  ' if ok else 'FAIL'} {name}")
+    return 0 if all(ok for _, ok in checks) else 1

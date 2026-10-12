@@ -39,7 +39,12 @@ def create_application(argv: list[str] | None = None) -> QApplication:
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv if argv is None else argv)
     app = create_application(argv)
+    if "--self-test" in argv:
+        from printpicker.ui.selftest import run_self_test
+
+        return run_self_test(app)
     install_translations(app)
     window = MainWindow()
     window.show()

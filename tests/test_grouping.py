@@ -53,3 +53,13 @@ def test_order_follows_scan_order():
 
 def test_empty():
     assert group_photos([]) == []
+
+
+def test_complete_linkage_prevents_chaining():
+    # a-b and b-c are within the threshold, but a-c is not: c must not join a's group.
+    items = [
+        (PhotoFile("a.jpg"), 0b0000),
+        (PhotoFile("b.jpg"), 0b0011),
+        (PhotoFile("c.jpg"), 0b1111),
+    ]
+    assert names(group_photos(items, threshold=2)) == [["a.jpg", "b.jpg"], ["c.jpg"]]

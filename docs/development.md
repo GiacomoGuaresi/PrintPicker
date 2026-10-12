@@ -21,3 +21,15 @@ uv run pytest              # test
 uv run ruff check .        # lint
 uv run ruff format .       # formattazione
 ```
+
+## CLI di debug
+
+Analizza una cartella e stampa i gruppi, utile per tarare la soglia:
+
+```sh
+uv run python -m printpicker.cli /Volumes/<chiavetta> -t 14 --cache hashes.json --sheets fogli/
+```
+
+- `-t` soglia (distanza di Hamming massima, 0–64)
+- `--cache` riusa gli hash tra un'esecuzione e l'altra (la prima analisi della chiavetta richiede ~2 minuti)
+- `--sheets` salva un foglio provini per ogni gruppo con 2+ foto

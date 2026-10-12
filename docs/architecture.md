@@ -19,6 +19,8 @@
 - Perceptual hash (pHash a 64 bit: DCT di un'immagine 32×32 in scala di grigi, 8×8 frequenze basse confrontate con la mediana) + distanza di Hamming tra gli hash.
 - L'hash si calcola su una versione ridotta (max 256 px, decodifica JPEG in modalità *draft*): sulla chiavetta di test ~230 ms/foto, dominati dalla lettura del file.
 - Confronto solo tra foto della stessa cartella.
+- **Complete linkage**: una foto entra in un gruppo solo se è entro la soglia da **tutte** le foto del gruppo (scegliendo il gruppo col membro più lontano più vicino). Con il *single linkage* i gruppi si "concatenavano" (a soglia 20 un gruppo di 65 foto scattate in ore diverse).
+- **Soglia predefinita 14** (su 64 bit), tarata sulla chiavetta di test con `python -m printpicker.cli`: fino a ~14 i gruppi sono raffiche vere; da ~18 compaiono abbinamenti sbagliati tra paesaggi con la stessa struttura cielo/terra.
 - La soglia è la distanza massima ammessa ed è regolabile dal cursore live.
 - Alternativa futura, se servisse una somiglianza più "semantica": embedding di immagini (più lenti e pesanti).
 

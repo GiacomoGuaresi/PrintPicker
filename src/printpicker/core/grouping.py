@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from printpicker.core.hashing import hamming
 from printpicker.core.scanner import PhotoFile
 
-DEFAULT_THRESHOLD = 12
+DEFAULT_THRESHOLD = 14
 
 
 @dataclass(frozen=True)
@@ -24,8 +24,9 @@ def group_photos(
 ) -> list[Group]:
     """Group ``(photo, hash)`` pairs given in scan order.
 
-    Photos are only grouped with photos of the same folder. A photo joins the group holding its
-    closest photo, if that distance is at most ``threshold``; otherwise it starts a new group.
+    Photos are only grouped with photos of the same folder. A photo joins the group whose
+    farthest photo is closest to it, if every photo of that group is within ``threshold``;
+    otherwise it starts a new group.
     Photos without a hash (unreadable) are always alone. Groups are ordered by their first
     photo, so folders and file names keep the scan order.
     """
@@ -35,11 +36,13 @@ def group_photos(
         best, best_distance = None, threshold + 1
         if h is not None:
             for group in groups:
-                for _, other in group:
-                    if other is not None:
-                        d = hamming(h, other)
-                        if d < best_distance:
-                            best, best_distance = group, d
+                # Complete linkage: the farthest member must be within the threshold, so a
+                # group cannot drift through a chain of slightly different shots.
+                d = max(
+                    hamming(h, other) if other is not None else threshold + 1 for _, other in group
+                )
+                if d < best_distance:
+                    best, best_distance = group, d
         if best is None:
             groups.append([(photo, h)])
         else:

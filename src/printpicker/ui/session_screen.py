@@ -23,6 +23,7 @@ from printpicker.core.grouping import Group, group_photos
 from printpicker.core.images import ImageLoadError
 from printpicker.core.scanner import PhotoFile
 from printpicker.selection import Selection, Source, SourceExistsError
+from printpicker.selection.choices import first_unseen_group
 from printpicker.ui.group_view import GroupView
 from printpicker.ui.thumbnails import ThumbnailLoader
 from printpicker.ui.workers import AnalysisThread
@@ -107,6 +108,9 @@ class SessionScreen(QWidget):
         if not sources:
             self.pages.setCurrentWidget(self.empty_page)
             return
+        if select_id is None:
+            last = self.selection.get_meta("last_source")
+            select_id = int(last) if last else None
         index = self.source_combo.findData(select_id) if select_id is not None else 0
         self.source_combo.setCurrentIndex(max(index, 0))
         self._source_changed()
@@ -131,6 +135,7 @@ class SessionScreen(QWidget):
         self.cancel_analysis()
         self.loader.reset()
         self.source = self.selection.source(source_id)
+        self.selection.set_meta("last_source", str(source_id))
         if not self.source.is_available:
             self.show_message(
                 self.tr("The folder “%1” cannot be found.\nIs the drive connected?").replace(
@@ -198,7 +203,9 @@ class SessionScreen(QWidget):
         self.show_groups()
 
     def show_groups(self) -> None:
-        self.show_group(0)
+        """Resume from the first group with photos not reviewed yet."""
+        assert self.source is not None
+        self.show_group(first_unseen_group(self.groups, self.selection.seen_photos(self.source)))
 
     # Group review ------------------------------------------------------------------------
 

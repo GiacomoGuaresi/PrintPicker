@@ -65,7 +65,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 3.5 | **Miniature** generate in background e salvate in `.printpicker/thumbs/` | `feat(ui): thumbnail cache` | ✅ |
 | 3.6 | **Vista gruppo**: griglia, click e Ctrl/Cmd+click, conferma → copia → gruppo successivo | `feat(ui): group view with selection and confirm` | ✅ |
 | 3.7 | **Navigazione avanti / indietro**, modifica di un gruppo già confermato | `feat(ui): back and forward navigation` | ✅ |
-| 3.8 | **Ripresa** dal primo gruppo non visto alla riapertura | `feat(ui): resume from last unseen group` | ⬜ |
+| 3.8 | **Ripresa** dal primo gruppo non visto alla riapertura | `feat(ui): resume from last unseen group` | ✅ |
 | 3.9 | **Messaggio di fine origine** con totale e pulsante "apri cartella" | `feat(ui): end of source message` | ⬜ |
 
 ## M4 — Velocità d'uso → `v0.4.0`

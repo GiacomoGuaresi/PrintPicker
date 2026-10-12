@@ -115,3 +115,24 @@ def test_go_back_and_change_choice(qtbot, session, photos):
     session.confirm_button.click()
     assert exported(session) == ["Foto - a1.jpg"]
     assert session.index == 1
+
+
+def test_reopen_resumes_where_left(qtbot, tmp_path, photos):
+    other = tmp_path / "Other"
+    make_photo(other / "z.jpg", pattern=5)
+    Selection.create(tmp_path, "R").close()
+    first = SessionScreen(tmp_path / "R")
+    qtbot.addWidget(first)
+    first.add_source(other)
+    wait_groups(qtbot, first)
+    first.add_source(photos)
+    wait_groups(qtbot, first)
+    first.confirm_button.click()  # first group of "Foto" reviewed
+    first.close_selection()
+
+    again = SessionScreen(tmp_path / "R")
+    qtbot.addWidget(again)
+    wait_groups(qtbot, again)
+    assert again.source.name == "Foto"  # last used source
+    assert again.index == 1
+    again.close_selection()

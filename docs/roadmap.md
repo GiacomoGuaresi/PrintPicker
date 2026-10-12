@@ -50,7 +50,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 2.5 | **Copia**: duplicati identici saltati, suffisso `_2`, `_3` per nomi in conflitto | `feat(export): copy with duplicate handling` | ✅ |
 | 2.6 | **Conversione JPG** per HEIC / RAW / TIFF / WebP | `feat(export): convert non-JPG formats to JPG` | ✅ |
 | 2.7 | **Rimozione** di una foto deselezionata dalla cartella della selezione | `feat(export): remove deselected photos` | ✅ |
-| 2.8 | **Avanzamento**: salvataggio delle scelte per foto e del punto raggiunto per ogni origine | `feat(selection): persist progress and choices` | ⬜ |
+| 2.8 | **Avanzamento**: salvataggio delle scelte per foto e del punto raggiunto per ogni origine | `feat(selection): persist progress and choices` | ✅ |
 
 > Nota 2.8: le scelte vanno salvate **per foto**, non per indice di gruppo, perché cambiando la soglia i gruppi si ricalcolano.
 

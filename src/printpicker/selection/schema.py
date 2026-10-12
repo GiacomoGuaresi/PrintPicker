@@ -32,6 +32,10 @@ MIGRATIONS: list[str] = [
         mtime_ns  INTEGER,
         hash      INTEGER,
         hashed    INTEGER NOT NULL DEFAULT 0,
+        -- Choices: ``seen`` once its group was confirmed, ``selected`` if picked for print.
+        -- Stored per photo (not per group) because groups change with the threshold.
+        seen      INTEGER NOT NULL DEFAULT 0,
+        selected  INTEGER NOT NULL DEFAULT 0,
         -- File name of the copy in the selection folder, NULL when not exported.
         exported_name TEXT,
         UNIQUE (source_id, rel_path)

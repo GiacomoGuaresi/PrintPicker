@@ -281,3 +281,34 @@ def test_click_toggles_and_double_click_previews(qtbot, session, photos):
     assert previews == [1]
     assert view.picked() == {"a2.jpg"}  # the double-click itself does not change the choice
     view.grab()  # paints the checkboxes
+
+
+def test_group_view_shortcuts(qtbot, session, photos):
+    from PySide6.QtCore import Qt
+
+    from printpicker.ui.group_view import image_frame, preview_button_rect
+
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    view = session.group_view
+    session.resize(900, 700)
+    session.show()
+    qtbot.waitExposed(session)
+    qtbot.keyClick(view, Qt.Key.Key_A)
+    assert view.picked() == {"a1.jpg", "a2.jpg"}
+    qtbot.keyClick(view, Qt.Key.Key_A)
+    assert view.picked() == set()
+
+    previews = []
+    view.preview_requested.disconnect(session.open_preview)
+    view.preview_requested.connect(previews.append)
+    index = view.photo_model.index(1)
+    frame = image_frame(view.visualRect(index), index.data(Qt.ItemDataRole.DecorationRole))
+    button = preview_button_rect(frame).center()
+    qtbot.mouseClick(view.viewport(), Qt.MouseButton.LeftButton, pos=button)
+    assert previews == [1] and view.picked() == set()  # the magnifier does not pick
+
+    qtbot.mouseClick(view.viewport(), Qt.MouseButton.ForwardButton)
+    assert session.index == 1
+    qtbot.mouseClick(view.viewport(), Qt.MouseButton.BackButton)
+    assert session.index == 0

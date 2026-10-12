@@ -295,7 +295,9 @@ class SessionScreen(QWidget):
         self.previous_button.setToolTip(self.tr("← or Backspace · your picks are kept"))
         self.next_button.setToolTip(self.tr("→ or Enter · your picks are kept"))
         self.help_label = QLabel(
-            self.tr("Click or Space/1–9 pick · ← → groups · ↑ ↓ Tab photos · F preview · C crop")
+            self.tr(
+                "Click/Space/1–9 pick · A all · ← → groups · ↑ ↓ Tab photos · F preview · C crop"
+            )
         )
         self.help_label.setEnabled(False)
         self.previous_button.clicked.connect(self.previous_group)

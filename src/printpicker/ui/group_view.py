@@ -105,16 +105,11 @@ class PhotoDelegate(QStyledItemDelegate):
         accent = palette.color(QPalette.ColorRole.Highlight)
 
         cell = option.rect
-        image_area = cell.adjusted(6, 6, -6, -6 - LABEL_HEIGHT)
         image: QImage | None = index.data(Qt.ItemDataRole.DecorationRole)
+        frame = image_frame(cell, image)
         if image is not None and not image.isNull():
-            size = image.size().scaled(image_area.size(), Qt.AspectRatioMode.KeepAspectRatio)
-            target = QRect(0, 0, size.width(), size.height())
-            target.moveCenter(image_area.center())
-            painter.drawImage(target, image)
-            frame = target
+            painter.drawImage(frame, image)
         else:
-            frame = image_area
             painter.fillRect(frame, palette.color(QPalette.ColorRole.AlternateBase))
             unreadable = QCoreApplication.translate("GroupView", "Unreadable")
             text = unreadable if image is not None else "…"
@@ -133,6 +128,8 @@ class PhotoDelegate(QStyledItemDelegate):
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawRect(frame.adjusted(-2, -2, 2, 2))
         draw_checkbox(painter, frame, selected, hovered, accent)
+        if hovered:
+            draw_preview_button(painter, frame)
         if option.state & QStyle.StateFlag.State_HasFocus and self.view.hasFocus():
             painter.setPen(QPen(palette.color(QPalette.ColorRole.Text), 1, Qt.PenStyle.DashLine))
             painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -145,6 +142,36 @@ class PhotoDelegate(QStyledItemDelegate):
         )
         painter.drawText(label, Qt.AlignmentFlag.AlignCenter, name)
         painter.restore()
+
+
+def image_frame(cell: QRect, image: QImage | None) -> QRect:
+    """Where the thumbnail is drawn in its cell (the whole image area while loading)."""
+    area = cell.adjusted(6, 6, -6, -6 - LABEL_HEIGHT)
+    if image is None or image.isNull():
+        return area
+    size = image.size().scaled(area.size(), Qt.AspectRatioMode.KeepAspectRatio)
+    frame = QRect(0, 0, size.width(), size.height())
+    frame.moveCenter(area.center())
+    return frame
+
+
+def preview_button_rect(frame: QRect) -> QRect:
+    return QRect(frame.right() - 8 - 30, frame.top() + 8, 30, 30)
+
+
+def draw_preview_button(painter: QPainter, frame: QRect) -> None:
+    """Magnifier in the top-right corner, shown on hover: opens the full-screen preview."""
+    painter.save()
+    button = preview_button_rect(frame)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor(0, 0, 0, 150))
+    painter.drawRoundedRect(button, 6, 6)
+    painter.setPen(QPen(QColor("white"), 2))
+    painter.setBrush(Qt.BrushStyle.NoBrush)
+    c = button.center()
+    painter.drawEllipse(c + QPoint(-2, -2), 7, 7)
+    painter.drawLine(c + QPoint(3, 3), c + QPoint(8, 8))
+    painter.restore()
 
 
 def draw_checkbox(
@@ -296,6 +323,9 @@ class GroupView(QListView):
         if key == Qt.Key.Key_Space:
             self.toggle_current()
             return
+        if key == Qt.Key.Key_A:
+            self.pick_all(len(self.picked()) < self.photo_model.rowCount())
+            return
         if key == Qt.Key.Key_C:
             self.set_show_crop(not self.show_crop)
             self.crop_toggled.emit(self.show_crop)
@@ -317,10 +347,21 @@ class GroupView(QListView):
     # and dragging never selects a range.
     def mousePressEvent(self, event) -> None:
         self.setFocus()
+        if event.button() == Qt.MouseButton.BackButton:
+            self.previous_requested.emit()
+            return
+        if event.button() == Qt.MouseButton.ForwardButton:
+            self.next_requested.emit()
+            return
         if event.button() != Qt.MouseButton.LeftButton:
             return
-        index = self.indexAt(event.position().toPoint())
+        pos = event.position().toPoint()
+        index = self.indexAt(pos)
         if not index.isValid():
+            return
+        frame = image_frame(self.visualRect(index), index.data(Qt.ItemDataRole.DecorationRole))
+        if preview_button_rect(frame).contains(pos):
+            self.preview_requested.emit(index.row())
             return
         # Remember the state before a click, but not before the second click of a
         # double-click: the double-click restores it, so previewing never changes the choice.
@@ -350,6 +391,12 @@ class GroupView(QListView):
     def set_show_crop(self, show: bool) -> None:
         self.show_crop = show
         self.viewport().update()
+
+    def pick_all(self, picked: bool) -> None:
+        if picked:
+            self.selectAll()
+        else:
+            self.clearSelection()
 
     def is_picked(self, row: int) -> bool:
         return self.selectionModel().isSelected(self.photo_model.index(row))

@@ -13,13 +13,15 @@ from PySide6.QtCore import (
     QModelIndex,
     QPoint,
     QRect,
+    QRectF,
     QSize,
     Qt,
     Signal,
 )
-from PySide6.QtGui import QColor, QImage, QPainter, QPalette, QPen
+from PySide6.QtGui import QColor, QImage, QPainter, QPainterPath, QPalette, QPen
 from PySide6.QtWidgets import QListView, QStyle, QStyledItemDelegate, QStyleOptionViewItem
 
+from printpicker.core.print_format import needs_crop, print_area
 from printpicker.core.scanner import PhotoFile
 from printpicker.ui.thumbnails import ThumbnailLoader
 
@@ -53,8 +55,15 @@ class PhotoModel(QAbstractListModel):
         if not index.isValid():
             return None
         photo = self.photos[index.row()]
-        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.ToolTipRole):
-            return photo.name if role == Qt.ItemDataRole.DisplayRole else photo.rel_path
+        if role == Qt.ItemDataRole.DisplayRole:
+            return photo.name
+        if role == Qt.ItemDataRole.ToolTipRole:
+            image = self.loader.cached(photo.rel_path)
+            if image is not None and needs_crop(image.width(), image.height()):
+                return self.tr("%1\nWill be cropped to fit a 10×15 print").replace(
+                    "%1", photo.rel_path
+                )
+            return photo.rel_path
         if role == Qt.ItemDataRole.DecorationRole and self.paths_for is not None:
             return self.loader.request(photo.rel_path, *self.paths_for(photo))
         if role == Qt.ItemDataRole.UserRole:
@@ -102,6 +111,12 @@ class PhotoDelegate(QStyledItemDelegate):
             painter.setPen(palette.color(QPalette.ColorRole.PlaceholderText))
             painter.drawText(frame, Qt.AlignmentFlag.AlignCenter, text)
 
+        if image is not None and not image.isNull():
+            if self.view.show_crop:
+                draw_crop_overlay(painter, QRectF(frame), image.width(), image.height())
+            if needs_crop(image.width(), image.height()):
+                draw_crop_badge(painter, frame)
+
         if selected:
             painter.setPen(QPen(accent, 5))
             painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -129,6 +144,40 @@ class PhotoDelegate(QStyledItemDelegate):
         painter.restore()
 
 
+def draw_crop_overlay(painter: QPainter, frame: QRectF, width: int, height: int) -> None:
+    """Darken what the print service will cut away to fill the print format."""
+    x, y, w, h = print_area(width, height)
+    sx, sy = frame.width() / width, frame.height() / height
+    kept = QRectF(frame.x() + x * sx, frame.y() + y * sy, w * sx, h * sy)
+    outside = QPainterPath()
+    outside.addRect(frame)
+    inside = QPainterPath()
+    inside.addRect(kept)
+    painter.save()
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor(0, 0, 0, 150))
+    painter.drawPath(outside.subtracted(inside))
+    painter.setPen(QPen(QColor(255, 255, 255, 200), 1, Qt.PenStyle.DashLine))
+    painter.setBrush(Qt.BrushStyle.NoBrush)
+    painter.drawRect(kept)
+    painter.restore()
+
+
+def draw_crop_badge(painter: QPainter, frame: QRect) -> None:
+    """Small warning in the bottom-left corner: the photo will be cropped when printed."""
+    painter.save()
+    badge = QRect(frame.left() + 6, frame.bottom() - 28, 24, 22)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor(255, 176, 32, 230))
+    painter.drawRoundedRect(badge, 5, 5)
+    painter.setPen(QColor(40, 30, 0))
+    font = painter.font()
+    font.setBold(True)
+    painter.setFont(font)
+    painter.drawText(badge, Qt.AlignmentFlag.AlignCenter, "✂")
+    painter.restore()
+
+
 def best_cell_size(count: int, width: int, height: int) -> int:
     """Largest square cell so that ``count`` cells fit in ``width`` × ``height``."""
     if count <= 0:
@@ -148,6 +197,7 @@ class GroupView(QListView):
     confirm_requested = Signal()
     back_requested = Signal()
     preview_requested = Signal(int)
+    crop_toggled = Signal(bool)
 
     def __init__(self, loader: ThumbnailLoader, parent=None) -> None:
         super().__init__(parent)
@@ -159,6 +209,7 @@ class GroupView(QListView):
         self.setUniformItemSizes(True)
         self.setSelectionMode(QListView.SelectionMode.ExtendedSelection)
         self.setFrameShape(QListView.Shape.NoFrame)
+        self.show_crop = False
         self.photo_model = PhotoModel(loader, self)
         self.setModel(self.photo_model)
         self.setItemDelegate(PhotoDelegate(self))
@@ -211,6 +262,10 @@ class GroupView(QListView):
         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.confirm_requested.emit()
             return
+        if key == Qt.Key.Key_C:
+            self.set_show_crop(not self.show_crop)
+            self.crop_toggled.emit(self.show_crop)
+            return
         if key in (Qt.Key.Key_F, Qt.Key.Key_Z):
             self.preview_requested.emit(max(self.currentIndex().row(), 0))
             return
@@ -226,6 +281,10 @@ class GroupView(QListView):
                 self.toggle_current()
             return
         super().keyPressEvent(event)
+
+    def set_show_crop(self, show: bool) -> None:
+        self.show_crop = show
+        self.viewport().update()
 
     def toggle_row(self, row: int) -> None:
         self.selectionModel().select(

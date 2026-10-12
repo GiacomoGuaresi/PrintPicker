@@ -19,8 +19,9 @@ from PySide6.QtWidgets import (
 )
 
 from printpicker.core.images import ImageLoadError, load_image
+from printpicker.core.print_format import needs_crop
 from printpicker.core.scanner import PhotoFile
-from printpicker.ui.group_view import PathsFn
+from printpicker.ui.group_view import PathsFn, draw_crop_overlay
 from printpicker.ui.qimage import to_qimage
 
 
@@ -67,6 +68,7 @@ class ImageView(QGraphicsView):
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.fitted = True
         self.angle = 0  # view rotation in degrees, never applied to the files
+        self.show_crop = False
 
     def set_image(self, image: QImage, natural_size=None) -> None:
         """Show ``image``; ``natural_size`` lets a thumbnail stand in for the full photo."""
@@ -141,6 +143,17 @@ class ImageView(QGraphicsView):
         self.angle = 0
         self.fitted = True
 
+    def set_show_crop(self, show: bool) -> None:
+        self.show_crop = show
+        self.viewport().update()
+
+    def drawForeground(self, painter: QPainter, rect) -> None:
+        pixmap = self.item.pixmap()
+        if self.show_crop and not pixmap.isNull():
+            draw_crop_overlay(
+                painter, self.item.sceneBoundingRect(), pixmap.width(), pixmap.height()
+            )
+
     def wheelEvent(self, event) -> None:
         steps = event.angleDelta().y() / 120
         if steps:
@@ -160,6 +173,7 @@ class PhotoViewer(QDialog):
     """
 
     toggled = Signal(int)
+    crop_toggled = Signal(bool)
 
     def __init__(
         self,
@@ -169,6 +183,7 @@ class PhotoViewer(QDialog):
         picked: set[str],
         row: int = 0,
         parent: QWidget | None = None,
+        show_crop: bool = False,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Preview"))
@@ -185,10 +200,11 @@ class PhotoViewer(QDialog):
 
         self.view = ImageView()
         self.view.zoom_changed.connect(self._update_caption)
+        self.view.show_crop = show_crop
         self.caption = QLabel()
         self.caption.setStyleSheet("color: #ddd; padding: 6px;")
         self.help = QLabel(
-            self.tr("← → browse · Space pick · +/− zoom · 0 fit · 1 100% · R rotate · Esc close")
+            self.tr("← → browse · Space pick · +/− zoom · 0 fit · 1 100% · R rotate · C crop · Esc")
         )
         self.help.setStyleSheet("color: #888; padding: 6px;")
         bar = QHBoxLayout()
@@ -223,6 +239,9 @@ class PhotoViewer(QDialog):
             self.view.fit()
         elif key == Qt.Key.Key_1:
             self.view.actual_size()
+        elif key == Qt.Key.Key_C:
+            self.view.set_show_crop(not self.view.show_crop)
+            self.crop_toggled.emit(self.view.show_crop)
         elif key == Qt.Key.Key_R:
             shift = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
             self.view.rotate_by(-90 if shift else 90)
@@ -267,6 +286,9 @@ class PhotoViewer(QDialog):
     def _update_caption(self) -> None:
         photo = self.photos[self.row]
         mark = "  ✓ " + self.tr("picked") if photo.rel_path in self.picked else ""
+        pixmap = self.view.item.pixmap()
+        if not pixmap.isNull() and needs_crop(pixmap.width(), pixmap.height()):
+            mark += "  ·  ✂ " + self.tr("will be cropped to 10×15")
         zoom = "" if self.view.fitted else f"  ·  {self.view.zoom():.0%}"
         self.caption.setText(f"{self.row + 1} / {len(self.photos)}  ·  {photo.name}{mark}{zoom}")
 

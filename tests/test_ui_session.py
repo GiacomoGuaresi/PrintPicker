@@ -175,3 +175,13 @@ def test_threshold_slider_regroups_and_keeps_position(qtbot, session, photos):
     qtbot.waitUntil(lambda: session.selection.threshold == 0, timeout=2000)
     assert len(session.groups) == 3
     assert session.groups[session.index].photos[0].rel_path == "b.jpg"
+
+
+def test_crop_preview_toggle_in_grid(qtbot, session, photos):
+    from PySide6.QtCore import Qt
+
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    qtbot.keyClick(session.group_view, Qt.Key.Key_C)
+    assert session.group_view.show_crop
+    session.group_view.grab()

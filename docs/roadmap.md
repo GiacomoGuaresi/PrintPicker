@@ -77,7 +77,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 4.3 | **Anteprima a schermo intero** con frecce tra le foto del gruppo | `feat(ui): full-screen preview` | ✅ |
 | 4.4 | **Zoom e spostamento** (adatta, 100%, zoom libero) | `feat(ui): zoom and pan` | ✅ |
 | 4.5 | **Rotazione della vista** | `feat(ui): view rotation` | ✅ |
-| 4.6 | **Avviso proporzioni** (icona) e **anteprima ritaglio** 3:2 | `feat(ui): aspect ratio warning and crop preview` | ⬜ |
+| 4.6 | **Avviso proporzioni** (icona) e **anteprima ritaglio** 3:2 | `feat(ui): aspect ratio warning and crop preview` | ✅ |
 
 ## M5 — Costi e impostazioni → `v0.5.0`
 

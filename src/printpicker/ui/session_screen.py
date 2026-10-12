@@ -235,7 +235,9 @@ class SessionScreen(QWidget):
         self.previous_button.setToolTip(self.tr("Backspace"))
         self.confirm_button.setToolTip(self.tr("Enter"))
         self.help_label = QLabel(
-            self.tr("Arrows: move · Space or 1–9: pick · Enter: confirm · Backspace: back")
+            self.tr(
+                "Arrows move · Space/1–9 pick · Enter confirm · Backspace back · F preview · C crop"
+            )
         )
         self.help_label.setEnabled(False)
         self.previous_button.clicked.connect(self.previous_group)
@@ -365,8 +367,10 @@ class SessionScreen(QWidget):
             self.group_view.picked(),
             row,
             self,
+            show_crop=self.group_view.show_crop,
         )
         viewer.toggled.connect(self.group_view.toggle_row)
+        viewer.crop_toggled.connect(self.group_view.set_show_crop)
         self.viewer = viewer
         viewer.showFullScreen()
         viewer.exec()

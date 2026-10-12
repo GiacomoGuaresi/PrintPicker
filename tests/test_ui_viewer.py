@@ -92,3 +92,20 @@ def test_rotation_is_view_only(qtbot, tmp_path):
     qtbot.keyClick(viewer, Qt.Key.Key_Right)
     assert viewer.view.angle == 0
     assert (tmp_path / "a.jpg").read_bytes() == before
+
+
+def test_crop_toggle_and_warning(qtbot, tmp_path):
+    photos = [PhotoFile("phone.jpg")]
+    make_photo(tmp_path / "phone.jpg", size=(800, 600), pattern=3)  # 4:3
+    viewer = PhotoViewer(
+        photos, lambda p: (tmp_path / p.rel_path, tmp_path / "t.jpg"), lambda p: None, set()
+    )
+    qtbot.addWidget(viewer)
+    viewer.show()
+    qtbot.waitUntil(lambda: viewer.full_image is not None, timeout=5000)
+    assert "cropped" in viewer.caption.text()
+    toggles = []
+    viewer.crop_toggled.connect(toggles.append)
+    qtbot.keyClick(viewer, Qt.Key.Key_C)
+    assert viewer.view.show_crop and toggles == [True]
+    viewer.grab()  # paints the overlay without errors

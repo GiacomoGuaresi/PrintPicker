@@ -175,3 +175,28 @@ def test_controls_hide_with_the_cursor(qtbot, tmp_path):
     assert viewer.next_button.isVisible() and not viewer.prev_button.isVisible()
     assert viewport.cursor().shape() != Qt.CursorShape.BlankCursor
     assert viewer._hide_timer.isActive()
+
+
+def test_filmstrip(qtbot, tmp_path):
+    viewer = make_viewer(qtbot, tmp_path, picked={"b.jpg"})
+    strip = viewer.filmstrip
+    assert strip.isVisible() and strip.model().rowCount() == 2
+    assert strip.current == 0 and strip.picked == {"b.jpg"}
+    strip.grab()  # paints the thumbnails, the current frame and the check
+    rect = strip.visualRect(strip.model().index(1, 0))
+    qtbot.mouseClick(strip.viewport(), Qt.MouseButton.LeftButton, pos=rect.center())
+    assert viewer.row == 1 and strip.current == 1
+    qtbot.keyClick(viewer, Qt.Key.Key_Space)
+    assert strip.picked == set()
+    qtbot.keyClick(viewer, Qt.Key.Key_Left)  # keys still go to the viewer
+    assert strip.current == 0
+
+
+def test_no_filmstrip_for_a_single_photo(qtbot, tmp_path):
+    make_photo(tmp_path / "a.jpg", size=(900, 600))
+    viewer = PhotoViewer(
+        [PhotoFile("a.jpg")], lambda p: (tmp_path / p.rel_path, None), lambda p: None, set()
+    )
+    qtbot.addWidget(viewer)
+    viewer.show()
+    assert not viewer.filmstrip.isVisible()

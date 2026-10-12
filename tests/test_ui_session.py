@@ -231,3 +231,30 @@ def test_unreadable_photo_is_shown_alone(qtbot, session, photos):
     wait_groups(qtbot, session)
     names = [[p.name for p in g.photos] for g in session.groups]
     assert ["broken.jpg"] in names
+
+
+def test_click_toggles_and_double_click_previews(qtbot, session, photos):
+    from PySide6.QtCore import Qt
+
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    view = session.group_view
+    session.resize(900, 700)
+    session.show()
+    qtbot.waitExposed(session)
+    centers = [view.visualRect(view.photo_model.index(r)).center() for r in (0, 1)]
+    qtbot.mouseClick(view.viewport(), Qt.MouseButton.LeftButton, pos=centers[0])
+    qtbot.mouseClick(view.viewport(), Qt.MouseButton.LeftButton, pos=centers[1])
+    assert view.picked() == {"a1.jpg", "a2.jpg"}  # no Ctrl/Cmd needed
+    qtbot.mouseClick(view.viewport(), Qt.MouseButton.LeftButton, pos=centers[0])
+    assert view.picked() == {"a2.jpg"}
+
+    previews = []
+    view.preview_requested.disconnect(session.open_preview)  # no modal viewer in tests
+    view.preview_requested.connect(previews.append)
+    # A real double-click is a click followed by a double-click event.
+    qtbot.mouseClick(view.viewport(), Qt.MouseButton.LeftButton, pos=centers[1])
+    qtbot.mouseDClick(view.viewport(), Qt.MouseButton.LeftButton, pos=centers[1])
+    assert previews == [1]
+    assert view.picked() == {"a2.jpg"}  # the double-click itself does not change the choice
+    view.grab()  # paints the checkboxes

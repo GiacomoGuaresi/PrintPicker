@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import time
 from collections.abc import Callable
 from pathlib import Path
 
@@ -20,7 +21,13 @@ from PySide6.QtCore import (
     Signal,
 )
 from PySide6.QtGui import QColor, QImage, QPainter, QPainterPath, QPalette, QPen
-from PySide6.QtWidgets import QListView, QStyle, QStyledItemDelegate, QStyleOptionViewItem
+from PySide6.QtWidgets import (
+    QApplication,
+    QListView,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
+)
 
 from printpicker.core.print_format import needs_crop, print_area
 from printpicker.core.scanner import PhotoFile
@@ -79,7 +86,7 @@ class PhotoModel(QAbstractListModel):
 
 
 class PhotoDelegate(QStyledItemDelegate):
-    """Draws a thumbnail fitted in its cell, with a strong frame and a check when selected."""
+    """Draws a thumbnail fitted in its cell, with a checkbox and a strong frame when picked."""
 
     def __init__(self, view: GroupView) -> None:
         super().__init__(view)
@@ -94,6 +101,7 @@ class PhotoDelegate(QStyledItemDelegate):
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         palette = option.palette
         selected = bool(option.state & QStyle.StateFlag.State_Selected)
+        hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
         accent = palette.color(QPalette.ColorRole.Highlight)
 
         cell = option.rect
@@ -119,19 +127,12 @@ class PhotoDelegate(QStyledItemDelegate):
             if needs_crop(image.width(), image.height()):
                 draw_crop_badge(painter, frame)
 
-        if selected:
-            painter.setPen(QPen(accent, 5))
+        if selected or hovered:
+            color = accent if selected else palette.color(QPalette.ColorRole.Mid)
+            painter.setPen(QPen(color, 5 if selected else 3))
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawRect(frame.adjusted(-2, -2, 2, 2))
-            r = 14
-            center = QPoint(frame.right() - r - 6, frame.top() + r + 6)
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(accent)
-            painter.drawEllipse(center, r, r)
-            painter.setPen(QPen(QColor("white"), 3))
-            painter.drawPolyline(
-                [center + QPoint(-6, 0), center + QPoint(-2, 5), center + QPoint(6, -5)]
-            )
+        draw_checkbox(painter, frame, selected, hovered, accent)
         if option.state & QStyle.StateFlag.State_HasFocus and self.view.hasFocus():
             painter.setPen(QPen(palette.color(QPalette.ColorRole.Text), 1, Qt.PenStyle.DashLine))
             painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -144,6 +145,23 @@ class PhotoDelegate(QStyledItemDelegate):
         )
         painter.drawText(label, Qt.AlignmentFlag.AlignCenter, name)
         painter.restore()
+
+
+def draw_checkbox(
+    painter: QPainter, frame: QRect, checked: bool, hovered: bool, accent: QColor
+) -> None:
+    """Checkbox in the top-left corner of the photo: always visible, so it's clear that a
+    click picks the photo."""
+    painter.save()
+    box = QRect(frame.left() + 8, frame.top() + 8, 26, 26)
+    painter.setPen(QPen(QColor("white"), 2))
+    painter.setBrush(accent if checked else QColor(0, 0, 0, 140 if hovered else 90))
+    painter.drawRoundedRect(box, 6, 6)
+    if checked:
+        c = box.center()
+        painter.setPen(QPen(QColor("white"), 3))
+        painter.drawPolyline([c + QPoint(-6, 0), c + QPoint(-2, 5), c + QPoint(6, -5)])
+    painter.restore()
 
 
 def draw_crop_overlay(painter: QPainter, frame: QRectF, width: int, height: int) -> None:
@@ -193,7 +211,7 @@ def best_cell_size(count: int, width: int, height: int) -> int:
 
 
 class GroupView(QListView):
-    """Click selects one photo, Ctrl/Cmd+click adds or removes photos."""
+    """Click picks or unpicks a photo (no modifier keys needed), double-click previews it."""
 
     picked_changed = Signal()
     confirm_requested = Signal()
@@ -209,14 +227,16 @@ class GroupView(QListView):
         self.setFlow(QListView.Flow.LeftToRight)
         self.setWrapping(True)
         self.setUniformItemSizes(True)
-        self.setSelectionMode(QListView.SelectionMode.ExtendedSelection)
+        self.setSelectionMode(QListView.SelectionMode.MultiSelection)
+        self.setMouseTracking(True)
+        self.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover)
         self.setFrameShape(QListView.Shape.NoFrame)
         self.show_crop = False
+        self._last_press: tuple[int, bool, float] = (-1, False, 0.0)
         self.photo_model = PhotoModel(loader, self)
         self.setModel(self.photo_model)
         self.setItemDelegate(PhotoDelegate(self))
         self.selectionModel().selectionChanged.connect(lambda *_: self.picked_changed.emit())
-        self.doubleClicked.connect(lambda index: self.preview_requested.emit(index.row()))
 
     def set_photos(self, photos: list[PhotoFile], paths_for: PathsFn, picked: set[str]) -> None:
         self.photo_model.set_photos(photos, paths_for)
@@ -284,9 +304,46 @@ class GroupView(QListView):
             return
         super().keyPressEvent(event)
 
+    # The mouse is handled here rather than by QListView: a click always toggles one photo,
+    # and dragging never selects a range.
+    def mousePressEvent(self, event) -> None:
+        self.setFocus()
+        if event.button() != Qt.MouseButton.LeftButton:
+            return
+        index = self.indexAt(event.position().toPoint())
+        if not index.isValid():
+            return
+        # Remember the state before a click, but not before the second click of a
+        # double-click: the double-click restores it, so previewing never changes the choice.
+        now = time.monotonic()
+        last_row, _, last_time = self._last_press
+        interval = QApplication.doubleClickInterval() / 1000
+        if not (index.row() == last_row and now - last_time < interval):
+            self._last_press = (index.row(), self.is_picked(index.row()), now)
+        self.selectionModel().setCurrentIndex(index, QItemSelectionModel.SelectionFlag.NoUpdate)
+        self.toggle_row(index.row())
+
+    def mouseMoveEvent(self, event) -> None:
+        if not event.buttons():
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event) -> None:
+        pass
+
+    def mouseDoubleClickEvent(self, event) -> None:
+        index = self.indexAt(event.position().toPoint())
+        if event.button() == Qt.MouseButton.LeftButton and index.isValid():
+            row, was_picked, _ = self._last_press
+            if row == index.row() and self.is_picked(row) != was_picked:
+                self.toggle_row(row)
+            self.preview_requested.emit(index.row())
+
     def set_show_crop(self, show: bool) -> None:
         self.show_crop = show
         self.viewport().update()
+
+    def is_picked(self, row: int) -> bool:
+        return self.selectionModel().isSelected(self.photo_model.index(row))
 
     def toggle_row(self, row: int) -> None:
         self.selectionModel().select(

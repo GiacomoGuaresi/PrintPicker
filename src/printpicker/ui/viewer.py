@@ -6,11 +6,14 @@ import math
 from pathlib import Path
 
 from PySide6.QtCore import (
+    QAbstractListModel,
     QEvent,
+    QModelIndex,
     QObject,
     QPoint,
     QRect,
     QRunnable,
+    QSize,
     Qt,
     QThreadPool,
     QTimer,
@@ -18,12 +21,15 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import QColor, QImage, QPainter, QPalette, QPen, QPixmap
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QDialog,
     QGraphicsPixmapItem,
     QGraphicsScene,
     QGraphicsView,
     QHBoxLayout,
     QLabel,
+    QListView,
+    QStyledItemDelegate,
     QToolButton,
     QVBoxLayout,
     QWidget,
@@ -199,6 +205,22 @@ class ImageView(QGraphicsView):
             self.fit()
 
 
+def draw_check(painter: QPainter, center: QPoint, radius: int, color: QColor) -> None:
+    """A filled circle with a white check mark, the "picked" sign."""
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(color)
+    painter.drawEllipse(center, radius, radius)
+    k = radius / 14
+    painter.setPen(QPen(QColor("white"), max(2.0, 3 * k)))
+    painter.drawPolyline(
+        [
+            center + QPoint(round(-6 * k), 0),
+            center + QPoint(round(-2 * k), round(5 * k)),
+            center + QPoint(round(6 * k), round(-5 * k)),
+        ]
+    )
+
+
 class PickedOverlay(QWidget):
     """Frame around the screen and a "✓ Picked" badge, shown while the photo is picked."""
 
@@ -236,15 +258,114 @@ class PickedOverlay(QWidget):
         painter.setBrush(accent)
         painter.drawRoundedRect(badge, badge.height() / 2, badge.height() / 2)
         r = badge.height() // 2
-        center = QPoint(badge.left() + r + 2, badge.center().y())
-        painter.setPen(QPen(QColor("white"), 3))
-        painter.drawPolyline(
-            [center + QPoint(-6, 0), center + QPoint(-2, 5), center + QPoint(6, -5)]
-        )
+        draw_check(painter, QPoint(badge.left() + r + 2, badge.center().y()), 14, accent)
+        painter.setPen(QColor("white"))
         font = painter.font()
         font.setBold(True)
         painter.setFont(font)
         painter.drawText(badge.adjusted(2 * r, 0, -12, 0), Qt.AlignmentFlag.AlignCenter, self.text)
+
+
+CELL = QSize(104, 78)  # filmstrip cell
+
+
+class _FilmstripModel(QAbstractListModel):
+    def __init__(self, photos: list[PhotoFile], thumbnail_for, parent=None) -> None:
+        super().__init__(parent)
+        self.photos = photos
+        self.thumbnail_for = thumbnail_for
+
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:  # noqa: B008
+        return 0 if parent.isValid() else len(self.photos)
+
+    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
+        photo = self.photos[index.row()]
+        if role == Qt.ItemDataRole.DecorationRole:
+            return self.thumbnail_for(photo)  # None while not loaded yet
+        if role == Qt.ItemDataRole.ToolTipRole:
+            return photo.name
+        return None
+
+
+class _FilmstripDelegate(QStyledItemDelegate):
+    def __init__(self, strip: Filmstrip) -> None:
+        super().__init__(strip)
+        self.strip = strip
+
+    def sizeHint(self, option, index) -> QSize:
+        return CELL
+
+    def paint(self, painter: QPainter, option, index: QModelIndex) -> None:
+        painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        area = option.rect.adjusted(5, 5, -5, -5)
+        image: QImage | None = index.data(Qt.ItemDataRole.DecorationRole)
+        frame = area
+        if image is not None and not image.isNull():
+            size = image.size().scaled(area.size(), Qt.AspectRatioMode.KeepAspectRatio)
+            frame = QRect(QPoint(), size)
+            frame.moveCenter(area.center())
+            painter.drawImage(frame, image)
+        else:
+            painter.fillRect(frame, QColor(42, 42, 42))
+        current = index.row() == self.strip.current
+        if not current:
+            painter.fillRect(frame, QColor(0, 0, 0, 90))
+        accent = option.palette.color(QPalette.ColorRole.Highlight)
+        if self.strip.photos[index.row()].rel_path in self.strip.picked:
+            painter.setPen(QPen(accent, 2))
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawRect(frame)
+            draw_check(painter, QPoint(frame.right() - 10, frame.top() + 10), 8, accent)
+        if current:
+            painter.setPen(QPen(QColor("white"), 3))
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawRect(frame.adjusted(-2, -2, 2, 2))
+        painter.restore()
+
+
+class Filmstrip(QListView):
+    """The photos of the group in a row: current one framed, picked ones checked."""
+
+    def __init__(self, photos: list[PhotoFile], thumbnail_for, parent=None) -> None:
+        super().__init__(parent)
+        self.photos = photos
+        self.current = 0
+        self.picked: set[str] = set()
+        self.setModel(_FilmstripModel(photos, thumbnail_for, self))
+        self.setItemDelegate(_FilmstripDelegate(self))
+        self.setFlow(QListView.Flow.LeftToRight)
+        self.setWrapping(False)
+        self.setUniformItemSizes(True)
+        self.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFrameShape(QListView.Shape.NoFrame)
+        self.setFixedHeight(CELL.height() + 8)
+        self.setStyleSheet("QListView { background: #141414; padding: 4px; }")
+
+    def set_state(self, current: int, picked: set[str]) -> None:
+        self.current = current
+        self.picked = picked
+        self._center_current()
+        self.viewport().update()
+
+    def _center_current(self) -> None:
+        index = self.model().index(self.current, 0)
+        self.scrollTo(index, QAbstractItemView.ScrollHint.PositionAtCenter)
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._center_current()
+
+    def wheelEvent(self, event) -> None:
+        """The mouse wheel scrolls the strip sideways."""
+        bar = self.horizontalScrollBar()
+        bar.setValue(bar.value() - event.angleDelta().y() - event.angleDelta().x())
 
 
 class PhotoViewer(QDialog):
@@ -321,6 +442,10 @@ class PhotoViewer(QDialog):
         rotate = self._bar_button("↻", self.tr("Rotate (R)"))
         rotate.clicked.connect(lambda: self.view.rotate_by(90))
 
+        self.filmstrip = Filmstrip(photos, thumbnail_for)
+        self.filmstrip.clicked.connect(lambda index: self.show_row(index.row()))
+        self.filmstrip.setVisible(len(photos) > 1)
+
         bar = QHBoxLayout()
         bar.addWidget(self.caption)
         bar.addStretch()
@@ -340,6 +465,7 @@ class PhotoViewer(QDialog):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addWidget(self.view, 1)
+        layout.addWidget(self.filmstrip)
         layout.addWidget(bar_widget)
 
         self.show_row(row)
@@ -488,6 +614,7 @@ class PhotoViewer(QDialog):
         photo = self.photos[self.row]
         self.picked_overlay.setVisible(photo.rel_path in self.picked)
         self.pick_button.setChecked(photo.rel_path in self.picked)
+        self.filmstrip.set_state(self.row, self.picked)
         self._update_controls()
         mark = ""
         pixmap = self.view.item.pixmap()

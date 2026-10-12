@@ -126,6 +126,15 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 9.4 | **Striscia miniature** del gruppo, cliccabile, con corrente e scelte evidenziate | `feat(viewer): filmstrip` | ⬜ |
 | 9.5 | Traduzioni e documentazione dell'anteprima | `docs: viewer` | ⬜ |
 
+## M10 — Vista gruppo
+
+| # | Step | Commit | Stato |
+|---|---|---|---|
+| 10.1 | **Click semplice** per scegliere / togliere una foto (niente Ctrl/Shift), **casella di spunta** sempre visibile, evidenziazione al passaggio del mouse | `feat(ui): click to pick with checkboxes` | ✅ |
+| 10.2 | **Frecce ← → tra i gruppi** senza perdere le scelte (salvataggio automatico anche tornando indietro); ↑ ↓ / Tab tra le foto | `feat(ui): arrow keys switch groups` | ⬜ |
+| 10.3 | **Pulsante anteprima** sulla miniatura, `A` tutte / nessuna, tasti avanti / indietro del mouse | `feat(ui): group view shortcuts` | ⬜ |
+| 10.4 | Traduzioni e documentazione della vista gruppo | `docs: group view` | ⬜ |
+
 ---
 
 ## Dopo la v1.0 (idee)

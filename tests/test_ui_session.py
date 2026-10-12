@@ -87,7 +87,10 @@ def test_confirm_copies_and_advances(qtbot, session, photos):
     assert session.index == 1
     assert "1" in session.total_label.text()
     session.confirm_button.click()  # nothing picked in the last group
-    assert session.pages.currentWidget() is session.message_page
+    assert session.pages.currentWidget() is session.end_page
+    assert "Photos to print: <b>1</b>" in session.end_label.text()
+    session.previous_group()
+    assert session.index == 1 and session.pages.currentWidget() is session.groups_page
 
 
 def test_best_cell_size():

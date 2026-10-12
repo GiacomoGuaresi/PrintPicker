@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, QUrl, Signal
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -86,7 +87,9 @@ class SessionScreen(QWidget):
         self.retry_button.clicked.connect(self._source_changed)
         self.message_page = _centered(self.message_label, self.retry_button)
         self.groups_page = self._build_groups_page()
-        for page in (self.empty_page, self.progress_page, self.message_page, self.groups_page):
+        self.end_page = self._build_end_page()
+        pages = (self.empty_page, self.progress_page, self.message_page, self.groups_page)
+        for page in (*pages, self.end_page):
             self.pages.addWidget(page)
 
         layout = QVBoxLayout(self)
@@ -250,9 +253,7 @@ class SessionScreen(QWidget):
         assert self.source is not None
         self.index = index
         if index >= len(self.groups):
-            self.show_message(
-                self.tr("All groups of “%1” have been reviewed.").replace("%1", self.source.name)
-            )
+            self.show_end()
             return
         group = self.groups[index]
         self.group_title.setText(
@@ -284,6 +285,40 @@ class SessionScreen(QWidget):
             return
         QApplication.restoreOverrideCursor()
         self.show_group(self.index + 1)
+
+    def _build_end_page(self) -> QWidget:
+        self.end_label = QLabel()
+        self.end_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        open_button = QPushButton(self.tr("Open the selection folder"))
+        open_button.setDefault(True)
+        open_button.clicked.connect(self.open_folder)
+        back_button = QPushButton(self.tr("← Previous group"))
+        back_button.clicked.connect(self.previous_group)
+        add_button = QPushButton(self.tr("Add another source…"))
+        add_button.clicked.connect(self.choose_source)
+        buttons = QWidget()
+        row = QHBoxLayout(buttons)
+        for b in (back_button, add_button, open_button):
+            row.addWidget(b)
+        return _centered(self.end_label, buttons)
+
+    def show_end(self) -> None:
+        assert self.source is not None
+        self.index = len(self.groups)
+        self.end_label.setText(
+            self.tr("<h2>Done!</h2>All the photos of “%1” have been reviewed.<br><br>%2")
+            .replace("%1", self.source.name)
+            .replace("%2", self.summary_text())
+        )
+        self.pages.setCurrentWidget(self.end_page)
+
+    def summary_text(self) -> str:
+        return self.tr("Photos to print: <b>%1</b>").replace(
+            "%1", str(self.selection.selected_count())
+        )
+
+    def open_folder(self) -> None:
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.selection.folder)))
 
     def previous_group(self) -> None:
         """Go back without saving the current group; its previous choice is kept."""

@@ -41,9 +41,23 @@ def test_space_toggles_pick(qtbot, tmp_path):
     viewer.toggled.connect(toggled.append)
     qtbot.keyClick(viewer, Qt.Key.Key_Space)
     assert toggled == [0]
-    assert "picked" in viewer.caption.text()
+    assert viewer.picked_overlay.isVisible()
+    viewer.grab()  # paints the frame and badge without errors
+    qtbot.keyClick(viewer, Qt.Key.Key_Right)
+    assert not viewer.picked_overlay.isVisible()
+    qtbot.keyClick(viewer, Qt.Key.Key_Left)
+    assert viewer.picked_overlay.isVisible()
     qtbot.keyClick(viewer, Qt.Key.Key_Space)
-    assert "picked" not in viewer.caption.text()
+    assert not viewer.picked_overlay.isVisible()
+
+
+def test_picked_overlay_covers_the_view(qtbot, tmp_path):
+    viewer = make_viewer(qtbot, tmp_path, picked={"a.jpg"})
+    viewer.resize(800, 600)
+    qtbot.waitUntil(lambda: viewer.picked_overlay.size() == viewer.view.viewport().size())
+    badge = viewer.picked_overlay.badge_rect()
+    assert viewer.picked_overlay.rect().contains(badge)
+    assert badge.right() > 700 and badge.top() < 40  # top-right corner
 
 
 def test_escape_closes(qtbot, tmp_path):

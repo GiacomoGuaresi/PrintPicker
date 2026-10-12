@@ -21,22 +21,22 @@ Verrà ritagliata per la stampa 10×15</translation>
 <context>
     <name>PhotoViewer</name>
     <message>
-        <location filename="../ui/viewer.py" line="189" />
+        <location filename="../ui/viewer.py" line="247" />
         <source>Preview</source>
         <translation>Anteprima</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="207" />
+        <location filename="../ui/viewer.py" line="266" />
+        <source>Picked</source>
+        <translation>Scelta</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="270" />
         <source>← → browse · Space pick · +/− zoom · 0 fit · 1 100% · R rotate · C crop · Esc</source>
         <translation>← → sfoglia · Spazio scegli · +/− zoom · 0 adatta · 1 100% · R ruota · C ritaglio · Esc</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="288" />
-        <source>picked</source>
-        <translation>scelta</translation>
-    </message>
-    <message>
-        <location filename="../ui/viewer.py" line="291" />
+        <location filename="../ui/viewer.py" line="377" />
         <source>will be cropped to 10×15</source>
         <translation>verrà ritagliata per il 10×15</translation>
     </message>

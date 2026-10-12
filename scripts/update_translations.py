@@ -30,7 +30,7 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "← → browse · Space pick · +/− zoom · 0 fit · 1 100% · R rotate · C crop · Esc": (
         "← → sfoglia · Spazio scegli · +/− zoom · 0 adatta · 1 100% · R ruota · C ritaglio · Esc"
     ),
-    "picked": "scelta",
+    "Picked": "Scelta",
     "will be cropped to 10×15": "verrà ritagliata per il 10×15",
     # Session
     "← Selections": "← Selezioni",

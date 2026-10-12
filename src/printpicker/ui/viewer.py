@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, Signal
-from PySide6.QtGui import QColor, QImage, QPainter, QPixmap
+from PySide6.QtCore import QObject, QPoint, QRect, QRunnable, Qt, QThreadPool, Signal
+from PySide6.QtGui import QColor, QImage, QPainter, QPalette, QPen, QPixmap
 from PySide6.QtWidgets import (
     QDialog,
     QGraphicsPixmapItem,
@@ -175,6 +175,54 @@ class ImageView(QGraphicsView):
             self.fit()
 
 
+class PickedOverlay(QWidget):
+    """Frame around the screen and a "✓ Picked" badge, shown while the photo is picked."""
+
+    BORDER = 6
+    MARGIN = 18
+
+    def __init__(self, view: QGraphicsView) -> None:
+        super().__init__(view.viewport())
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.text = ""
+        view.viewport().installEventFilter(self)
+        self.hide()
+
+    def eventFilter(self, watched, event) -> bool:
+        if event.type() == event.Type.Resize:
+            self.setGeometry(watched.rect())
+        return False
+
+    def badge_rect(self) -> QRect:
+        metrics = self.fontMetrics()
+        height = max(36, metrics.height() + 14)
+        width = height + metrics.horizontalAdvance(self.text) + 14
+        return QRect(self.width() - self.MARGIN - width, self.MARGIN, width, height)
+
+    def paintEvent(self, event) -> None:
+        accent = self.palette().color(QPalette.ColorRole.Highlight)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        half = self.BORDER / 2
+        painter.setPen(QPen(accent, self.BORDER))
+        painter.drawRect(self.rect().toRectF().adjusted(half, half, -half, -half))
+
+        badge = self.badge_rect()
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(accent)
+        painter.drawRoundedRect(badge, badge.height() / 2, badge.height() / 2)
+        r = badge.height() // 2
+        center = QPoint(badge.left() + r + 2, badge.center().y())
+        painter.setPen(QPen(QColor("white"), 3))
+        painter.drawPolyline(
+            [center + QPoint(-6, 0), center + QPoint(-2, 5), center + QPoint(6, -5)]
+        )
+        font = painter.font()
+        font.setBold(True)
+        painter.setFont(font)
+        painter.drawText(badge.adjusted(2 * r, 0, -12, 0), Qt.AlignmentFlag.AlignCenter, self.text)
+
+
 class PhotoViewer(QDialog):
     """Full-screen view: Left/Right to browse the group, Space to pick, Esc or F to close.
 
@@ -214,6 +262,8 @@ class PhotoViewer(QDialog):
         self.view = ImageView()
         self.view.zoom_changed.connect(self._update_caption)
         self.view.show_crop = show_crop
+        self.picked_overlay = PickedOverlay(self.view)
+        self.picked_overlay.text = self.tr("Picked")
         self.caption = QLabel()
         self.caption.setStyleSheet("color: #ddd; padding: 6px;")
         self.help = QLabel(
@@ -320,7 +370,8 @@ class PhotoViewer(QDialog):
 
     def _update_caption(self) -> None:
         photo = self.photos[self.row]
-        mark = "  ✓ " + self.tr("picked") if photo.rel_path in self.picked else ""
+        self.picked_overlay.setVisible(photo.rel_path in self.picked)
+        mark = ""
         pixmap = self.view.item.pixmap()
         if not pixmap.isNull() and needs_crop(pixmap.width(), pixmap.height()):
             mark += "  ·  ✂ " + self.tr("will be cropped to 10×15")

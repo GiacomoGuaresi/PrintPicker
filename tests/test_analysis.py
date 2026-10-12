@@ -12,3 +12,15 @@ def test_hash_photos_keeps_order_and_handles_bad_files(tmp_path):
     assert [p.rel_path for p, _ in result] == [f"{i}.jpg" for i in range(6)] + ["9_bad.jpg"]
     assert all(h is not None for _, h in result[:-1])
     assert result[-1][1] is None
+
+
+def test_closing_generator_cancels_pending_work(tmp_path, monkeypatch):
+    from printpicker.core import analysis
+
+    calls = []
+    monkeypatch.setattr(analysis, "hash_file", lambda path: calls.append(path) or 0)
+    photos = [analysis.PhotoFile(f"{i}.jpg") for i in range(100)]
+    gen = hash_photos(tmp_path, photos, workers=2)
+    next(gen)
+    gen.close()
+    assert len(calls) < 10

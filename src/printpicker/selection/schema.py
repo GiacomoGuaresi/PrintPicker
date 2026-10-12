@@ -20,6 +20,20 @@ MIGRATIONS: list[str] = [
         name     TEXT NOT NULL,
         added_at TEXT NOT NULL
     );
+
+    -- Photos found in a source, identified by their POSIX path relative to the source root.
+    -- ``size`` / ``mtime_ns`` detect changed files; ``hashed`` tells "not computed yet" apart
+    -- from "unreadable" (hash NULL in both cases).
+    CREATE TABLE photos (
+        id        INTEGER PRIMARY KEY,
+        source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
+        rel_path  TEXT NOT NULL,
+        size      INTEGER,
+        mtime_ns  INTEGER,
+        hash      INTEGER,
+        hashed    INTEGER NOT NULL DEFAULT 0,
+        UNIQUE (source_id, rel_path)
+    );
     """,
 ]
 

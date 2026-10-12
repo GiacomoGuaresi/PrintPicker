@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import os
+from collections import deque
 from collections.abc import Iterable, Iterator
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 
 from printpicker.core.hashing import phash
@@ -31,9 +32,22 @@ def default_workers() -> int:
 def hash_photos(
     source_root: Path, photos: Iterable[PhotoFile], workers: int | None = None
 ) -> Iterator[tuple[PhotoFile, int | None]]:
-    """Yield ``(photo, hash)`` for each photo, in input order, hashing in parallel."""
-    photos = list(photos)
-    with ThreadPoolExecutor(max_workers=workers or default_workers()) as pool:
-        yield from zip(
-            photos, pool.map(lambda p: hash_file(p.absolute(source_root)), photos), strict=True
-        )
+    """Yield ``(photo, hash)`` for each photo, in input order, hashing in parallel.
+
+    Only a few photos are in flight at a time, so closing the generator early (cancellation)
+    stops promptly instead of waiting for the whole batch.
+    """
+    workers = workers or default_workers()
+    pool = ThreadPoolExecutor(max_workers=workers)
+    in_flight: deque[tuple[PhotoFile, Future[int | None]]] = deque()
+    try:
+        for photo in photos:
+            in_flight.append((photo, pool.submit(hash_file, photo.absolute(source_root))))
+            if len(in_flight) >= workers * 2:
+                done_photo, future = in_flight.popleft()
+                yield done_photo, future.result()
+        while in_flight:
+            done_photo, future = in_flight.popleft()
+            yield done_photo, future.result()
+    finally:
+        pool.shutdown(wait=True, cancel_futures=True)

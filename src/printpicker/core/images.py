@@ -5,6 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from PIL import Image, ImageOps
+from pillow_heif import register_heif_opener
+
+register_heif_opener()
 
 # Archive photos can be very large (panoramas); they come from the user's own disk.
 Image.MAX_IMAGE_PIXELS = None

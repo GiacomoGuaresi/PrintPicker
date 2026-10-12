@@ -42,3 +42,12 @@ def test_corrupt_file_raises(tmp_path):
     p.write_bytes(b"not an image")
     with pytest.raises(ImageLoadError):
         load_image(p)
+
+
+def test_heic(tmp_path):
+    p = tmp_path / "iphone.heic"
+    Image.new("RGB", (64, 48), (10, 120, 200)).save(p, format="HEIF")
+    img = load_image(p)
+    assert img.size == (64, 48)
+    r, g, b = img.getpixel((32, 24))
+    assert abs(r - 10) < 12 and abs(g - 120) < 12 and abs(b - 200) < 12

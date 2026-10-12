@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import sqlite3
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -31,10 +32,8 @@ def last_used(folder: Path) -> float:
     db = Path(folder) / DATA_DIR / DB_NAME
     times = []
     for path in (db, db.with_name(DB_NAME + "-wal")):
-        try:
+        with contextlib.suppress(OSError):
             times.append(path.stat().st_mtime)
-        except OSError:
-            pass
     return max(times, default=0.0)
 
 

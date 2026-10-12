@@ -4,10 +4,21 @@ Il concetto centrale dell'app è la **selezione per stampa**: una cartella sul P
 
 ## Avvio
 
-- All'avvio l'app chiede: **nuova selezione** oppure **apri una selezione esistente**.
-- Le selezioni stanno in una **posizione nota**: `Documenti/PrintPicker/` (cartella base modificabile nelle impostazioni), elencate nella schermata iniziale.
-- **Nuova selezione**: si inserisce solo il nome (proposto: `Stampa <data di oggi>`, es. `Stampa 2026-10-12`); la cartella viene creata nella posizione base.
-- Riaprendo una selezione esistente l'app **riprende da dove si era rimasti** (primo gruppo non ancora visto).
+- All'avvio l'app mostra la **home**: una griglia di **schede**, una per selezione, ordinate dalla più recente.
+- Ogni scheda mostra:
+  - una **copertina** con le prime foto scelte (fino a 4, a mosaico);
+  - il **nome**;
+  - il **numero di foto** e il **costo stimato**, calcolato con il listino delle impostazioni;
+  - **quando è stata modificata** l'ultima volta ("oggi", "ieri", "3 giorni fa", oppure la data).
+- La prima scheda è sempre **Nuova selezione**: si inserisce solo il nome (proposto: `Stampa <data di oggi>`, es. `Stampa 2026-10-12`) e la cartella viene creata nella posizione base.
+- Le selezioni stanno in una **posizione nota**: `Documenti/PrintPicker/`. La cartella base si cambia nelle impostazioni ed è indicata sotto il titolo.
+- **Click** (o Invio) su una scheda apre la selezione; l'app **riprende da dove si era rimasti** (primo gruppo non ancora visto).
+- Il pulsante **⋯** sulla scheda, il tasto destro o il tasto menu danno accesso a:
+  - **Apri**;
+  - **Apri cartella**;
+  - **Rinomina…** (anche con `F2`);
+  - **Elimina…** (anche con `Canc` / `Backspace`).
+- Senza selezioni la home mostra un breve **benvenuto** che spiega cos'è una selezione.
 
 ## Origini
 
@@ -41,4 +52,5 @@ Documenti/PrintPicker/
 ## Eliminazione
 
 - **Eliminare la cartella = eliminare la selezione**: nessun dato residuo altrove.
-- **Elimina selezione** dalla schermata iniziale: sposta la cartella nel Cestino, previa conferma.
+- **Elimina…** dal menu ⋯ della scheda: sposta la cartella nel Cestino, previa conferma.
+- **Rinomina…** cambia il nome della cartella; origini e avanzamento restano validi.

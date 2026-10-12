@@ -43,7 +43,7 @@ The builds are not signed, so the first launch needs one extra step:
 
 ## How to use it
 
-1. **Create a print selection.** On the start screen choose *New selection…* and give it a name (e.g. `Print 2026-10-12`). It becomes a folder in `Documents/PrintPicker/`.
+1. **Create a print selection.** The start screen shows your selections as cards (cover, photos, estimated cost, last change). Click *New selection* and give it a name (e.g. `Print 2026-10-12`): it becomes a folder in `Documents/PrintPicker/`. The **⋯** button on a card (or a right click) opens, renames or deletes a selection.
 2. **Add a source.** Choose a folder of your archive (sub-folders included). The first analysis reads every photo once — on a USB stick about 2 minutes for 500 photos — then it is cached.
 3. **Review the groups.** Each screen shows one group of similar photos from the same folder. Pick none, one or more, then confirm: the picked photos are copied into the selection and the next group appears.
 4. **Check the total.** The bottom bar shows how many photos you picked and the estimated cost.

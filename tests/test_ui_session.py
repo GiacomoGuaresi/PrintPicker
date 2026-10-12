@@ -161,3 +161,17 @@ def test_keyboard_flow(qtbot, session, photos):
     assert exported(session) == ["Foto - a2.jpg"]
     qtbot.keyClick(session.group_view, Qt.Key.Key_Backspace)
     assert session.index == 0
+
+
+def test_threshold_slider_regroups_and_keeps_position(qtbot, session, photos):
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    # Hashes with known distances: a1-a2 = 3 bits, b far away.
+    session.items = [(p, h) for (p, _), h in zip(session.items, [0, 0b111, 2**64 - 1], strict=True)]
+    session.regroup()
+    assert len(session.groups) == 2
+    session.confirm_button.click()  # now on group with b.jpg
+    session.threshold_slider.setValue(0)
+    qtbot.waitUntil(lambda: session.selection.threshold == 0, timeout=2000)
+    assert len(session.groups) == 3
+    assert session.groups[session.index].photos[0].rel_path == "b.jpg"

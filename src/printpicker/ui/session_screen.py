@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QUrl, Signal
+from PySide6.QtCore import Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QApplication,
@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QSlider,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -28,6 +29,9 @@ from printpicker.selection.choices import first_unseen_group
 from printpicker.ui.group_view import GroupView
 from printpicker.ui.thumbnails import ThumbnailLoader
 from printpicker.ui.workers import AnalysisThread
+
+# Hamming distance on 64-bit hashes; above ~24 almost everything in a folder is "similar".
+MAX_THRESHOLD = 24
 
 
 def _centered(*widgets: QWidget) -> QWidget:
@@ -234,6 +238,23 @@ class SessionScreen(QWidget):
         self.help_label.setEnabled(False)
         self.previous_button.clicked.connect(self.previous_group)
 
+        self.threshold_slider = QSlider(Qt.Orientation.Horizontal)
+        self.threshold_slider.setRange(0, MAX_THRESHOLD)
+        self.threshold_slider.setFixedWidth(160)
+        self.threshold_slider.setValue(self.selection.threshold)
+        self.threshold_slider.setToolTip(
+            self.tr("How different two photos can be to end up in the same group")
+        )
+        self.threshold_slider.valueChanged.connect(lambda _v: self._regroup_timer.start())
+        self._regroup_timer = QTimer(self)
+        self._regroup_timer.setSingleShot(True)
+        self._regroup_timer.setInterval(120)
+        self._regroup_timer.timeout.connect(self._threshold_changed)
+        similarity = QHBoxLayout()
+        similarity.addWidget(QLabel(self.tr("Grouping: strict")))
+        similarity.addWidget(self.threshold_slider)
+        similarity.addWidget(QLabel(self.tr("loose")))
+
         bottom = QHBoxLayout()
         bottom.addWidget(self.previous_button)
         bottom.addSpacing(24)
@@ -241,6 +262,8 @@ class SessionScreen(QWidget):
         bottom.addSpacing(24)
         bottom.addWidget(self.total_label)
         bottom.addStretch()
+        bottom.addLayout(similarity)
+        bottom.addSpacing(24)
         bottom.addWidget(self.confirm_button)
 
         page = QWidget()
@@ -328,6 +351,24 @@ class SessionScreen(QWidget):
 
     def open_folder(self) -> None:
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.selection.folder)))
+
+    def _threshold_changed(self) -> None:
+        """Regroup with the new threshold, staying on the photo currently shown."""
+        self.selection.threshold = self.threshold_slider.value()
+        if not self.items or self.source is None:
+            return
+        current = None
+        if self.index < len(self.groups):
+            row = max(self.group_view.currentIndex().row(), 0)
+            current = self.groups[self.index].photos[row].rel_path
+        self.groups = group_photos(self.items, self.selection.threshold)
+        if current is None:
+            self.show_end()
+            return
+        index = next(
+            i for i, g in enumerate(self.groups) if any(p.rel_path == current for p in g.photos)
+        )
+        self.show_group(index)
 
     def previous_group(self) -> None:
         """Go back without saving the current group; its previous choice is kept."""

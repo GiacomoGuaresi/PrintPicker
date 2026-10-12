@@ -124,7 +124,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 9.2 | **Stato "scelta" evidente**: badge e bordo ben visibili, feedback immediato a Spazio | `feat(viewer): picked badge` | ✅ |
 | 9.3 | **Controlli col mouse** in sovrimpressione (‹ › Scegli ✕), nascosti col cursore quando il mouse è fermo | `feat(viewer): mouse controls` | ✅ |
 | 9.4 | **Striscia miniature** del gruppo, cliccabile, con corrente e scelte evidenziate | `feat(viewer): filmstrip` | ✅ |
-| 9.5 | Traduzioni e documentazione dell'anteprima | `docs: viewer` | ⬜ |
+| 9.5 | Traduzioni e documentazione dell'anteprima | `docs: viewer` | ✅ |
 
 ## M10 — Vista gruppo
 

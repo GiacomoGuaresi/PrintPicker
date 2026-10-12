@@ -13,7 +13,7 @@ PrintPicker is a small cross-platform desktop utility for people who keep their 
 - **Similar-photo groups** — photos are grouped by visual similarity (perceptual hashing), so bursts and near-duplicates are shown side by side and you pick the best one(s).
 - **Fast keyboard-driven review** — arrows to move, Space to pick, Enter to confirm and move on, Backspace to go back. Ctrl/Cmd+click for multiple picks.
 - **Live similarity threshold** — a slider regroups photos on the fly, from strict to loose.
-- **Full-screen preview** with zoom and rotation to check focus and closed eyes — view only, files are never altered.
+- **Full-screen preview** with zoom and rotation to check focus and closed eyes, a filmstrip of the group and on-screen controls; neighbouring photos are preloaded for instant browsing — view only, files are never altered.
 - **Crop preview** — warns when a photo's aspect ratio doesn't match the print format (3:2 for 10×15) and shows what will be printed.
 - **Print selections** — each selection is a self-contained folder: the chosen photos plus a hidden `.printpicker/` folder with its database and thumbnails. Delete the folder after printing and nothing is left behind.
 - **Resume anytime** — reopen a selection and continue from the first group you haven't seen.
@@ -60,7 +60,7 @@ The builds are not signed, so the first launch needs one extra step:
 | `F` or double-click | Full-screen preview |
 | `C` | Show / hide the crop preview |
 
-In the full-screen preview: ← → to browse, Space to pick, `+` / `−` / mouse wheel to zoom, `0` fit, `1` 100%, `R` / `Shift+R` rotate, `Esc` to close.
+In the full-screen preview: ← → to browse, Space to pick, `+` / `−` / mouse wheel to zoom, `0` fit, `1` 100%, double-click to switch between fit and 100%, `R` / `Shift+R` rotate, `Esc` to close. With the mouse: the ‹ › arrows and ✕ appear when you move it, the bottom bar has *Pick*, zoom and rotate buttons, and a click on the filmstrip jumps to that photo.
 
 ### Price list
 

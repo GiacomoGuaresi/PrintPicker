@@ -31,7 +31,12 @@ Flusso principale dell'app.
 
 - **Avanti / indietro** tra i gruppi; si può modificare la scelta di un gruppo già confermato.
   - Se si deseleziona una foto già copiata, viene **rimossa dalla cartella della selezione**.
-- **Anteprima a schermo intero** (doppio click o tasto) con frecce per confrontare le foto del gruppo.
+- **Anteprima a schermo intero** (doppio click o tasto) con frecce per confrontare le foto del gruppo:
+  - le foto vicine sono **precaricate**, così sfogliando si vede subito la foto a piena risoluzione;
+  - una foto scelta ha una **cornice colorata** e il badge **✓ Scelta** in alto a destra;
+  - **controlli col mouse**: ‹ › ai lati e ✕ in alto, che si nascondono col cursore dopo 2 s di mouse fermo; nella barra in basso *Scegli*, zoom e rotazione;
+  - **striscia delle miniature** del gruppo (corrente incorniciata, scelte con la spunta): un clic salta a quella foto;
+  - doppio click sulla foto: adatta ↔ 100% sul punto cliccato.
 
 ### Strumenti di visualizzazione
 

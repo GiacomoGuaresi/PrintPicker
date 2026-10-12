@@ -36,7 +36,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 1.3 | Supporto **HEIC** (pillow-heif) | `feat(core): HEIC support` | ✅ |
 | 1.4 | Supporto **RAW** (rawpy, usando l'anteprima incorporata quando disponibile) | `feat(core): RAW support` | ✅ |
 | 1.5 | **Perceptual hash** delle foto | `feat(core): perceptual hashing` | ✅ |
-| 1.6 | **Raggruppamento** per cartella con soglia (distanza di Hamming), foto singole come gruppi da 1 | `feat(core): similarity grouping` | ⬜ |
+| 1.6 | **Raggruppamento** per cartella con soglia (distanza di Hamming), foto singole come gruppi da 1 | `feat(core): similarity grouping` | ✅ |
 | 1.7 | **CLI di debug** (`python -m printpicker.cli <cartella> --threshold N`) che stampa i gruppi: serve a tarare la soglia sulla chiavetta | `feat(cli): debug command to inspect groups` | ⬜ |
 
 ## M2 — Selezioni ed export (senza interfaccia) → `v0.2.0`

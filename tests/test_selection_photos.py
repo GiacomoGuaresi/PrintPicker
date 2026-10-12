@@ -25,9 +25,9 @@ def count_hashing(monkeypatch):
     calls = []
     real = analysis.hash_file
 
-    def counting(path):
+    def counting(path, thumb_path=None):
         calls.append(path.name)
-        return real(path)
+        return real(path, thumb_path)
 
     monkeypatch.setattr(analysis, "hash_file", counting)
     return calls
@@ -92,3 +92,15 @@ def test_cache_survives_reopen(setup, count_hashing, tmp_path):
 @pytest.mark.parametrize("h", [0, 1, 2**63 - 1, 2**63, 2**64 - 1, None])
 def test_hash_roundtrip(h):
     assert from_db_hash(to_db_hash(h)) == h
+
+
+def test_thumbnails_are_saved_during_analysis(setup):
+    from PIL import Image
+
+    sel, source, _ = setup
+    sel.analyze_source(source)
+    thumb = sel.thumb_path(source, "sub/x.jpg")
+    assert thumb.is_file()
+    with Image.open(thumb) as img:
+        assert max(img.size) <= 512
+    assert not sel.thumb_path(source, "bad.jpg").exists()

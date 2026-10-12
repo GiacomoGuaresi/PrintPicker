@@ -18,7 +18,7 @@ def test_closing_generator_cancels_pending_work(tmp_path, monkeypatch):
     from printpicker.core import analysis
 
     calls = []
-    monkeypatch.setattr(analysis, "hash_file", lambda path: calls.append(path) or 0)
+    monkeypatch.setattr(analysis, "hash_file", lambda path, thumb=None: calls.append(path) or 0)
     photos = [analysis.PhotoFile(f"{i}.jpg") for i in range(100)]
     gen = hash_photos(tmp_path, photos, workers=2)
     next(gen)

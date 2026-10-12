@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 
 from printpicker.core.analysis import hash_photos
 from printpicker.core.scanner import PhotoFile, scan
@@ -42,8 +44,16 @@ ProgressCallback = Callable[[int, int], None]
 _COMMIT_EVERY = 25
 
 
+def thumb_name(rel_path: str) -> str:
+    return hashlib.sha1(rel_path.encode()).hexdigest() + ".jpg"
+
+
 class PhotosMixin:
     """Photo scanning and hash caching for :class:`~printpicker.selection.store.Selection`."""
+
+    def thumb_path(self, source: Source, rel_path: str) -> Path:
+        """Cached thumbnail of a photo (it may not exist yet)."""
+        return self.thumbs_dir / str(source.id) / thumb_name(rel_path)
 
     def analyze_source(
         self,
@@ -82,7 +92,9 @@ class PhotosMixin:
         stats = {p.rel_path: st for p, st in stale}
         pending = 0
         try:
-            for photo, h in hash_photos(source.path, (p for p, _ in stale)):
+            photo_iter = (p for p, _ in stale)
+            thumb_for = lambda p: self.thumb_path(source, p.rel_path)  # noqa: E731
+            for photo, h in hash_photos(source.path, photo_iter, thumb_for=thumb_for):
                 st = stats[photo.rel_path]
                 self.conn.execute(
                     "INSERT INTO photos (source_id, rel_path, size, mtime_ns, hash, hashed) "

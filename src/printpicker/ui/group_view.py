@@ -147,6 +147,7 @@ class GroupView(QListView):
     picked_changed = Signal()
     confirm_requested = Signal()
     back_requested = Signal()
+    preview_requested = Signal(int)
 
     def __init__(self, loader: ThumbnailLoader, parent=None) -> None:
         super().__init__(parent)
@@ -162,6 +163,7 @@ class GroupView(QListView):
         self.setModel(self.photo_model)
         self.setItemDelegate(PhotoDelegate(self))
         self.selectionModel().selectionChanged.connect(lambda *_: self.picked_changed.emit())
+        self.doubleClicked.connect(lambda index: self.preview_requested.emit(index.row()))
 
     def set_photos(self, photos: list[PhotoFile], paths_for: PathsFn, picked: set[str]) -> None:
         self.photo_model.set_photos(photos, paths_for)
@@ -209,6 +211,9 @@ class GroupView(QListView):
         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.confirm_requested.emit()
             return
+        if key in (Qt.Key.Key_F, Qt.Key.Key_Z):
+            self.preview_requested.emit(max(self.currentIndex().row(), 0))
+            return
         if key == Qt.Key.Key_Backspace:
             self.back_requested.emit()
             return
@@ -221,6 +226,11 @@ class GroupView(QListView):
                 self.toggle_current()
             return
         super().keyPressEvent(event)
+
+    def toggle_row(self, row: int) -> None:
+        self.selectionModel().select(
+            self.photo_model.index(row), QItemSelectionModel.SelectionFlag.Toggle
+        )
 
     def toggle_current(self) -> None:
         index = self.currentIndex()

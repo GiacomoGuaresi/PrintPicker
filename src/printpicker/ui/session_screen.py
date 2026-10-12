@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer, QUrl, Signal
+from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QApplication,
@@ -28,6 +28,7 @@ from printpicker.selection import Selection, Source, SourceExistsError
 from printpicker.selection.choices import first_unseen_group
 from printpicker.ui.group_view import GroupView
 from printpicker.ui.thumbnails import ThumbnailLoader
+from printpicker.ui.viewer import PhotoViewer
 from printpicker.ui.workers import AnalysisThread
 
 # Hamming distance on 64-bit hashes; above ~24 almost everything in a folder is "similar".
@@ -223,6 +224,7 @@ class SessionScreen(QWidget):
         self.group_view.picked_changed.connect(self._update_counters)
         self.group_view.confirm_requested.connect(self.confirm_group)
         self.group_view.back_requested.connect(self.previous_group)
+        self.group_view.preview_requested.connect(self.open_preview)
         self.picked_label = QLabel()
         self.total_label = QLabel()
         self.confirm_button = QPushButton(self.tr("Confirm and continue →"))
@@ -351,6 +353,28 @@ class SessionScreen(QWidget):
 
     def open_folder(self) -> None:
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.selection.folder)))
+
+    def open_preview(self, row: int) -> None:
+        photos = self.group_view.photo_model.photos
+        if not photos:
+            return
+        viewer = PhotoViewer(
+            photos,
+            self._paths_for,
+            lambda p: self.loader.cached(p.rel_path),
+            self.group_view.picked(),
+            row,
+            self,
+        )
+        viewer.toggled.connect(self.group_view.toggle_row)
+        self.viewer = viewer
+        viewer.showFullScreen()
+        viewer.exec()
+        self.viewer = None
+        self.group_view.selectionModel().setCurrentIndex(
+            self.group_view.photo_model.index(viewer.row),
+            QItemSelectionModel.SelectionFlag.NoUpdate,
+        )
 
     def _threshold_changed(self) -> None:
         """Regroup with the new threshold, staying on the photo currently shown."""

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QFile, Qt, Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QInputDialog,
@@ -36,6 +36,10 @@ def photo_count(folder: Path) -> int:
         return sum(1 for p in folder.iterdir() if p.is_file() and is_supported(p.name))
     except OSError:
         return 0
+
+
+def move_to_trash(path: Path) -> bool:
+    return QFile.moveToTrash(str(path))
 
 
 def last_used(folder: Path) -> float:
@@ -72,9 +76,13 @@ class StartScreen(QWidget):
         self.open_button = QPushButton(self.tr("Open"))
         self.open_button.clicked.connect(lambda: self._open_item(self.list.currentItem()))
 
+        self.delete_button = QPushButton(self.tr("Delete…"))
+        self.delete_button.clicked.connect(self.delete_selection)
+
         buttons = QHBoxLayout()
         buttons.addWidget(self.new_button)
         buttons.addStretch()
+        buttons.addWidget(self.delete_button)
         buttons.addWidget(self.open_button)
 
         layout = QVBoxLayout(self)
@@ -105,7 +113,9 @@ class StartScreen(QWidget):
         return item.data(PATH_ROLE) if item else None
 
     def _update_buttons(self, *_args) -> None:
-        self.open_button.setEnabled(self.list.currentItem() is not None)
+        has_item = self.list.currentItem() is not None
+        self.open_button.setEnabled(has_item)
+        self.delete_button.setEnabled(has_item)
 
     def _open_item(self, item: QListWidgetItem | None) -> None:
         if item is not None:
@@ -139,3 +149,27 @@ class StartScreen(QWidget):
             message = self.tr("Could not create the selection: %1").replace("%1", str(exc))
         QMessageBox.warning(self, self.tr("New selection"), message)
         return None
+
+    def delete_selection(self) -> None:
+        path = self.selected_path()
+        if path is None:
+            return
+        answer = QMessageBox.question(
+            self,
+            self.tr("Delete selection"),
+            self.tr(
+                "Move the selection “%1” and the photos it contains to the trash?\n\n"
+                "The original photos in your archive are not touched."
+            ).replace("%1", path.name),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel,
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        if not move_to_trash(path):
+            QMessageBox.warning(
+                self,
+                self.tr("Delete selection"),
+                self.tr("Could not move “%1” to the trash.").replace("%1", path.name),
+            )
+        self.refresh()

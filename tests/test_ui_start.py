@@ -42,3 +42,28 @@ def test_opening_switches_screen(qtbot, settings):
         window.start_screen.open_button.click()
     assert window.current_selection == settings.base_dir / "A"
     assert window.stack.currentWidget() is not window.start_screen
+
+
+@pytest.mark.parametrize(("answer", "deleted"), [("Yes", True), ("Cancel", False)])
+def test_delete_selection(qtbot, settings, monkeypatch, answer, deleted):
+    import shutil
+
+    from PySide6.QtWidgets import QMessageBox
+
+    from printpicker.ui import start_screen
+
+    settings.base_dir.mkdir()
+    Selection.create(settings.base_dir, "Old").close()
+    trashed = []
+    monkeypatch.setattr(
+        start_screen, "move_to_trash", lambda p: trashed.append(p) or shutil.rmtree(p) or True
+    )
+    monkeypatch.setattr(
+        QMessageBox, "question", lambda *a, **k: getattr(QMessageBox.StandardButton, answer)
+    )
+    screen = StartScreen(settings)
+    qtbot.addWidget(screen)
+    screen.delete_selection()
+    assert (trashed == [settings.base_dir / "Old"]) is deleted
+    assert screen.list.count() == (0 if deleted else 1)
+    assert screen.delete_button.isEnabled() is not deleted

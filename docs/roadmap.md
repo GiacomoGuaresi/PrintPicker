@@ -60,7 +60,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 |---|---|---|---|
 | 3.1 | Scheletro app PySide6, finestra principale, avvio con `python -m printpicker` | `feat(ui): application skeleton` | ✅ |
 | 3.2 | **Schermata iniziale**: elenco selezioni, nuova (nome proposto con data), apri | `feat(ui): start screen` | ✅ |
-| 3.3 | **Elimina selezione** con conferma (spostamento nel Cestino) | `feat(ui): delete selection to trash` | ⬜ |
+| 3.3 | **Elimina selezione** con conferma (spostamento nel Cestino) | `feat(ui): delete selection to trash` | ✅ |
 | 3.4 | **Aggiungi origine** + analisi in background con barra di avanzamento | `feat(ui): add source with background analysis` | ⬜ |
 | 3.5 | **Miniature** generate in background e salvate in `.printpicker/thumbs/` | `feat(ui): thumbnail cache` | ⬜ |
 | 3.6 | **Vista gruppo**: griglia, click e Ctrl/Cmd+click, conferma → copia → gruppo successivo | `feat(ui): group view with selection and confirm` | ⬜ |

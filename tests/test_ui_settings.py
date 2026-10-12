@@ -26,3 +26,14 @@ def test_format_money():
     assert format_money(Decimal("10.2"), "EUR", it).replace("\xa0", " ") == "10,20 €"
     us = QLocale(QLocale.Language.English, QLocale.Country.UnitedStates)
     assert format_money(Decimal("10.2"), "EUR", us) == "€10.20"
+
+
+def test_settings_dialog_changes_base_dir(qtbot, tmp_path):
+    from printpicker.ui.settings_dialog import SettingsDialog
+
+    s = AppSettings(QSettings(str(tmp_path / "s.ini"), QSettings.Format.IniFormat))
+    dialog = SettingsDialog(s)
+    qtbot.addWidget(dialog)
+    dialog.base_dir_edit.setText(str(tmp_path / "Stampe"))
+    dialog.accept()
+    assert s.base_dir == tmp_path / "Stampe"

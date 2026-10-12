@@ -27,6 +27,7 @@ from printpicker.selection import (
     list_selections,
 )
 from printpicker.ui.settings import AppSettings
+from printpicker.ui.settings_dialog import SettingsDialog
 
 PATH_ROLE = Qt.ItemDataRole.UserRole
 
@@ -79,8 +80,12 @@ class StartScreen(QWidget):
         self.delete_button = QPushButton(self.tr("Delete…"))
         self.delete_button.clicked.connect(self.delete_selection)
 
+        self.settings_button = QPushButton(self.tr("Settings…"))
+        self.settings_button.clicked.connect(self.open_settings)
+
         buttons = QHBoxLayout()
         buttons.addWidget(self.new_button)
+        buttons.addWidget(self.settings_button)
         buttons.addStretch()
         buttons.addWidget(self.delete_button)
         buttons.addWidget(self.open_button)
@@ -149,6 +154,10 @@ class StartScreen(QWidget):
             message = self.tr("Could not create the selection: %1").replace("%1", str(exc))
         QMessageBox.warning(self, self.tr("New selection"), message)
         return None
+
+    def open_settings(self) -> None:
+        if SettingsDialog(self.settings, self).exec():
+            self.refresh()
 
     def delete_selection(self) -> None:
         path = self.selected_path()

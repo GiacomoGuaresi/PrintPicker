@@ -97,3 +97,21 @@ def test_best_cell_size():
     assert best_cell_size(3, 1200, 700) == 400
     assert best_cell_size(4, 800, 800) == 400
     assert best_cell_size(500, 800, 600) == MIN_CELL
+
+
+def test_go_back_and_change_choice(qtbot, session, photos):
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    assert not session.previous_button.isEnabled()
+    pick(session, 0, 1)
+    session.confirm_button.click()
+    assert exported(session) == ["Foto - a1.jpg", "Foto - a2.jpg"]
+    assert session.previous_button.isEnabled()
+
+    session.previous_button.click()
+    assert session.index == 0
+    assert session.group_view.picked() == {"a1.jpg", "a2.jpg"}  # previous choice restored
+    pick(session, 0)
+    session.confirm_button.click()
+    assert exported(session) == ["Foto - a1.jpg"]
+    assert session.index == 1

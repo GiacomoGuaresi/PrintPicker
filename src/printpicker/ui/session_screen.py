@@ -213,7 +213,12 @@ class SessionScreen(QWidget):
         self.confirm_button.setDefault(True)
         self.confirm_button.clicked.connect(self.confirm_group)
 
+        self.previous_button = QPushButton(self.tr("← Previous group"))
+        self.previous_button.clicked.connect(self.previous_group)
+
         bottom = QHBoxLayout()
+        bottom.addWidget(self.previous_button)
+        bottom.addSpacing(24)
         bottom.addWidget(self.picked_label)
         bottom.addSpacing(24)
         bottom.addWidget(self.total_label)
@@ -252,6 +257,7 @@ class SessionScreen(QWidget):
         )
         picked = self.selection.selected_photos(self.source)
         self.group_view.set_photos(list(group.photos), self._paths_for, picked)
+        self.previous_button.setEnabled(index > 0)
         self.pages.setCurrentWidget(self.groups_page)
         self.group_view.setFocus()
 
@@ -271,6 +277,11 @@ class SessionScreen(QWidget):
             return
         QApplication.restoreOverrideCursor()
         self.show_group(self.index + 1)
+
+    def previous_group(self) -> None:
+        """Go back without saving the current group; its previous choice is kept."""
+        if self.index > 0:
+            self.show_group(min(self.index, len(self.groups)) - 1)
 
     def _update_counters(self) -> None:
         self.picked_label.setText(

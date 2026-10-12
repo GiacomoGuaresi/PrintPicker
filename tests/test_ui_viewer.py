@@ -201,3 +201,17 @@ def test_no_filmstrip_for_a_single_photo(qtbot, tmp_path):
     qtbot.addWidget(viewer)
     viewer.show()
     assert not viewer.filmstrip.isVisible()
+
+
+def test_overlays_stay_put_when_the_photo_scrolls(qtbot, tmp_path):
+    viewer = make_viewer(qtbot, tmp_path, picked={"a.jpg"})
+    viewer.resize(400, 300)
+    qtbot.waitUntil(lambda: viewer.full_image is not None, timeout=5000)
+    viewport = viewer.view.viewport()
+    viewer.view.actual_size()
+    before = {w: w.geometry() for w in (viewer.picked_overlay, viewer.close_button)}
+    viewer.view.horizontalScrollBar().setValue(viewer.view.horizontalScrollBar().value() + 80)
+    viewer.view.verticalScrollBar().setValue(viewer.view.verticalScrollBar().value() + 50)
+    for widget, geometry in before.items():
+        assert widget.geometry() == geometry
+    assert viewer.picked_overlay.geometry() == viewport.geometry()

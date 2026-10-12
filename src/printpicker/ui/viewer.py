@@ -229,15 +229,17 @@ class PickedOverlay(QWidget):
     MARGIN = 18
 
     def __init__(self, view: QGraphicsView) -> None:
-        super().__init__(view.viewport())
+        # A child of the view, not of its viewport: scrolling the photo moves the viewport's
+        # children along with it.
+        super().__init__(view)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.text = ""
         view.viewport().installEventFilter(self)
         self.hide()
 
     def eventFilter(self, watched, event) -> bool:
-        if event.type() == event.Type.Resize:
-            self.setGeometry(watched.rect())
+        if event.type() in (event.Type.Resize, event.Type.Move):
+            self.setGeometry(watched.geometry())
         return False
 
     def badge_rect(self) -> QRect:
@@ -482,7 +484,7 @@ class PhotoViewer(QDialog):
         self._hide_timer.start()
 
     def _overlay_button(self, text: str, tip: str, size: int) -> QToolButton:
-        button = QToolButton(self.view.viewport())
+        button = QToolButton(self.view)  # not on the viewport, which scrolls its children
         button.setText(text)
         button.setToolTip(tip)
         button.setFixedSize(size, size)
@@ -503,19 +505,19 @@ class PhotoViewer(QDialog):
 
     def eventFilter(self, watched, event) -> bool:
         if watched is self.view.viewport():
-            if event.type() == QEvent.Type.Resize:
+            if event.type() in (QEvent.Type.Resize, QEvent.Type.Move):
                 self._place_controls()
             elif event.type() in (QEvent.Type.MouseMove, QEvent.Type.MouseButtonPress):
                 self._show_controls()
         return super().eventFilter(watched, event)
 
     def _place_controls(self) -> None:
-        rect = self.view.viewport().rect()
+        rect = self.view.viewport().geometry()
         margin = 18
         y = rect.center().y() - self.prev_button.height() // 2
-        self.prev_button.move(margin, y)
+        self.prev_button.move(rect.left() + margin, y)
         self.next_button.move(rect.right() - margin - self.next_button.width(), y)
-        self.close_button.move(margin, margin)
+        self.close_button.move(rect.left() + margin, rect.top() + margin)
 
     def _show_controls(self) -> None:
         if not self.controls_visible:

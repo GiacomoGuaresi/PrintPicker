@@ -11,16 +11,19 @@ from printpicker.selection.store import (
     list_selections,
     validate_name,
 )
+from printpicker.selection.summary import SelectionSummary, summarize
 
 __all__ = [
     "DATA_DIR",
     "InvalidSelectionError",
     "Selection",
     "SelectionExistsError",
+    "SelectionSummary",
     "Source",
     "SourceExistsError",
     "default_selection_name",
     "is_selection",
     "list_selections",
+    "summarize",
     "validate_name",
 ]

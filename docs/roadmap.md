@@ -107,6 +107,15 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 7.4b | **Screenshot** nel README (servono foto pubblicabili) | `docs: screenshots` | ⬜ |
 | 7.5 | Prova manuale completa e tag `v1.0.0` → prima release pubblica | `chore: release 1.0.0` | ⬜ |
 
+## M8 — UI/UX
+
+| # | Step | Commit | Stato |
+|---|---|---|---|
+| 8.1 | **Riepilogo selezione** (n° foto, origini, ultima modifica, copertina) senza Qt | `feat(selection): selection summary` | ✅ |
+| 8.2 | **Home a schede**: griglia con copertina, foto, costo, ultima modifica; scheda "Nuova selezione"; stato vuoto | `feat(ui): selection cards on start screen` | ⬜ |
+| 8.3 | **Menu ⋯ sulla scheda** e tasto destro: apri, apri cartella, rinomina, elimina; F2 / Canc | `feat(ui): card actions menu` | ⬜ |
+| 8.4 | Traduzioni e documentazione della nuova home | `docs: start screen cards` | ⬜ |
+
 ---
 
 ## Dopo la v1.0 (idee)

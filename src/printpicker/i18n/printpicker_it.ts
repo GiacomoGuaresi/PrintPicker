@@ -44,42 +44,42 @@ Verrà ritagliata per la stampa 10×15</translation>
 <context>
     <name>SelectionCardModel</name>
     <message>
-        <location filename="../ui/selection_cards.py" line="72" />
+        <location filename="../ui/selection_cards.py" line="74" />
         <source>New selection</source>
         <translation>Nuova selezione</translation>
     </message>
     <message>
-        <location filename="../ui/selection_cards.py" line="74" />
+        <location filename="../ui/selection_cards.py" line="76" />
         <source>Create a new print selection</source>
         <translation>Crea una nuova selezione per la stampa</translation>
     </message>
     <message>
-        <location filename="../ui/selection_cards.py" line="93" />
+        <location filename="../ui/selection_cards.py" line="95" />
         <source>No photos yet</source>
         <translation>Ancora nessuna foto</translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/selection_cards.py" line="94" />
+        <location filename="../ui/selection_cards.py" line="96" />
         <source>%n photo(s)</source>
         <translation><numerusform>%n foto</numerusform><numerusform>%n foto</numerusform></translation>
     </message>
     <message>
-        <location filename="../ui/selection_cards.py" line="105" />
+        <location filename="../ui/selection_cards.py" line="107" />
         <source>Updated today</source>
         <translation>Modificata oggi</translation>
     </message>
     <message>
-        <location filename="../ui/selection_cards.py" line="107" />
+        <location filename="../ui/selection_cards.py" line="109" />
         <source>Updated yesterday</source>
         <translation>Modificata ieri</translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/selection_cards.py" line="109" />
+        <location filename="../ui/selection_cards.py" line="111" />
         <source>Updated %n day(s) ago</source>
         <translation><numerusform>Modificata %n giorno fa</numerusform><numerusform>Modificata %n giorni fa</numerusform></translation>
     </message>
     <message>
-        <location filename="../ui/selection_cards.py" line="112" />
+        <location filename="../ui/selection_cards.py" line="114" />
         <source>Updated on %1</source>
         <translation>Modificata il %1</translation>
     </message>
@@ -402,59 +402,97 @@ Collega il disco e premi Riprova, oppure indica dove si trova ora la cartella.</
     <name>StartScreen</name>
     <message>
         <location filename="../ui/selftest.py" line="46" />
-        <location filename="../ui/start_screen.py" line="54" />
+        <location filename="../ui/start_screen.py" line="56" />
         <source>Settings…</source>
         <translation>Impostazioni…</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="67" />
+        <location filename="../ui/start_screen.py" line="69" />
         <source>&lt;b&gt;Welcome!&lt;/b&gt; A print selection is a folder on your computer where the photos you choose from your archive are copied, ready to be sent to print. Create your first one to start.</source>
         <translation>&lt;b&gt;Benvenuto!&lt;/b&gt; Una selezione per la stampa è una cartella sul tuo computer in cui vengono copiate le foto che scegli dal tuo archivio, pronte da mandare in stampa. Crea la prima per iniziare.</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="89" />
+        <location filename="../ui/start_screen.py" line="94" />
         <source>Selections in %1</source>
         <translation>Selezioni in %1</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="118" />
+        <location filename="../ui/start_screen.py" line="124" />
+        <source>Open folder</source>
+        <translation>Apri cartella</translation>
+    </message>
+    <message>
+        <location filename="../ui/start_screen.py" line="169" />
         <source>Print</source>
         <translation>Stampa</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="121" />
-        <location filename="../ui/start_screen.py" line="143" />
+        <location filename="../ui/start_screen.py" line="172" />
+        <location filename="../ui/start_screen.py" line="194" />
         <source>New selection</source>
         <translation>Nuova selezione</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="121" />
+        <location filename="../ui/start_screen.py" line="172" />
         <source>Name of the selection:</source>
         <translation>Nome della selezione:</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="138" />
+        <location filename="../ui/start_screen.py" line="155" />
+        <location filename="../ui/start_screen.py" line="189" />
         <source>A selection with this name already exists.</source>
         <translation>Esiste già una selezione con questo nome.</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="140" />
+        <location filename="../ui/start_screen.py" line="123" />
+        <source>Open</source>
+        <translation>Apri</translation>
+    </message>
+    <message>
+        <location filename="../ui/start_screen.py" line="126" />
+        <source>Rename…</source>
+        <translation>Rinomina…</translation>
+    </message>
+    <message>
+        <location filename="../ui/start_screen.py" line="127" />
+        <source>Delete…</source>
+        <translation>Elimina…</translation>
+    </message>
+    <message>
+        <location filename="../ui/start_screen.py" line="148" />
+        <location filename="../ui/start_screen.py" line="163" />
+        <source>Rename selection</source>
+        <translation>Rinomina selezione</translation>
+    </message>
+    <message>
+        <location filename="../ui/start_screen.py" line="148" />
+        <source>New name:</source>
+        <translation>Nuovo nome:</translation>
+    </message>
+    <message>
+        <location filename="../ui/start_screen.py" line="157" />
+        <location filename="../ui/start_screen.py" line="191" />
         <source>This name cannot be used for a folder.</source>
         <translation>Questo nome non può essere usato per una cartella.</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="142" />
+        <location filename="../ui/start_screen.py" line="159" />
+        <source>Could not rename the selection: %1</source>
+        <translation>Impossibile rinominare la selezione: %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/start_screen.py" line="193" />
         <source>Could not create the selection: %1</source>
         <translation>Impossibile creare la selezione: %1</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="156" />
-        <location filename="../ui/start_screen.py" line="169" />
+        <location filename="../ui/start_screen.py" line="207" />
+        <location filename="../ui/start_screen.py" line="220" />
         <source>Delete selection</source>
         <translation>Elimina selezione</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="158" />
+        <location filename="../ui/start_screen.py" line="209" />
         <source>Move the selection “%1” and the photos it contains to the trash?
 
 The original photos in your archive are not touched.</source>
@@ -463,7 +501,7 @@ The original photos in your archive are not touched.</source>
 Le foto originali del tuo archivio non vengono toccate.</translation>
     </message>
     <message>
-        <location filename="../ui/start_screen.py" line="170" />
+        <location filename="../ui/start_screen.py" line="221" />
         <source>Could not move “%1” to the trash.</source>
         <translation>Impossibile spostare “%1” nel Cestino.</translation>
     </message>

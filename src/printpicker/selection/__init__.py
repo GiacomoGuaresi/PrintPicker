@@ -9,6 +9,7 @@ from printpicker.selection.store import (
     default_selection_name,
     is_selection,
     list_selections,
+    rename_selection,
     validate_name,
 )
 from printpicker.selection.summary import SelectionSummary, summarize
@@ -24,6 +25,7 @@ __all__ = [
     "default_selection_name",
     "is_selection",
     "list_selections",
+    "rename_selection",
     "summarize",
     "validate_name",
 ]

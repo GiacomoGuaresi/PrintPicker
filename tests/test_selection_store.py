@@ -11,6 +11,7 @@ from printpicker.selection import (
     default_selection_name,
     is_selection,
     list_selections,
+    rename_selection,
     validate_name,
 )
 from printpicker.selection.schema import SCHEMA_VERSION, SchemaTooNewError
@@ -79,3 +80,17 @@ def test_newer_schema_is_rejected(tmp_path):
     conn.close()
     with pytest.raises(SchemaTooNewError):
         Selection.open(tmp_path / "S")
+
+
+def test_rename_selection(tmp_path):
+    Selection.create(tmp_path, "Old").close()
+    Selection.create(tmp_path, "Other").close()
+    new = rename_selection(tmp_path / "Old", " New ")
+    assert new == tmp_path / "New" and is_selection(new)
+    assert not (tmp_path / "Old").exists()
+    assert rename_selection(new, "new") == tmp_path / "new"  # case-only rename
+    assert rename_selection(tmp_path / "new", "new") == tmp_path / "new"
+    with pytest.raises(SelectionExistsError):
+        rename_selection(tmp_path / "new", "Other")
+    with pytest.raises(InvalidSelectionError):
+        rename_selection(tmp_path / "new", "a/b")

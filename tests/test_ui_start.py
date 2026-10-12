@@ -149,3 +149,68 @@ def test_cover_tiles_stay_inside(count):
     tiles = cover_tiles(rect, count)
     assert len(tiles) == count
     assert all(rect.contains(t) for t in tiles)
+
+
+@pytest.mark.parametrize(
+    ("answer", "expected"), [("Nuovo", "Nuovo"), ("Other", "A"), ("a/b", "A"), (None, "A")]
+)
+def test_rename_selection(settings, screen_for, monkeypatch, answer, expected):
+    from PySide6.QtWidgets import QInputDialog, QMessageBox
+
+    settings.base_dir.mkdir()
+    for name in ["Other", "A"]:
+        Selection.create(settings.base_dir, name).close()
+    screen = screen_for()
+    screen.cards.setCurrentIndex(
+        screen.cards.model().index(2 if screen.selected_path().name == "Other" else 1)
+    )
+    assert screen.selected_path().name == "A"
+    answers = iter([(answer, True), (None, False)] if answer else [(None, False)])
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: next(answers))
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a: warnings.append(a))
+    screen.rename_selection()
+    assert (settings.base_dir / expected).is_dir()
+    assert bool(warnings) is (answer in ("Other", "a/b"))
+    if expected == "Nuovo":
+        assert screen.selected_path() == settings.base_dir / "Nuovo"
+
+
+def test_keys_and_menu(qtbot, settings, screen_for, monkeypatch):
+    from PySide6.QtCore import QPoint, Qt
+
+    settings.base_dir.mkdir()
+    Selection.create(settings.base_dir, "A").close()
+    screen = screen_for()
+    calls = []
+    monkeypatch.setattr(screen, "rename_selection", lambda: calls.append("rename"))
+    monkeypatch.setattr(screen, "delete_selection", lambda: calls.append("delete"))
+    screen.cards.rename_requested.disconnect()
+    screen.cards.delete_requested.disconnect()
+    screen.cards.rename_requested.connect(lambda _i: screen.rename_selection())
+    screen.cards.delete_requested.connect(lambda _i: screen.delete_selection())
+    qtbot.keyClick(screen.cards, Qt.Key.Key_F2)
+    qtbot.keyClick(screen.cards, Qt.Key.Key_Delete)
+    assert calls == ["rename", "delete"]
+    labels = [a.text() for a in screen.menu_actions().actions() if not a.isSeparator()]
+    assert labels == ["Open", "Open folder", "Rename…", "Delete…"]
+
+    monkeypatch.setattr(screen, "show_menu", lambda *a: calls.append("menu"))
+    screen.cards.menu_requested.disconnect()
+    screen.cards.menu_requested.connect(lambda *a: screen.show_menu(*a))
+    screen.resize(1000, 700)
+    screen.show()
+    index = screen.cards.model().index(1)
+    with qtbot.waitSignal(screen.cards.menu_requested):
+        qtbot.mouseClick(
+            screen.cards.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=screen.cards.menu_button_rect(index).center(),
+        )
+    assert calls[-1] == "menu"
+    with qtbot.waitSignal(screen.selection_opened):
+        qtbot.mouseClick(
+            screen.cards.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=screen.cards.visualRect(index).center() + QPoint(0, 20),
+        )

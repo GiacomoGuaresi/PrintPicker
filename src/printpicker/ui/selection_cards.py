@@ -8,6 +8,7 @@ from PySide6.QtCore import (
     QAbstractListModel,
     QLocale,
     QModelIndex,
+    QPoint,
     QRect,
     QRectF,
     QSize,
@@ -27,6 +28,7 @@ MIN_CARD = 200
 MAX_CARD = 280
 TEXT_HEIGHT = 74
 RADIUS = 10
+MENU_SIZE = 30
 
 SUMMARY_ROLE = Qt.ItemDataRole.UserRole
 COVER_ROLE = Qt.ItemDataRole.UserRole + 1
@@ -118,6 +120,17 @@ class SelectionCardModel(QAbstractListModel):
                 self.dataChanged.emit(index, index, [COVER_ROLE])
 
 
+def card_rect(cell: QRect, size: QSize) -> QRect:
+    card = QRect(cell.topLeft(), size)
+    card.moveCenter(cell.center())
+    return card
+
+
+def menu_rect(card: QRect) -> QRect:
+    """The "⋯" button in the top-right corner of a card."""
+    return QRect(card.right() - 8 - MENU_SIZE, card.top() + 8, MENU_SIZE, MENU_SIZE)
+
+
 def cover_tiles(rect: QRect, count: int) -> list[QRect]:
     """Layout of the cover mosaic: 1 full, 2 side by side, 3 one big + two, 4 a 2×2 grid."""
     gap = 2
@@ -169,8 +182,7 @@ class SelectionCardDelegate(QStyledItemDelegate):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         palette = option.palette
-        card = QRect(option.rect.topLeft(), self.sizeHint(option, index))
-        card.moveCenter(option.rect.center())
+        card = card_rect(option.rect, self.sizeHint(option, index))
         hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
         current = bool(option.state & QStyle.StateFlag.State_HasFocus) and self.view.hasFocus()
         accent = palette.color(QPalette.ColorRole.Highlight)
@@ -183,7 +195,17 @@ class SelectionCardDelegate(QStyledItemDelegate):
                 painter.setPen(QPen(accent, 3 if current else 2))
                 painter.setBrush(Qt.BrushStyle.NoBrush)
                 painter.drawRoundedRect(QRectF(card).adjusted(1, 1, -1, -1), RADIUS, RADIUS)
+                self._paint_menu_button(painter, menu_rect(card))
         painter.restore()
+
+    def _paint_menu_button(self, painter: QPainter, rect: QRect) -> None:
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QColor(0, 0, 0, 150))
+        painter.drawEllipse(rect)
+        painter.setBrush(QColor("white"))
+        center = rect.center()
+        for dx in (-7, 0, 7):
+            painter.drawEllipse(center + QPoint(dx, 1), 2, 2)
 
     def _paint_new(self, painter, card: QRect, palette, active: bool, accent: QColor) -> None:
         color = accent if active else palette.color(QPalette.ColorRole.PlaceholderText)
@@ -254,9 +276,14 @@ class SelectionCardDelegate(QStyledItemDelegate):
 
 
 class SelectionCardView(QListView):
-    """Click or Enter on a card asks to open it (``open_requested``)."""
+    """Click or Enter on a card asks to open it (``open_requested``); the "⋯" button, right
+    click and the menu key ask for its actions (``menu_requested``); F2 and Delete ask to
+    rename or delete the current selection."""
 
     open_requested = Signal(QModelIndex)
+    menu_requested = Signal(QModelIndex, QPoint)
+    rename_requested = Signal(QModelIndex)
+    delete_requested = Signal(QModelIndex)
 
     def __init__(self, loader: ThumbnailLoader, parent=None) -> None:
         super().__init__(parent)
@@ -281,17 +308,52 @@ class SelectionCardView(QListView):
     def new_label(self) -> str:
         return self.card_model.data(self.card_model.index(0))
 
+    def is_selection_card(self, index: QModelIndex) -> bool:
+        return index.isValid() and index.row() > 0
+
+    def menu_button_rect(self, index: QModelIndex) -> QRect:
+        return menu_rect(
+            card_rect(self.visualRect(index), self.gridSize() - QSize(SPACING, SPACING))
+        )
+
     def keyPressEvent(self, event) -> None:
-        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and self.currentIndex().isValid():
-            self.open_requested.emit(self.currentIndex())
+        index = self.currentIndex()
+        key = event.key()
+        if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and index.isValid():
+            self.open_requested.emit(index)
             return
+        if self.is_selection_card(index):
+            if key == Qt.Key.Key_F2:
+                self.rename_requested.emit(index)
+                return
+            if key in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
+                self.delete_requested.emit(index)
+                return
         super().keyPressEvent(event)
 
     def mouseReleaseEvent(self, event) -> None:
-        index = self.indexAt(event.position().toPoint())
+        pos = event.position().toPoint()
+        index = self.indexAt(pos)
         super().mouseReleaseEvent(event)
-        if event.button() == Qt.MouseButton.LeftButton and index.isValid():
+        if event.button() != Qt.MouseButton.LeftButton or not index.isValid():
+            return
+        if self.is_selection_card(index) and self.menu_button_rect(index).contains(pos):
+            self.setCurrentIndex(index)
+            corner = self.menu_button_rect(index).bottomLeft()
+            self.menu_requested.emit(index, self.viewport().mapToGlobal(corner))
+        else:
             self.open_requested.emit(index)
+
+    def contextMenuEvent(self, event) -> None:
+        index = self.indexAt(event.pos()) if event.reason() == event.Reason.Mouse else None
+        if index is None:
+            index = self.currentIndex()
+            pos = self.viewport().mapToGlobal(self.visualRect(index).center())
+        else:
+            pos = event.globalPos()
+        if self.is_selection_card(index):
+            self.setCurrentIndex(index)
+            self.menu_requested.emit(index, pos)
 
     def mouseDoubleClickEvent(self, event) -> None:
         # The first click already opened the card.

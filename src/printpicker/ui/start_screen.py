@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import QFile, QModelIndex, Qt, Signal
-from PySide6.QtGui import QPalette
+from PySide6.QtCore import QFile, QModelIndex, QPoint, Qt, QUrl, Signal
+from PySide6.QtGui import QDesktopServices, QPalette
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QInputDialog,
     QLabel,
+    QMenu,
     QMessageBox,
     QPushButton,
     QVBoxLayout,
@@ -22,6 +23,7 @@ from printpicker.selection import (
     SelectionExistsError,
     default_selection_name,
     list_selections,
+    rename_selection,
     summarize,
 )
 from printpicker.ui.selection_cards import SelectionCardView
@@ -74,6 +76,9 @@ class StartScreen(QWidget):
         self.loader = ThumbnailLoader(self)
         self.cards = SelectionCardView(self.loader)
         self.cards.open_requested.connect(self._open_index)
+        self.cards.menu_requested.connect(self.show_menu)
+        self.cards.rename_requested.connect(lambda _index: self.rename_selection())
+        self.cards.delete_requested.connect(lambda _index: self.delete_selection())
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(40, 28, 40, 20)
@@ -84,7 +89,7 @@ class StartScreen(QWidget):
 
         self.refresh()
 
-    def refresh(self) -> None:
+    def refresh(self, current: Path | None = None) -> None:
         base = self.settings.base_dir
         self.location.setText(self.tr("Selections in %1").replace("%1", str(base)))
         self.loader.reset()
@@ -94,7 +99,9 @@ class StartScreen(QWidget):
         self.cards.card_model.set_summaries(summaries, self.settings.price_list)
         self.welcome.setVisible(not summaries)
         model = self.cards.card_model
-        self.cards.setCurrentIndex(model.index(1 if summaries else 0))
+        rows = [s.folder for s in summaries]
+        row = rows.index(current) + 1 if current in rows else (1 if summaries else 0)
+        self.cards.setCurrentIndex(model.index(row))
         self.cards.setFocus()
 
     def selection_count(self) -> int:
@@ -110,6 +117,50 @@ class StartScreen(QWidget):
             self.new_selection()
         else:
             self.selection_opened.emit(summary.folder)
+
+    def menu_actions(self) -> QMenu:
+        menu = QMenu(self)
+        menu.addAction(self.tr("Open"), self._open_current)
+        menu.addAction(self.tr("Open folder"), self.open_folder)
+        menu.addSeparator()
+        menu.addAction(self.tr("Rename…"), self.rename_selection)
+        menu.addAction(self.tr("Delete…"), self.delete_selection)
+        return menu
+
+    def show_menu(self, _index: QModelIndex, pos: QPoint) -> None:
+        self.menu_actions().exec(pos)
+
+    def _open_current(self) -> None:
+        self._open_index(self.cards.currentIndex())
+
+    def open_folder(self) -> None:
+        path = self.selected_path()
+        if path is not None:
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
+
+    def rename_selection(self) -> None:
+        path = self.selected_path()
+        if path is None:
+            return
+        name = path.name
+        while True:
+            name, ok = QInputDialog.getText(
+                self, self.tr("Rename selection"), self.tr("New name:"), text=name
+            )
+            if not ok:
+                return
+            try:
+                new_path = rename_selection(path, name)
+            except SelectionExistsError:
+                message = self.tr("A selection with this name already exists.")
+            except InvalidSelectionError:
+                message = self.tr("This name cannot be used for a folder.")
+            except OSError as exc:
+                message = self.tr("Could not rename the selection: %1").replace("%1", str(exc))
+            else:
+                self.refresh(current=new_path)
+                return
+            QMessageBox.warning(self, self.tr("Rename selection"), message)
 
     def shutdown(self) -> None:
         self.loader.shutdown()

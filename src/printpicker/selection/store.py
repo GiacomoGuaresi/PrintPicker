@@ -66,6 +66,18 @@ def list_selections(base_dir: Path) -> list[Path]:
     return sorted(entries, key=lambda p: natural_key(p.name))
 
 
+def rename_selection(folder: Path, new_name: str) -> Path:
+    """Rename a selection folder; sources are absolute paths, so nothing else changes."""
+    folder = Path(folder)
+    target = folder.with_name(validate_name(new_name))
+    if target == folder:
+        return folder
+    # A case-only rename finds the folder itself on case-insensitive file systems.
+    if target.exists() and not (folder.exists() and target.samefile(folder)):
+        raise SelectionExistsError(str(target))
+    return folder.rename(target)
+
+
 def _hide(path: Path) -> None:
     """Dot-folders are hidden on macOS/Linux; Windows needs the hidden attribute."""
     if sys.platform == "win32":

@@ -31,6 +31,16 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
         "← → sfoglia · Spazio scegli · +/− zoom · 0 adatta · 1 100% · R ruota · C ritaglio · Esc"
     ),
     "Picked": "Scelta",
+    "Previous photo (←)": "Foto precedente (←)",
+    "Next photo (→)": "Foto successiva (→)",
+    "Close (Esc)": "Chiudi (Esc)",
+    "Pick": "Scegli",
+    "Pick (Space)": "Scegli (Spazio)",
+    "Zoom out (−)": "Riduci (−)",
+    "Fit": "Adatta",
+    "Fit to screen (0)": "Adatta allo schermo (0)",
+    "Zoom in (+)": "Ingrandisci (+)",
+    "Rotate (R)": "Ruota (R)",
     "will be cropped to 10×15": "verrà ritagliata per il 10×15",
     # Session
     "← Selections": "← Selezioni",

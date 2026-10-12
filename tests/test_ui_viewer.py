@@ -144,3 +144,34 @@ def test_double_click_toggles_fit_and_actual_size(qtbot, tmp_path):
     assert not view.fitted and abs(view.zoom() - 1.0) < 0.01
     qtbot.mouseDClick(view.viewport(), Qt.MouseButton.LeftButton, pos=center)
     assert view.fitted
+
+
+def test_mouse_controls(qtbot, tmp_path):
+    viewer = make_viewer(qtbot, tmp_path)
+    viewer.resize(800, 600)
+    assert not viewer.prev_button.isVisible() and viewer.next_button.isVisible()  # first photo
+    qtbot.mouseClick(viewer.next_button, Qt.MouseButton.LeftButton)
+    assert viewer.row == 1
+    assert viewer.prev_button.isVisible() and not viewer.next_button.isVisible()  # last photo
+    toggled = []
+    viewer.toggled.connect(toggled.append)
+    qtbot.mouseClick(viewer.pick_button, Qt.MouseButton.LeftButton)
+    assert toggled == [1] and viewer.pick_button.isChecked()
+    assert viewer.picked_overlay.isVisible()
+    qtbot.keyClick(viewer, Qt.Key.Key_Space)  # the keyboard still works after a click
+    assert toggled == [1, 1] and not viewer.pick_button.isChecked()
+    with qtbot.waitSignal(viewer.finished, timeout=2000):
+        qtbot.mouseClick(viewer.close_button, Qt.MouseButton.LeftButton)
+
+
+def test_controls_hide_with_the_cursor(qtbot, tmp_path):
+    viewer = make_viewer(qtbot, tmp_path)
+    viewport = viewer.view.viewport()
+    viewer._hide_controls()
+    assert not viewer.close_button.isVisible() and not viewer.next_button.isVisible()
+    assert viewport.cursor().shape() == Qt.CursorShape.BlankCursor
+    qtbot.mouseMove(viewport, viewport.rect().center())
+    qtbot.waitUntil(viewer.close_button.isVisible, timeout=2000)
+    assert viewer.next_button.isVisible() and not viewer.prev_button.isVisible()
+    assert viewport.cursor().shape() != Qt.CursorShape.BlankCursor
+    assert viewer._hide_timer.isActive()

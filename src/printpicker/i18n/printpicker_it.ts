@@ -21,22 +21,72 @@ Verrà ritagliata per la stampa 10×15</translation>
 <context>
     <name>PhotoViewer</name>
     <message>
-        <location filename="../ui/viewer.py" line="247" />
+        <location filename="../ui/viewer.py" line="271" />
         <source>Preview</source>
         <translation>Anteprima</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="266" />
+        <location filename="../ui/viewer.py" line="290" />
         <source>Picked</source>
         <translation>Scelta</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="270" />
+        <location filename="../ui/viewer.py" line="294" />
         <source>← → browse · Space pick · +/− zoom · 0 fit · 1 100% · R rotate · C crop · Esc</source>
         <translation>← → sfoglia · Spazio scegli · +/− zoom · 0 adatta · 1 100% · R ruota · C ritaglio · Esc</translation>
     </message>
     <message>
-        <location filename="../ui/viewer.py" line="377" />
+        <location filename="../ui/viewer.py" line="300" />
+        <source>Previous photo (←)</source>
+        <translation>Foto precedente (←)</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="302" />
+        <source>Next photo (→)</source>
+        <translation>Foto successiva (→)</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="304" />
+        <source>Close (Esc)</source>
+        <translation>Chiudi (Esc)</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="312" />
+        <source>Pick</source>
+        <translation>Scegli</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="312" />
+        <source>Pick (Space)</source>
+        <translation>Scegli (Spazio)</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="315" />
+        <source>Zoom out (−)</source>
+        <translation>Riduci (−)</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="317" />
+        <source>Fit</source>
+        <translation>Adatta</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="317" />
+        <source>Fit to screen (0)</source>
+        <translation>Adatta allo schermo (0)</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="319" />
+        <source>Zoom in (+)</source>
+        <translation>Ingrandisci (+)</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="321" />
+        <source>Rotate (R)</source>
+        <translation>Ruota (R)</translation>
+    </message>
+    <message>
+        <location filename="../ui/viewer.py" line="493" />
         <source>will be cropped to 10×15</source>
         <translation>verrà ritagliata per il 10×15</translation>
     </message>

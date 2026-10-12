@@ -5,7 +5,17 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from PySide6.QtCore import QObject, QPoint, QRect, QRunnable, Qt, QThreadPool, Signal
+from PySide6.QtCore import (
+    QEvent,
+    QObject,
+    QPoint,
+    QRect,
+    QRunnable,
+    Qt,
+    QThreadPool,
+    QTimer,
+    Signal,
+)
 from PySide6.QtGui import QColor, QImage, QPainter, QPalette, QPen, QPixmap
 from PySide6.QtWidgets import (
     QDialog,
@@ -14,6 +24,7 @@ from PySide6.QtWidgets import (
     QGraphicsView,
     QHBoxLayout,
     QLabel,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -45,6 +56,19 @@ class _FullLoad(QRunnable):
 
 ZOOM_STEP = 1.25
 MAX_ZOOM = 8.0  # relative to actual pixels
+HIDE_CONTROLS_MS = 2000  # the controls over the photo hide after this much mouse stillness
+
+OVERLAY_BUTTON_STYLE = """
+QToolButton { color: white; background: rgba(0, 0, 0, 110); border: none; border-radius: %dpx;
+              font-size: %dpx; }
+QToolButton:hover { background: rgba(0, 0, 0, 170); }
+"""
+BAR_BUTTON_STYLE = """
+QToolButton { color: #ddd; background: transparent; border: none; border-radius: 4px;
+              padding: 4px 10px; font-size: 14px; }
+QToolButton:hover { background: #2a2a2a; }
+QToolButton:checked { background: palette(highlight); color: white; }
+"""
 
 
 class ImageView(QGraphicsView):
@@ -270,13 +294,47 @@ class PhotoViewer(QDialog):
             self.tr("← → browse · Space pick · +/− zoom · 0 fit · 1 100% · R rotate · C crop · Esc")
         )
         self.help.setStyleSheet("color: #888; padding: 6px;")
+
+        # Controls over the photo, hidden with the cursor while the mouse is still.
+        viewport = self.view.viewport()
+        self.prev_button = self._overlay_button("‹", self.tr("Previous photo (←)"), 56)
+        self.prev_button.clicked.connect(lambda: self.show_row(self.row - 1))
+        self.next_button = self._overlay_button("›", self.tr("Next photo (→)"), 56)
+        self.next_button.clicked.connect(lambda: self.show_row(self.row + 1))
+        self.close_button = self._overlay_button("✕", self.tr("Close (Esc)"), 40)
+        self.close_button.clicked.connect(self.accept)
+        self.controls_visible = True
+        self._hide_timer = QTimer(self, singleShot=True, interval=HIDE_CONTROLS_MS)
+        self._hide_timer.timeout.connect(self._hide_controls)
+        viewport.setMouseTracking(True)
+        viewport.installEventFilter(self)
+
+        self.pick_button = self._bar_button("✓ " + self.tr("Pick"), self.tr("Pick (Space)"))
+        self.pick_button.setCheckable(True)
+        self.pick_button.clicked.connect(self._toggle)
+        zoom_out = self._bar_button("−", self.tr("Zoom out (−)"))
+        zoom_out.clicked.connect(self.view.zoom_out)
+        fit = self._bar_button(self.tr("Fit"), self.tr("Fit to screen (0)"))
+        fit.clicked.connect(self.view.fit)
+        zoom_in = self._bar_button("+", self.tr("Zoom in (+)"))
+        zoom_in.clicked.connect(self.view.zoom_in)
+        rotate = self._bar_button("↻", self.tr("Rotate (R)"))
+        rotate.clicked.connect(lambda: self.view.rotate_by(90))
+
         bar = QHBoxLayout()
         bar.addWidget(self.caption)
         bar.addStretch()
+        bar.addWidget(self.pick_button)
+        bar.addSpacing(16)
+        for button in (zoom_out, fit, zoom_in, rotate):
+            bar.addWidget(button)
+        bar.addStretch()
         bar.addWidget(self.help)
         bar_widget = QWidget()
+        bar_widget.setObjectName("bar")
+        bar_widget.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
         bar_widget.setLayout(bar)
-        bar_widget.setStyleSheet("background: #141414;")
+        bar_widget.setStyleSheet("#bar { background: #141414; }" + BAR_BUTTON_STYLE)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -285,6 +343,64 @@ class PhotoViewer(QDialog):
         layout.addWidget(bar_widget)
 
         self.show_row(row)
+        self._hide_timer.start()
+
+    def _overlay_button(self, text: str, tip: str, size: int) -> QToolButton:
+        button = QToolButton(self.view.viewport())
+        button.setText(text)
+        button.setToolTip(tip)
+        button.setFixedSize(size, size)
+        button.setFocusPolicy(Qt.FocusPolicy.NoFocus)  # keys stay with the viewer
+        button.setCursor(Qt.CursorShape.PointingHandCursor)
+        button.setStyleSheet(OVERLAY_BUTTON_STYLE % (size // 2, size * 3 // 5))
+        return button
+
+    def _bar_button(self, text: str, tip: str) -> QToolButton:
+        button = QToolButton()
+        button.setText(text)
+        button.setToolTip(tip)
+        button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        button.setCursor(Qt.CursorShape.PointingHandCursor)
+        return button
+
+    # Overlay controls ---------------------------------------------------------------------
+
+    def eventFilter(self, watched, event) -> bool:
+        if watched is self.view.viewport():
+            if event.type() == QEvent.Type.Resize:
+                self._place_controls()
+            elif event.type() in (QEvent.Type.MouseMove, QEvent.Type.MouseButtonPress):
+                self._show_controls()
+        return super().eventFilter(watched, event)
+
+    def _place_controls(self) -> None:
+        rect = self.view.viewport().rect()
+        margin = 18
+        y = rect.center().y() - self.prev_button.height() // 2
+        self.prev_button.move(margin, y)
+        self.next_button.move(rect.right() - margin - self.next_button.width(), y)
+        self.close_button.move(margin, margin)
+
+    def _show_controls(self) -> None:
+        if not self.controls_visible:
+            self.controls_visible = True
+            self.view.viewport().setCursor(Qt.CursorShape.OpenHandCursor)
+            self._update_controls()
+        self._hide_timer.start()
+
+    def _hide_controls(self) -> None:
+        if any(b.underMouse() for b in (self.prev_button, self.next_button, self.close_button)):
+            self._hide_timer.start()  # keep them while the mouse rests on one
+            return
+        self.controls_visible = False
+        self.view.viewport().setCursor(Qt.CursorShape.BlankCursor)
+        self._update_controls()
+
+    def _update_controls(self) -> None:
+        shown = self.controls_visible
+        self.prev_button.setVisible(shown and self.row > 0)
+        self.next_button.setVisible(shown and self.row < len(self.photos) - 1)
+        self.close_button.setVisible(shown)
 
     def keyPressEvent(self, event) -> None:
         key = event.key()
@@ -371,6 +487,8 @@ class PhotoViewer(QDialog):
     def _update_caption(self) -> None:
         photo = self.photos[self.row]
         self.picked_overlay.setVisible(photo.rel_path in self.picked)
+        self.pick_button.setChecked(photo.rel_path in self.picked)
+        self._update_controls()
         mark = ""
         pixmap = self.view.item.pixmap()
         if not pixmap.isNull() and needs_crop(pixmap.width(), pixmap.height()):

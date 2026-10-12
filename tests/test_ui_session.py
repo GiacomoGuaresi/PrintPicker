@@ -85,7 +85,10 @@ def test_confirm_copies_and_advances(qtbot, session, photos):
     session.confirm_button.click()
     assert exported(session) == ["Foto - a2.jpg"]
     assert session.index == 1
-    assert "1" in session.total_label.text()
+    assert "<b>1</b>" in session.total_label.text()
+    assert "~" in session.total_label.text() and "0,35" in session.total_label.text().replace(
+        ".", ","
+    )
     session.confirm_button.click()  # nothing picked in the last group
     assert session.pages.currentWidget() is session.end_page
     assert "Photos to print: <b>1</b>" in session.end_label.text()

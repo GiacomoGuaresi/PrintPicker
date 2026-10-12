@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from PySide6.QtCore import QSettings, QStandardPaths
+
+from printpicker.core.pricing import DEFAULT_PRICE_LIST, PriceList
 
 APP_FOLDER = "PrintPicker"
 
@@ -26,3 +29,17 @@ class AppSettings:
     @base_dir.setter
     def base_dir(self, path: Path) -> None:
         self._s.setValue("selections/base_dir", str(path))
+
+    @property
+    def price_list(self) -> PriceList:
+        value = self._s.value("pricing/price_list")
+        if value:
+            try:
+                return PriceList.from_dict(json.loads(value))
+            except (ValueError, KeyError, TypeError, ArithmeticError):
+                pass  # corrupted or from an incompatible version: fall back to the default
+        return DEFAULT_PRICE_LIST
+
+    @price_list.setter
+    def price_list(self, price_list: PriceList) -> None:
+        self._s.setValue("pricing/price_list", json.dumps(price_list.to_dict()))

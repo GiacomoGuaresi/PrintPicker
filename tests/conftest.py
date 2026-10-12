@@ -14,3 +14,14 @@ def photo(tmp_path):
         return make_photo(tmp_path / name, **kwargs)
 
     return factory
+
+
+@pytest.fixture(autouse=True)
+def isolated_settings(tmp_path_factory):
+    """Keep QSettings (base folder, price list) away from the user's real configuration."""
+    from PySide6.QtCore import QSettings
+
+    path = tmp_path_factory.mktemp("settings")
+    QSettings.setDefaultFormat(QSettings.Format.IniFormat)
+    QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, str(path))
+    yield

@@ -31,7 +31,7 @@ class MainWindow(QMainWindow):
     def open_selection(self, folder: Path) -> None:
         self.current_selection = folder
         self.setWindowTitle(f"{folder.name} — {APP_NAME}")
-        self.session = SessionScreen(folder)
+        self.session = SessionScreen(folder, self.settings)
         self.session.closed.connect(self.show_start)
         self.stack.addWidget(self.session)
         self.stack.setCurrentWidget(self.session)

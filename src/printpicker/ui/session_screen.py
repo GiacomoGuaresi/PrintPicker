@@ -27,6 +27,8 @@ from printpicker.core.scanner import PhotoFile
 from printpicker.selection import Selection, Source, SourceExistsError
 from printpicker.selection.choices import first_unseen_group
 from printpicker.ui.group_view import GroupView
+from printpicker.ui.money import format_money
+from printpicker.ui.settings import AppSettings
 from printpicker.ui.thumbnails import ThumbnailLoader
 from printpicker.ui.viewer import PhotoViewer
 from printpicker.ui.workers import AnalysisThread
@@ -48,8 +50,11 @@ def _centered(*widgets: QWidget) -> QWidget:
 class SessionScreen(QWidget):
     closed = Signal()
 
-    def __init__(self, folder: Path, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, folder: Path, settings: AppSettings | None = None, parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
+        self.settings = settings or AppSettings()
         self.selection = Selection.open(folder)
         self.source: Source | None = None
         self.items: list[tuple[PhotoFile, int | None]] = []
@@ -349,9 +354,19 @@ class SessionScreen(QWidget):
         self.pages.setCurrentWidget(self.end_page)
 
     def summary_text(self) -> str:
-        return self.tr("Photos to print: <b>%1</b>").replace(
-            "%1", str(self.selection.selected_count())
+        """Photos in the selection and their estimated cost, e.g. "34 photos · ~10,20 €"."""
+        count = self.selection.exported_count()
+        price_list = self.settings.price_list
+        estimate = price_list.estimate(count)
+        text = self.tr("Photos to print: <b>%1</b>").replace("%1", str(count))
+        if count:
+            text += " · ~" + format_money(estimate.total, price_list.currency)
+        self.total_label.setToolTip(
+            self.tr("Estimate with “%1”: %2 per photo")
+            .replace("%1", price_list.name)
+            .replace("%2", format_money(estimate.unit_price, price_list.currency))
         )
+        return text
 
     def open_folder(self) -> None:
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.selection.folder)))
@@ -407,9 +422,7 @@ class SessionScreen(QWidget):
         self.picked_label.setText(
             self.tr("Selected in this group: %1").replace("%1", str(len(self.group_view.picked())))
         )
-        self.total_label.setText(
-            self.tr("Photos to print: %1").replace("%1", str(self.selection.selected_count()))
-        )
+        self.total_label.setText(self.summary_text())
 
     # Lifecycle ---------------------------------------------------------------------------
 

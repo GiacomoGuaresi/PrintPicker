@@ -10,5 +10,6 @@ Specifiche funzionali e tecniche del progetto, in evoluzione.
 | [Copia ed export](export.md) | Come vengono nominati, copiati e convertiti i file |
 | [Anteprima costi di stampa](cost-estimate.md) | Listino a scaglioni e stima del costo |
 | [Architettura](architecture.md) | Stack tecnologico e scelte di implementazione |
+| [Roadmap](roadmap.md) | Piano di sviluppo incrementale, step per step |
 | [Sviluppo e test](development.md) | Dati di test e ambiente di sviluppo |
 | [Domande aperte](open-questions.md) | Punti ancora da decidere |

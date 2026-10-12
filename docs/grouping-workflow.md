@@ -21,6 +21,7 @@ Flusso principale dell'app.
 - **Ordine**: per cartella, poi per nome file (alfabetico, come in Finder / Esplora risorse).
 - **Formati supportati**: JPG, PNG, HEIC, RAW (CR2, NEF, ARW, DNG, …), TIFF, WebP.
 - **Video ignorati** (`.mp4`, `.mov`, …).
+- **Foto identiche in cartelle diverse** (es. backup doppi): nessuna logica speciale, compaiono nei gruppi della rispettiva cartella.
 
 ## Soglia di somiglianza
 
@@ -30,7 +31,25 @@ Flusso principale dell'app.
 
 - **Avanti / indietro** tra i gruppi; si può modificare la scelta di un gruppo già confermato.
   - Se si deseleziona una foto già copiata, viene **rimossa dalla cartella della selezione**.
-- **Anteprima a schermo intero** (doppio click o tasto) con zoom al 100% e frecce per confrontare le foto del gruppo.
+- **Anteprima a schermo intero** (doppio click o tasto) con frecce per confrontare le foto del gruppo.
+
+### Strumenti di visualizzazione
+
+Servono solo a **guardare bene** le foto e scegliere la migliore: **non modificano** né l'originale né la copia salvata nella selezione.
+
+- Zoom (adatta alla finestra, 100%, zoom libero) e spostamento sull'immagine ingrandita.
+- Rotazione della vista (90° a sinistra / destra).
+- Orientamento EXIF applicato automaticamente.
+
+### Avviso proporzioni e ritaglio
+
+- Le foto con proporzioni diverse dal formato di stampa (10×15 = **3:2**) mostrano un'**icona d'avviso** nella griglia.
+- Un'**anteprima del ritaglio** sovrappone alla foto l'area che verrà effettivamente stampata (parti escluse oscurate).
+- È solo un'indicazione: la foto viene copiata intera, il ritaglio lo fa il servizio di stampa.
+
+### Fine dell'origine
+
+- Visti tutti i gruppi di un'origine, l'app mostra un **messaggio di fine** con il totale (foto e costo stimato) e un pulsante per **aprire la cartella** della selezione.
 
 ### Scorciatoie da tastiera (proposta)
 
@@ -41,6 +60,9 @@ Flusso principale dell'app.
 | Invio | Conferma e passa al gruppo successivo |
 | Backspace | Torna al gruppo precedente |
 | `F` / `Z` | Anteprima a schermo intero |
+| `R` / `Shift+R` | Ruota la vista a destra / sinistra |
+| `+` / `-` / `0` | Zoom avanti / indietro / adatta |
+| `C` | Mostra / nascondi anteprima ritaglio |
 
 ## Schermata di selezione
 

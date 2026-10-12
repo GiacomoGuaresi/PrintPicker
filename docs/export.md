@@ -14,6 +14,7 @@ Come le foto scelte vengono scritte nella cartella della [selezione](selections.
 
 - **Conversione in JPG**: HEIC / RAW / TIFF / WebP vengono salvati come JPG ad alta qualità, perché molti servizi di stampa accettano solo JPG.
 - JPG e PNG vengono copiati identici.
+- Nessuna modifica alla foto: rotazioni e zoom fatti in app servono solo alla visualizzazione. Nella conversione in JPG viene mantenuto l'orientamento EXIF.
 
 ## Rimozione
 

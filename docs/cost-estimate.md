@@ -6,6 +6,8 @@ L'app mostra una **stima indicativa** del numero di foto e del costo totale dell
 
 - **Contatore sempre visibile**: numero di foto nella selezione + costo stimato, aggiornati a ogni scelta (es. nella barra in basso: `34 foto · ~10,20 €`).
 - **Listino a scaglioni configurabile** (tabella modificabile dall'utente).
+- **Un solo listino globale**, nelle impostazioni dell'app, usato da tutte le selezioni. Se si modificano i prezzi, la stima di tutte le selezioni si aggiorna.
+- **Valuta**: euro.
 - **Costi fissi** opzionali (es. spedizione, costo ordine minimo) da sommare al totale.
 - La stima è **approssimativa**: è un aiuto per decidere quante foto tenere, non un preventivo.
 
@@ -20,6 +22,10 @@ PhotoSì, stampe **10×15** (prezzi rilevati il 2026-10-12):
 | 100 | 199 | 0,25 € |
 | 200 | 399 | 0,19 € |
 | 400 | — | 0,16 € |
+
+## Avviso ritaglio
+
+Le stampe 10×15 hanno proporzione **3:2**; molte foto da smartphone sono 4:3 o 16:9 e verrebbero ritagliate dal servizio di stampa. Vedi [Avviso proporzioni](grouping-workflow.md#avviso-proporzioni-e-ritaglio).
 
 ## Calcolo
 

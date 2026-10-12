@@ -10,6 +10,10 @@
   - [pillow-heif](https://github.com/bigcat88/pillow_heif) – supporto HEIC
   - [rawpy](https://github.com/letmaik/rawpy) – supporto RAW (anteprima e conversione)
 
+## Lingua
+
+- Interfaccia in **italiano e inglese**, scelta in base alla lingua del sistema (traduzioni Qt).
+
 ## Somiglianza
 
 - Perceptual hash + distanza di Hamming tra gli hash.
@@ -26,3 +30,4 @@
 
 - Dati, cache e stato stanno tutti dentro la cartella della selezione (`.printpicker/`, SQLite + miniature). Vedi [Selezioni per stampa](selections.md).
 - Nulla viene scritto nell'archivio delle foto.
+- **Impostazioni globali** (cartella base delle selezioni, listino prezzi) nella cartella di configurazione dell'utente (`QStandardPaths` / `QSettings`): `~/Library/Application Support/PrintPicker` su macOS, `%APPDATA%\PrintPicker` su Windows, `~/.config/PrintPicker` su Linux.

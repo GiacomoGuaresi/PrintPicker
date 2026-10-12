@@ -11,7 +11,8 @@ PrintPicker is a small cross-platform desktop utility for people who keep their 
 - **Similar-photo groups** — photos are grouped by visual similarity (perceptual hashing), so bursts and near-duplicates are shown side by side and you pick the best one(s).
 - **Fast keyboard-driven review** — arrows to move, Space to select, Enter to confirm and move on, Backspace to go back. Ctrl/Cmd+click for multiple picks.
 - **Live similarity threshold** — a slider regroups photos on the fly, from strict to loose.
-- **Full-screen preview** with 100% zoom to check focus and closed eyes.
+- **Full-screen preview** with zoom and rotation to check focus and closed eyes — view only, files are never altered.
+- **Crop preview** — warns when a photo's aspect ratio doesn't match the print format (3:2 for 10×15) and shows what will be printed.
 - **Print selections** — each selection is a self-contained folder: the chosen photos plus a hidden `.printpicker/` folder with its database and thumbnails. Delete the folder after printing and nothing is left behind.
 - **Resume anytime** — reopen a selection and continue from the first group you haven't seen.
 - **Multiple sources per selection**, with graceful handling of disconnected or remapped drives.
@@ -25,7 +26,7 @@ JPG, PNG, HEIC, RAW (CR2, NEF, ARW, DNG, …), TIFF, WebP. Videos are ignored.
 
 ## Platforms
 
-macOS, Windows and Linux.
+macOS, Windows and Linux. Interface in English and Italian.
 
 ## Tech stack
 
@@ -41,6 +42,7 @@ The full specification (in Italian) lives in [`docs/`](docs/README.md):
 - [Copy and export](docs/export.md)
 - [Print cost estimate](docs/cost-estimate.md)
 - [Architecture](docs/architecture.md)
+- [Roadmap](docs/roadmap.md)
 - [Development and testing](docs/development.md)
 - [Open questions](docs/open-questions.md)
 

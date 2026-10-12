@@ -11,14 +11,22 @@ dependencies = [
     "numpy>=1.26",
     "pillow>=11",
     "pillow-heif>=0.18",
+    "pyside6>=6.7",
     "rawpy>=0.21",
 ]
+
+[project.gui-scripts]
+printpicker = "printpicker.ui.app:main"
 
 [project.urls]
 Repository = "https://github.com/GiacomoGuaresi/PrintPicker"
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = [
+    "pytest>=8",
+    "pytest-qt>=4.4",
+    "ruff>=0.6",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -29,6 +37,7 @@ packages = ["src/printpicker"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+qt_api = "pyside6"
 
 [tool.ruff]
 line-length = 100

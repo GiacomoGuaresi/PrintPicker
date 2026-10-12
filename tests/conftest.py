@@ -1,3 +1,8 @@
+import os
+
+# Run Qt tests without opening windows.
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
 import pytest
 
 from helpers import make_photo

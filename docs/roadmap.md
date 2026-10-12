@@ -24,7 +24,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 |---|---|---|---|
 | 0.1 | Repo GitHub pubblico, `LICENSE`, `README.md`, `docs/`, primo push | `first commit` | ✅ |
 | 0.1b | `.gitignore` Python, aggiornamenti documentazione e roadmap | `docs: roadmap and spec updates` | ✅ |
-| 0.2 | `pyproject.toml`, struttura `src/printpicker/` + `tests/`, dipendenze di sviluppo (`pytest`, `ruff`), un test segnaposto | `chore: python project skeleton` | ⬜ |
+| 0.2 | `pyproject.toml`, struttura `src/printpicker/` + `tests/`, dipendenze di sviluppo (`pytest`, `ruff`), un test segnaposto | `chore: python project skeleton` | ✅ |
 | 0.3 | GitHub Actions: lint + test su macOS, Windows, Linux | `ci: lint and test on all platforms` | ⬜ |
 
 ## M1 — Motore di analisi (senza interfaccia) → `v0.1.0`

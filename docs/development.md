@@ -10,3 +10,14 @@ Per lo sviluppo si usa una chiavetta USB con un campione dell'archivio reale (su
 - Nomi cartella con spazi e maiuscole → da gestire correttamente
 
 Il campione non contiene ancora HEIC, RAW, TIFF o WebP: per testare quei formati servono file aggiuntivi.
+
+## Ambiente di sviluppo
+
+Il progetto usa [uv](https://docs.astral.sh/uv/) per gestire Python (3.12) e le dipendenze.
+
+```sh
+uv sync                    # crea .venv e installa le dipendenze
+uv run pytest              # test
+uv run ruff check .        # lint
+uv run ruff format .       # formattazione
+```

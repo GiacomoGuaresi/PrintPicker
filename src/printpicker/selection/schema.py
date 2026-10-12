@@ -11,6 +11,15 @@ MIGRATIONS: list[str] = [
         key   TEXT PRIMARY KEY,
         value TEXT NOT NULL
     );
+
+    -- Source folders. ``path`` is the last known absolute location (it can change when a drive
+    -- is remounted); ``name`` is fixed at creation and used for output file prefixes.
+    CREATE TABLE sources (
+        id       INTEGER PRIMARY KEY,
+        path     TEXT NOT NULL UNIQUE,
+        name     TEXT NOT NULL,
+        added_at TEXT NOT NULL
+    );
     """,
 ]
 

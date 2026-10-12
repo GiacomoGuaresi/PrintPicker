@@ -1,5 +1,6 @@
 """Print selections: self-contained folders with the chosen photos and their working data."""
 
+from printpicker.selection.sources import Source, SourceExistsError
 from printpicker.selection.store import (
     DATA_DIR,
     InvalidSelectionError,
@@ -16,6 +17,8 @@ __all__ = [
     "InvalidSelectionError",
     "Selection",
     "SelectionExistsError",
+    "Source",
+    "SourceExistsError",
     "default_selection_name",
     "is_selection",
     "list_selections",

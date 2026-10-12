@@ -44,7 +44,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | # | Step | Commit | Stato |
 |---|---|---|---|
 | 2.1 | **Selezione**: creazione / apertura cartella, `.printpicker/selection.db` SQLite con schema versionato | `feat(selection): create and open selections` | ✅ |
-| 2.2 | **Origini**: aggiunta di più cartelle sorgente, foto identificate da percorso relativo, rilevamento origine non trovata | `feat(selection): multiple sources with relative paths` | ⬜ |
+| 2.2 | **Origini**: aggiunta di più cartelle sorgente, foto identificate da percorso relativo, rilevamento origine non trovata | `feat(selection): multiple sources with relative paths` | ✅ |
 | 2.3 | **Cache hash** nel database (ricalcolo solo se il file cambia: dimensione + data modifica) | `feat(selection): cache hashes in selection db` | ⬜ |
 | 2.4 | **Nomi in uscita**: prefisso con percorso completo, nome cartella sorgente per i file nella root | `feat(export): output file naming` | ⬜ |
 | 2.5 | **Copia**: duplicati identici saltati, suffisso `_2`, `_3` per nomi in conflitto | `feat(export): copy with duplicate handling` | ⬜ |

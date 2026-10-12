@@ -10,6 +10,7 @@ from pathlib import Path
 
 from printpicker.core.scanner import natural_key
 from printpicker.selection.schema import migrate
+from printpicker.selection.sources import SourcesMixin
 
 DATA_DIR = ".printpicker"
 DB_NAME = "selection.db"
@@ -71,7 +72,7 @@ def _hide(path: Path) -> None:
         ctypes.windll.kernel32.SetFileAttributesW(str(path), file_attribute_hidden)
 
 
-class Selection:
+class Selection(SourcesMixin):
     """An open selection: its folder and database connection."""
 
     def __init__(self, folder: Path, conn: sqlite3.Connection):

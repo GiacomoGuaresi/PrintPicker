@@ -362,6 +362,8 @@ name = "printpicker"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pillow" },
     { name = "pillow-heif" },
     { name = "rawpy" },
@@ -375,6 +377,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "numpy", specifier = ">=1.26" },
     { name = "pillow", specifier = ">=11" },
     { name = "pillow-heif", specifier = ">=0.18" },
     { name = "rawpy", specifier = ">=0.21" },

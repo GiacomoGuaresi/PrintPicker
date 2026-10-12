@@ -8,6 +8,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "Giacomo Guaresi" }]
 requires-python = ">=3.11"
 dependencies = [
+    "numpy>=1.26",
     "pillow>=11",
     "pillow-heif>=0.18",
     "rawpy>=0.21",
@@ -35,3 +36,6 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.isort]
+known-local-folder = ["helpers"]

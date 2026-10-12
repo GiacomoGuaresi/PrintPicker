@@ -30,7 +30,7 @@ macOS, Windows and Linux. Interface in English and Italian.
 
 ## Tech stack
 
-Python + Qt ([PySide6](https://doc.qt.io/qtforpython-6/)), [Pillow](https://python-pillow.org/), [imagehash](https://github.com/JohannesBuchner/imagehash), [pillow-heif](https://github.com/bigcat88/pillow_heif), [rawpy](https://github.com/letmaik/rawpy). Packaged with PyInstaller.
+Python + Qt ([PySide6](https://doc.qt.io/qtforpython-6/)), [Pillow](https://python-pillow.org/), [NumPy](https://numpy.org/), [pillow-heif](https://github.com/bigcat88/pillow_heif), [rawpy](https://github.com/letmaik/rawpy). Packaged with PyInstaller.
 
 ## Documentation
 

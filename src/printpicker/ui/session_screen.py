@@ -27,6 +27,7 @@ from printpicker.core.scanner import PhotoFile
 from printpicker.selection import Selection, Source, SourceExistsError
 from printpicker.selection.choices import first_unseen_group
 from printpicker.ui.group_view import GroupView
+from printpicker.ui.key_hints import KeyHints
 from printpicker.ui.money import format_money
 from printpicker.ui.settings import AppSettings
 from printpicker.ui.settings_dialog import SettingsDialog
@@ -294,12 +295,16 @@ class SessionScreen(QWidget):
         self.previous_button = QPushButton(self.tr("← Previous group"))
         self.previous_button.setToolTip(self.tr("← or Backspace · your picks are kept"))
         self.next_button.setToolTip(self.tr("→ or Enter · your picks are kept"))
-        self.help_label = QLabel(
-            self.tr(
-                "Click/Space/1–9 pick · A all · ← → groups · ↑ ↓ Tab photos · F preview · C crop"
-            )
+        self.help_label = KeyHints(
+            [
+                ([self.tr("Click"), self.tr("Space"), "1–9"], self.tr("pick")),
+                (["A"], self.tr("all / none")),
+                (["←", "→"], self.tr("groups")),
+                (["↑", "↓", "Tab"], self.tr("photos")),
+                (["F"], self.tr("preview")),
+                (["C"], self.tr("crop")),
+            ]
         )
-        self.help_label.setEnabled(False)
         self.previous_button.clicked.connect(self.previous_group)
 
         self.threshold_slider = QSlider(Qt.Orientation.Horizontal)

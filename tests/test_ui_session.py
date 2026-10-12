@@ -312,3 +312,8 @@ def test_group_view_shortcuts(qtbot, session, photos):
     assert session.index == 1
     qtbot.mouseClick(view.viewport(), Qt.MouseButton.BackButton)
     assert session.index == 0
+
+
+def test_key_hints_are_chips(session):
+    keys = [chip.text() for chip in session.help_label.chips]
+    assert {"A", "←", "→", "F", "C"} <= set(keys)

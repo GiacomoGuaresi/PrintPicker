@@ -39,6 +39,7 @@ from printpicker.core.images import ImageLoadError, load_image
 from printpicker.core.print_format import needs_crop
 from printpicker.core.scanner import PhotoFile
 from printpicker.ui.group_view import PathsFn, draw_crop_overlay
+from printpicker.ui.key_hints import KeyHints
 from printpicker.ui.qimage import to_qimage
 
 
@@ -411,10 +412,19 @@ class PhotoViewer(QDialog):
         self.picked_overlay.text = self.tr("Picked")
         self.caption = QLabel()
         self.caption.setStyleSheet("color: #ddd; padding: 6px;")
-        self.help = QLabel(
-            self.tr("← → browse · Space pick · +/− zoom · 0 fit · 1 100% · R rotate · C crop · Esc")
+        self.help = KeyHints(
+            [
+                (["←", "→"], self.tr("browse")),
+                ([self.tr("Space")], self.tr("pick")),
+                (["+", "−"], self.tr("zoom")),
+                (["0"], self.tr("fit")),
+                (["1"], "100%"),
+                (["R"], self.tr("rotate")),
+                (["C"], self.tr("crop")),
+                (["Esc"], self.tr("close")),
+            ],
+            dark=True,
         )
-        self.help.setStyleSheet("color: #888; padding: 6px;")
 
         # Controls over the photo, hidden with the cursor while the mouse is still.
         viewport = self.view.viewport()

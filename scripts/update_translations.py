@@ -24,12 +24,22 @@ TS = I18N / "printpicker_it.ts"
 # source text -> translation; plural forms (with %n) as (singular, plural).
 ITALIAN: dict[str, str | tuple[str, str]] = {
     # Group view / viewer
+    "Click": "Clic",
+    "Space": "Spazio",
+    "pick": "scegli",
+    "all / none": "tutte / nessuna",
+    "groups": "gruppi",
+    "photos": "foto",
+    "preview": "anteprima",
+    "crop": "ritaglio",
+    "browse": "sfoglia",
+    "zoom": "zoom",
+    "fit": "adatta",
+    "rotate": "ruota",
+    "close": "chiudi",
     "%1\nWill be cropped to fit a 10×15 print": "%1\nVerrà ritagliata per la stampa 10×15",
     "Unreadable": "Illeggibile",
     "Preview": "Anteprima",
-    "← → browse · Space pick · +/− zoom · 0 fit · 1 100% · R rotate · C crop · Esc": (
-        "← → sfoglia · Spazio scegli · +/− zoom · 0 adatta · 1 100% · R ruota · C ritaglio · Esc"
-    ),
     "Picked": "Scelta",
     "Previous photo (←)": "Foto precedente (←)",
     "Next photo (→)": "Foto successiva (→)",
@@ -79,9 +89,6 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "← Previous group": "← Gruppo precedente",
     "← or Backspace · your picks are kept": "← o Backspace · le scelte restano salvate",
     "→ or Enter · your picks are kept": "→ o Invio · le scelte restano salvate",
-    "Click/Space/1–9 pick · A all · ← → groups · ↑ ↓ Tab photos · F preview · C crop": (
-        "Clic/Spazio/1–9 scegli · A tutte · ← → gruppi · ↑ ↓ Tab foto · F anteprima · C ritaglio"
-    ),
     "How different two photos can be to end up in the same group": (
         "Quanto possono essere diverse due foto per finire nello stesso gruppo"
     ),

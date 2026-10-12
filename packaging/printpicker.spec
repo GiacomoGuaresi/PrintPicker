@@ -35,7 +35,10 @@ a = Analysis(
     [str(SRC / "printpicker" / "__main__.py")],
     pathex=[str(SRC)],
     binaries=collect_dynamic_libs("rawpy") + collect_dynamic_libs("pillow_heif"),
-    datas=[(str(SRC / "printpicker" / "i18n" / "*.qm"), "printpicker/i18n")]
+    datas=[
+        (str(SRC / "printpicker" / "i18n" / "*.qm"), "printpicker/i18n"),
+        (str(SRC / "printpicker" / "resources" / "*.png"), "printpicker/resources"),
+    ]
     + collect_data_files("pillow_heif"),
     hiddenimports=["pillow_heif"],
     excludes=["tkinter", "unittest", "pydoc", *QT_EXCLUDES],

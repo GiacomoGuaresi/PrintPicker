@@ -45,6 +45,9 @@ def run_self_test(app: QApplication) -> int:
     )
     for t in translators:
         app.removeTranslator(t)
+    from printpicker.ui.app import ICON_PATH
+
+    checks.append(("app icon", ICON_PATH.is_file()))
     try:
         MainWindow().close()
         checks.append(("main window", True))

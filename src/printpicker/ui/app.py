@@ -6,12 +6,15 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QTranslator
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from printpicker import __version__
 from printpicker.ui.main_window import APP_NAME, MainWindow
 
-I18N_DIR = Path(__file__).resolve().parent.parent / "i18n"
+PACKAGE_DIR = Path(__file__).resolve().parent.parent
+I18N_DIR = PACKAGE_DIR / "i18n"
+ICON_PATH = PACKAGE_DIR / "resources" / "icon.png"
 
 
 def install_translations(app: QApplication, locale: QLocale | None = None) -> list[QTranslator]:
@@ -35,6 +38,7 @@ def create_application(argv: list[str] | None = None) -> QApplication:
     app.setApplicationName(APP_NAME)
     app.setOrganizationName(APP_NAME)
     app.setApplicationVersion(__version__)
+    app.setWindowIcon(QIcon(str(ICON_PATH)))
     return app
 
 

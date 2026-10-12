@@ -102,7 +102,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 |---|---|---|---|
 | 7.1 | **Build PyInstaller** locale per il sistema corrente | `build: pyinstaller packaging` | ✅ |
 | 7.2 | **GitHub Actions**: build per macOS, Windows, Linux e allegati alla release al push di un tag | `ci: build and release executables` | ✅ |
-| 7.3 | **Icona** dell'app e metadati | `chore: app icon and metadata` | ⬜ |
+| 7.3 | **Icona** dell'app e metadati | `chore: app icon and metadata` | ✅ |
 | 7.4 | **README**: screenshot, download, istruzioni d'uso | `docs: usage guide and screenshots` | ⬜ |
 
 ---

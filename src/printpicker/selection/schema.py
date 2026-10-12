@@ -32,6 +32,8 @@ MIGRATIONS: list[str] = [
         mtime_ns  INTEGER,
         hash      INTEGER,
         hashed    INTEGER NOT NULL DEFAULT 0,
+        -- File name of the copy in the selection folder, NULL when not exported.
+        exported_name TEXT,
         UNIQUE (source_id, rel_path)
     );
     """,

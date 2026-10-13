@@ -58,3 +58,8 @@ Sulle foto di esempio realistiche le coppie della stessa scena stanno sotto 0,14
 - Dati, cache e stato stanno tutti dentro la cartella della selezione (`.printpicker/`, SQLite + miniature). Vedi [Selezioni per stampa](selections.md).
 - Nulla viene scritto nell'archivio delle foto.
 - **Impostazioni globali** (cartella base delle selezioni, listino prezzi) nella cartella di configurazione dell'utente (`QStandardPaths` / `QSettings`): `~/Library/Application Support/PrintPicker` su macOS, `%APPDATA%\PrintPicker` su Windows, `~/.config/PrintPicker` su Linux.
+
+## Metadati dell'app
+
+- `src/printpicker/about.py` è l'unica fonte di nome, versione, autore, copyright e link GitHub: li usano l'interfaccia, la build PyInstaller (`packaging/printpicker.spec`) e i test.
+- La versione sta solo in `src/printpicker/__init__.py`; il `pyproject.toml` la legge da lì (`dynamic = ["version"]`). Per una nuova release basta cambiarla lì e creare il tag.

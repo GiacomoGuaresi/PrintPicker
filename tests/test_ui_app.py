@@ -1,4 +1,5 @@
-from printpicker.ui.main_window import APP_NAME, MainWindow
+from printpicker.about import APP_NAME
+from printpicker.ui.main_window import MainWindow
 
 
 def test_main_window_opens(qtbot):

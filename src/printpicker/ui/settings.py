@@ -7,14 +7,13 @@ from pathlib import Path
 
 from PySide6.QtCore import QSettings, QStandardPaths
 
+from printpicker.about import APP_NAME
 from printpicker.core.pricing import DEFAULT_PRICE_LIST, PriceList
-
-APP_FOLDER = "PrintPicker"
 
 
 def default_base_dir() -> Path:
     documents = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation)
-    return Path(documents or Path.home()) / APP_FOLDER
+    return Path(documents or Path.home()) / APP_NAME
 
 
 class AppSettings:

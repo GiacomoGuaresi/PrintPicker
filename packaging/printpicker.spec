@@ -13,7 +13,7 @@ ROOT = Path(SPECPATH).parent
 SRC = ROOT / "src"
 
 sys.path.insert(0, str(SRC))
-from printpicker import __version__  # noqa: E402
+from printpicker.about import APP_NAME, BUNDLE_ID, COPYRIGHT, LICENSE_NAME, __version__  # noqa: E402
 
 # Qt modules PrintPicker does not use: leaving them out saves a lot of space.
 QT_EXCLUDES = [
@@ -61,22 +61,22 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="PrintPicker",
+    name=APP_NAME,
     console=False,
     icon=icon,
 )
-coll = COLLECT(exe, a.binaries, a.datas, name="PrintPicker")
+coll = COLLECT(exe, a.binaries, a.datas, name=APP_NAME)
 
 if sys.platform == "darwin":
     app = BUNDLE(
         coll,
-        name="PrintPicker.app",
+        name=f"{APP_NAME}.app",
         icon=icon,
-        bundle_identifier="io.github.giacomoguaresi.printpicker",
+        bundle_identifier=BUNDLE_ID,
         version=__version__,
         info_plist={
             "CFBundleShortVersionString": __version__,
             "NSHighResolutionCapable": True,
-            "NSHumanReadableCopyright": "© 2026 Giacomo Guaresi — MIT License",
+            "NSHumanReadableCopyright": f"{COPYRIGHT} — {LICENSE_NAME}",
         },
     )

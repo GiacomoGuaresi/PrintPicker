@@ -9,8 +9,8 @@ from PySide6.QtCore import QLibraryInfo, QLocale, QTranslator
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
-from printpicker import __version__
-from printpicker.ui.main_window import APP_NAME, MainWindow
+from printpicker.about import APP_NAME, __version__
+from printpicker.ui.main_window import MainWindow
 
 PACKAGE_DIR = Path(__file__).resolve().parent.parent
 I18N_DIR = PACKAGE_DIR / "i18n"

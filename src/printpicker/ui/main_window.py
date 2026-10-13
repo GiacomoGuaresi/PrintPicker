@@ -6,11 +6,10 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QMainWindow, QStackedWidget
 
+from printpicker.about import APP_NAME
 from printpicker.ui.session_screen import SessionScreen
 from printpicker.ui.settings import AppSettings
 from printpicker.ui.start_screen import StartScreen
-
-APP_NAME = "PrintPicker"
 
 
 class MainWindow(QMainWindow):

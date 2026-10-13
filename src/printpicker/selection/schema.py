@@ -41,6 +41,11 @@ MIGRATIONS: list[str] = [
         UNIQUE (source_id, rel_path)
     );
     """,
+    """
+    -- Image embedding (float16), NULL when not computed: photos analysed before, or without
+    -- the model, or unreadable (hash NULL too).
+    ALTER TABLE photos ADD COLUMN embedding BLOB;
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)

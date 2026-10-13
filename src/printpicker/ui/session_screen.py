@@ -21,9 +21,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from printpicker.core.grouping import Group, group_photos
+from printpicker.core.grouping import Group, PhotoIndex
 from printpicker.core.images import ImageLoadError
 from printpicker.core.scanner import PhotoFile
+from printpicker.core.similarity import Signature
 from printpicker.selection import Selection, Source, SourceExistsError
 from printpicker.selection.choices import first_unseen_group
 from printpicker.ui.group_view import GroupView
@@ -59,7 +60,8 @@ class SessionScreen(QWidget):
         self.settings = settings or AppSettings()
         self.selection = Selection.open(folder)
         self.source: Source | None = None
-        self.items: list[tuple[PhotoFile, int | None]] = []
+        self.items: list[tuple[PhotoFile, Signature | None]] = []
+        self.photo_index = PhotoIndex([])
         self.groups: list[Group] = []
         self.thread: AnalysisThread | None = None
         self.index = 0
@@ -268,7 +270,9 @@ class SessionScreen(QWidget):
         self.regroup()
 
     def regroup(self) -> None:
-        self.groups = group_photos(self.items, self.selection.threshold)
+        """Group ``items`` from scratch (the slider then only regroups the same photos)."""
+        self.photo_index = PhotoIndex(self.items)
+        self.groups = self.photo_index.groups(self.selection.threshold)
         self.show_groups()
 
     def show_groups(self) -> None:
@@ -476,7 +480,7 @@ class SessionScreen(QWidget):
         if self.index < len(self.groups):
             row = max(self.group_view.currentIndex().row(), 0)
             current = self.groups[self.index].photos[row].rel_path
-        self.groups = group_photos(self.items, self.selection.threshold)
+        self.groups = self.photo_index.groups(self.selection.threshold)
         if current is None:
             self.show_end()
             return

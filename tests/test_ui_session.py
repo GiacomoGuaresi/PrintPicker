@@ -1,5 +1,6 @@
 import pytest
 
+from printpicker.core.similarity import Signature
 from printpicker.selection import Selection
 from printpicker.ui.session_screen import SessionScreen
 
@@ -193,7 +194,8 @@ def test_threshold_slider_regroups_and_keeps_position(qtbot, session, photos):
     session.add_source(photos)
     wait_groups(qtbot, session)
     # Hashes with known distances: a1-a2 = 3 bits, b far away.
-    session.items = [(p, h) for (p, _), h in zip(session.items, [0, 0b111, 2**64 - 1], strict=True)]
+    hashes = [0, 0b111, 2**64 - 1]
+    session.items = [(p, Signature(h)) for (p, _), h in zip(session.items, hashes, strict=True)]
     session.regroup()
     assert len(session.groups) == 2
     session.next_button.click()  # now on group with b.jpg

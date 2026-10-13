@@ -1,10 +1,16 @@
 import os
 
+import numpy as np
 import pytest
 
-from printpicker.core import analysis
+from printpicker.core import analysis, embedding
 from printpicker.selection import Selection
-from printpicker.selection.photos import from_db_hash, to_db_hash
+from printpicker.selection.photos import (
+    from_db_embedding,
+    from_db_hash,
+    to_db_embedding,
+    to_db_hash,
+)
 
 from helpers import make_photo
 
@@ -23,13 +29,13 @@ def setup(tmp_path):
 @pytest.fixture
 def count_hashing(monkeypatch):
     calls = []
-    real = analysis.hash_file
+    real = analysis.analyze_file
 
     def counting(path, thumb_path=None):
         calls.append(path.name)
         return real(path, thumb_path)
 
-    monkeypatch.setattr(analysis, "hash_file", counting)
+    monkeypatch.setattr(analysis, "analyze_file", counting)
     return calls
 
 
@@ -94,6 +100,42 @@ def test_hash_roundtrip(h):
     assert from_db_hash(to_db_hash(h)) == h
 
 
+def test_embedding_roundtrip():
+    v = np.linspace(-1, 1, 384, dtype=np.float32)
+    assert np.allclose(from_db_embedding(to_db_embedding(v)), v, atol=1e-3)
+    assert from_db_embedding(to_db_embedding(None)) is None
+
+
+def test_embeddings_are_cached(setup, count_hashing, model):
+    sel, source, _ = setup
+    first = dict(sel.analyze_source(source))
+    assert all(sig.embedding is not None for sig in first.values() if sig is not None)
+    count_hashing.clear()
+    second = dict(sel.analyze_source(source))
+    assert count_hashing == []
+    for photo, sig in first.items():
+        if sig is None:
+            assert second[photo] is None
+        else:
+            assert second[photo].phash == sig.phash
+            assert np.allclose(second[photo].embedding, sig.embedding, atol=1e-3)
+
+
+def test_photos_analysed_without_model_get_embeddings_later(
+    setup, count_hashing, model, monkeypatch
+):
+    sel, source, _ = setup
+    real_session = embedding._session
+    monkeypatch.setattr(embedding, "_session", lambda: None)
+    assert all(sig is None or sig.embedding is None for _, sig in sel.analyze_source(source))
+    count_hashing.clear()
+
+    monkeypatch.setattr(embedding, "_session", real_session)
+    result = sel.analyze_source(source)
+    assert sorted(count_hashing) == ["0.jpg", "1.jpg", "2.jpg", "3.jpg", "x.jpg"]  # not bad.jpg
+    assert all(sig is None or sig.embedding is not None for _, sig in result)
+
+
 def test_thumbnails_are_saved_during_analysis(setup):
     from PIL import Image
 
@@ -110,7 +152,7 @@ def test_disconnected_drive_is_not_cached_as_unreadable(setup, monkeypatch, tmp_
     from printpicker.selection.photos import SourceUnavailableError
 
     sel, source, src = setup
-    real = analysis.hash_file
+    real = analysis.analyze_file
     moved = tmp_path / "unplugged"
 
     import threading
@@ -125,13 +167,13 @@ def test_disconnected_drive_is_not_cached_as_unreadable(setup, monkeypatch, tmp_
                 return h
         return None
 
-    monkeypatch.setattr(analysis, "hash_file", unplug_after_first)
+    monkeypatch.setattr(analysis, "analyze_file", unplug_after_first)
     with pytest.raises(SourceUnavailableError):
         sel.analyze_source(source)
     rows = sel.conn.execute("SELECT COUNT(*) FROM photos WHERE hashed = 1").fetchone()[0]
     assert rows <= 1  # only the photo read before unplugging
 
     moved.rename(src)
-    monkeypatch.setattr(analysis, "hash_file", real)
+    monkeypatch.setattr(analysis, "analyze_file", real)
     result = dict((p.rel_path, h) for p, h in sel.analyze_source(source))
     assert all(h is not None for rel, h in result.items() if rel != "bad.jpg")

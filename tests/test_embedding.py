@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pytest
 from PIL import Image, ImageDraw, ImageEnhance
@@ -7,14 +5,7 @@ from PIL import Image, ImageDraw, ImageEnhance
 from printpicker.core import embedding
 from printpicker.core.embedding import EMBEDDING_SIZE, cosine_distance, embed
 
-
-@pytest.fixture
-def model():
-    """Skip without the model (scripts/fetch_model.py), unless CI says it must be there."""
-    if not embedding.available():
-        if os.environ.get("PRINTPICKER_REQUIRE_MODEL"):
-            pytest.fail("embedding model missing: run scripts/fetch_model.py")
-        pytest.skip("embedding model missing: run scripts/fetch_model.py")
+_real_session = embedding._session  # tests run without the model unless they ask for it
 
 
 def landscape() -> Image.Image:
@@ -63,12 +54,13 @@ def test_reframed_shot_is_closer_than_another_scene(model):
 
 def test_without_model_there_is_no_embedding(monkeypatch, tmp_path):
     monkeypatch.setattr(embedding, "MODEL_PATH", tmp_path / "missing.onnx")
-    embedding._session.cache_clear()
+    monkeypatch.setattr(embedding, "_session", _real_session)
+    _real_session.cache_clear()
     try:
         assert not embedding.available()
         assert embed(landscape()) is None
     finally:
-        embedding._session.cache_clear()
+        _real_session.cache_clear()
 
 
 def test_cosine_distance():

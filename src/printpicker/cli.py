@@ -13,18 +13,19 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-from printpicker.core.analysis import hash_photos
+from printpicker.core.analysis import analyze_photos
 from printpicker.core.grouping import DEFAULT_THRESHOLD, Group, group_photos
 from printpicker.core.images import ImageLoadError, load_image
 from printpicker.core.scanner import scan
+from printpicker.core.similarity import from_json, to_json
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="printpicker.cli", description=__doc__.splitlines()[0])
     parser.add_argument("folder", type=Path, help="source folder to analyse")
-    parser.add_argument("-t", "--threshold", type=int, default=DEFAULT_THRESHOLD)
+    parser.add_argument("-t", "--threshold", type=float, default=DEFAULT_THRESHOLD)
     parser.add_argument("--sheets", type=Path, help="write a contact sheet per multi-photo group")
-    parser.add_argument("--cache", type=Path, help="JSON file to reuse hashes between runs")
+    parser.add_argument("--cache", type=Path, help="JSON file to reuse the analysis between runs")
     args = parser.parse_args(argv)
 
     root: Path = args.folder
@@ -34,19 +35,19 @@ def main(argv: list[str] | None = None) -> int:
 
     started = time.monotonic()
     photos = list(scan(root))
-    cache: dict[str, int | None] = {}
+    cache: dict[str, list | None] = {}
     if args.cache and args.cache.exists():
         cache = json.loads(args.cache.read_text())
     missing = [p for p in photos if p.rel_path not in cache]
-    for i, (photo, h) in enumerate(hash_photos(root, missing), 1):
-        cache[photo.rel_path] = h
-        print(f"\rhashing {i}/{len(missing)}", end="", file=sys.stderr)
+    for i, (photo, sig) in enumerate(analyze_photos(root, missing), 1):
+        cache[photo.rel_path] = to_json(sig)
+        print(f"\ranalysing {i}/{len(missing)}", end="", file=sys.stderr)
     if missing:
         print(file=sys.stderr)
     if args.cache:
         args.cache.write_text(json.dumps(cache))
 
-    groups = group_photos(((p, cache[p.rel_path]) for p in photos), args.threshold)
+    groups = group_photos(((p, from_json(cache[p.rel_path])) for p in photos), args.threshold)
     elapsed = time.monotonic() - started
 
     multi = [g for g in groups if len(g.photos) > 1]

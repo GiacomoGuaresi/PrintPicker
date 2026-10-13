@@ -42,7 +42,8 @@ Il benchmark confronta i metodi di raggruppamento con questa verità:
 uv run python scripts/eval_grouping.py -v     # --fresh per misurare i tempi senza cache
 ```
 
-Per ogni metodo cerca la soglia con il richiamo più alto (meno doppioni rimasti separati) a
+Confronta il raggruppamento dell'app con e senza modello (`--method hash` / `app`). Per ogni
+metodo cerca la soglia con il richiamo più alto (meno doppioni rimasti separati) a
 precisione ≥ 0,9 (poche foto diverse nello stesso gruppo), e dà i numeri su tutte le cartelle
 e su quelle difficili (`Hard cases`, `Work desk`); con `-v` elenca le coppie sbagliate.
 
@@ -77,8 +78,8 @@ Analizza una cartella e stampa i gruppi, utile per tarare la soglia:
 uv run python -m printpicker.cli /Volumes/<chiavetta> -t 14 --cache hashes.json --sheets fogli/
 ```
 
-- `-t` soglia (distanza di Hamming massima, 0–64)
-- `--cache` riusa gli hash tra un'esecuzione e l'altra (la prima analisi della chiavetta richiede ~2 minuti)
+- `-t` soglia (in bit di perceptual hash, come lo slider dell'app; default 14)
+- `--cache` riusa l'analisi (hash ed embedding) tra un'esecuzione e l'altra (la prima analisi della chiavetta richiede ~2 minuti)
 - `--sheets` salva un foglio provini per ogni gruppo con 2+ foto
 
 ## Traduzioni

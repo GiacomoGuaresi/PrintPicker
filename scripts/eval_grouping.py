@@ -30,9 +30,13 @@ HARD = ("Hard cases", "Work desk")
 
 sys.path.insert(0, str(ROOT / "src"))
 
-from printpicker.core.analysis import hash_file  # noqa: E402
+from printpicker.core.analysis import SIGNATURE_DECODE_SIZE, analyze_file  # noqa: E402
+from printpicker.core.embedding import available  # noqa: E402
 from printpicker.core.grouping import group_photos  # noqa: E402
+from printpicker.core.hashing import phash  # noqa: E402
+from printpicker.core.images import ImageLoadError, load_image  # noqa: E402
 from printpicker.core.scanner import PhotoFile, scan  # noqa: E402
+from printpicker.core.similarity import Signature, from_json, to_json  # noqa: E402
 
 Pair = frozenset[str]
 
@@ -146,20 +150,37 @@ def best_threshold(scores: dict[float, Score]) -> float:
 
 @dataclass(frozen=True)
 class Method:
-    """A way of grouping: ``extract`` a feature per photo, then ``group`` with a threshold."""
+    """A way of grouping: ``extract`` a feature per photo (JSON-friendly, cached under
+    ``key``), then ``group`` with a threshold."""
 
     name: str
+    key: str
     extract: Callable[[Path], object]
     group: Callable[[Sequence[tuple[PhotoFile, object]], float], list[list[str]]]
     thresholds: Sequence[float]
 
 
-def _phash_greedy(items: Sequence[tuple[PhotoFile, object]], threshold: float) -> list[list[str]]:
-    return [[p.name for p in g.photos] for g in group_photos(items, round(threshold))]
+def _hash_only(path: Path) -> list | None:
+    """The signature without embedding, as when the model is missing."""
+    try:
+        return to_json(Signature(phash(load_image(path, max_size=SIGNATURE_DECODE_SIZE))))
+    except ImageLoadError:
+        return None
 
 
+def _app(path: Path) -> list | None:
+    return to_json(analyze_file(path))
+
+
+def _app_grouping(items: Sequence[tuple[PhotoFile, object]], threshold: float) -> list[list[str]]:
+    groups = group_photos([(p, from_json(f)) for p, f in items], threshold)
+    return [[p.name for p in g.photos] for g in groups]
+
+
+_THRESHOLDS = [t / 2 for t in range(0, 61)]  # in hash bits, like the app's slider
 METHODS = [
-    Method("phash (current)", hash_file, _phash_greedy, range(0, 33)),
+    Method("pHash only (no model)", "hash", _hash_only, _app_grouping, _THRESHOLDS),
+    Method("app: pHash + DINOv2", "app", _app, _app_grouping, _THRESHOLDS),
 ]
 
 
@@ -171,7 +192,7 @@ def features(
 ) -> tuple[dict[str, object], float]:
     """Feature of each photo (cached) and the extraction time per photo, in ms."""
     CACHE.mkdir(exist_ok=True)
-    path = CACHE / f"{method.name.split()[0]}.json"
+    path = CACHE / f"{method.key}.json"
     cache = json.loads(path.read_text()) if path.exists() and not fresh else {}
     elapsed, computed = 0.0, 0
     for photo in photos:
@@ -245,7 +266,7 @@ def report(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--folder", action="append", help="only these folders (repeatable)")
-    parser.add_argument("--method", action="append", help="only methods starting with this")
+    parser.add_argument("--method", action="append", help="only these methods (hash, app)")
     parser.add_argument("--fresh", action="store_true", help="ignore the cache (for timings)")
     parser.add_argument("-v", "--verbose", action="store_true", help="scores per folder")
     args = parser.parse_args(argv)
@@ -262,9 +283,10 @@ def main(argv: list[str] | None = None) -> int:
     truths = {
         f: truth_from_json(truth_json[f], (p.name for p in photos)) for f, photos in folders.items()
     }
-    methods = [
-        m for m in METHODS if not args.method or any(m.name.startswith(x) for x in args.method)
-    ]
+    methods = [m for m in METHODS if not args.method or m.key in args.method]
+    if any(m.key == "app" for m in methods) and not available():
+        print("embedding model missing: run scripts/fetch_model.py", file=sys.stderr)
+        return 1
 
     print(f"{sum(map(len, folders.values()))} photos, min precision {MIN_PRECISION}")
     for method in methods:

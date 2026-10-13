@@ -94,3 +94,19 @@ def test_rename_selection(tmp_path):
         rename_selection(tmp_path / "new", "Other")
     with pytest.raises(InvalidSelectionError):
         rename_selection(tmp_path / "new", "a/b")
+
+
+def test_migrates_a_version_1_database():
+    import sqlite3
+
+    from printpicker.selection.schema import MIGRATIONS, migrate
+
+    conn = sqlite3.connect(":memory:")
+    conn.executescript(MIGRATIONS[0])
+    conn.execute("PRAGMA user_version = 1")
+    conn.execute("INSERT INTO sources (id, path, name, added_at) VALUES (1, '/x', 'X', 'now')")
+    conn.execute("INSERT INTO photos (source_id, rel_path, hash, hashed) VALUES (1, 'a.jpg', 5, 1)")
+    migrate(conn)
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
+    row = conn.execute("SELECT hash, hashed, embedding FROM photos").fetchone()
+    assert row == (5, 1, None)  # kept, embedding computed at the next analysis

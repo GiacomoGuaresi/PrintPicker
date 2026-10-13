@@ -5,7 +5,27 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
 
+from printpicker.core import embedding
+
 from helpers import make_photo
+
+
+@pytest.fixture
+def model():
+    """The embedding model. Skipped without it (scripts/fetch_model.py), unless CI says it must
+    be there."""
+    if not embedding.available():
+        if os.environ.get("PRINTPICKER_REQUIRE_MODEL"):
+            pytest.fail("embedding model missing: run scripts/fetch_model.py")
+        pytest.skip("embedding model missing: run scripts/fetch_model.py")
+
+
+@pytest.fixture(autouse=True)
+def no_model_unless_asked(request, monkeypatch):
+    """Group by hash only, as without the model, unless the test uses the ``model`` fixture:
+    test photos are synthetic patterns, which the model finds all alike."""
+    if "model" not in request.fixturenames:
+        monkeypatch.setattr(embedding, "_session", lambda: None)
 
 
 @pytest.fixture

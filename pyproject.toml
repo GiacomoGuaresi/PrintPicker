@@ -8,7 +8,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "Giacomo Guaresi" }]
 requires-python = ">=3.11"
 dependencies = [
-    "numpy>=1.26",
+    "numpy>=2.0",
     "onnxruntime>=1.20",
     "pillow>=11",
     "pillow-heif>=0.18",

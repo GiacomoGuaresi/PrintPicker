@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QApplication
 
 
 def run_self_test(app: QApplication) -> int:
-    from printpicker.core.analysis import hash_file
+    from printpicker.core.analysis import analyze_file
     from printpicker.core.images import load_image
     from printpicker.ui.app import install_translations
     from printpicker.ui.main_window import MainWindow
@@ -28,7 +28,7 @@ def run_self_test(app: QApplication) -> int:
             path = Path(tmp) / f"x.{ext}"
             try:
                 Image.new("RGB", (32, 24), (10, 20, 30)).save(path, format=fmt)
-                ok = load_image(path).size == (32, 24) and hash_file(path) is not None
+                ok = load_image(path).size == (32, 24) and analyze_file(path) is not None
             except Exception:
                 ok = False
             checks.append((f"format {ext}", ok))

@@ -31,19 +31,19 @@ ICONS_DIR = RESOURCES / "icons"
 LOGO_PATH = RESOURCES / "logo.svg"
 FONT_FAMILY = "Inter"
 
-# Surfaces, from the window background up.
-BG = QColor("#111315")
-SURFACE = QColor("#1A1D21")
-SURFACE_2 = QColor("#23272D")
-SURFACE_3 = QColor("#2C3138")
-VIEWER_BG = QColor("#0B0C0E")
-BORDER = QColor("#2F343B")
-BORDER_STRONG = QColor("#434951")
+# Surfaces, from the window background up: neutral greys as in macOS dark mode, not black.
+BG = QColor("#2B2B2D")
+SURFACE = QColor("#333336")
+SURFACE_2 = QColor("#3C3C3F")
+SURFACE_3 = QColor("#47474A")
+VIEWER_BG = QColor("#1C1C1E")  # full-screen preview: darker, so the photo stands out
+BORDER = QColor("#434346")
+BORDER_STRONG = QColor("#58585C")
 
 # Text.
-TEXT = QColor("#E7E9EC")
-TEXT_MUTED = QColor("#9198A1")
-TEXT_FAINT = QColor("#626973")
+TEXT = QColor("#EBEBF0")
+TEXT_MUTED = QColor("#A1A1A6")
+TEXT_FAINT = QColor("#76767B")
 
 # Accents.
 ACCENT = QColor("#22B5AA")  # actions, focus, selection

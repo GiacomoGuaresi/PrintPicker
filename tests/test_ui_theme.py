@@ -14,7 +14,7 @@ def test_palette_is_dark(qapp):
     palette = qapp.palette()
     window = palette.color(QPalette.ColorRole.Window)
     text = palette.color(QPalette.ColorRole.WindowText)
-    assert window.lightness() < 40 < 200 < text.lightness()
+    assert window.lightness() < 60 < 200 < text.lightness()
     assert palette.color(QPalette.ColorRole.Highlight) == theme.ACCENT
 
 

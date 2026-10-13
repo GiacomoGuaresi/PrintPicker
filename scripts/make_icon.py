@@ -45,9 +45,9 @@ IMAGES = ROOT / "docs" / "images"
 sys.path.insert(0, str(ROOT / "src"))
 from printpicker.about import APP_NAME, TAGLINE  # noqa: E402
 
-BG = QColor("#111315")
-TEXT = QColor("#E7E9EC")
-MUTED = QColor("#9198A1")
+BG = QColor("#2B2B2D")
+TEXT = QColor("#EBEBF0")
+MUTED = QColor("#A1A1A6")
 ACCENT = QColor("#22B5AA")
 
 

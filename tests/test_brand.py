@@ -21,7 +21,7 @@ def test_icons_are_generated():
 
 
 def test_linux_desktop_entry():
-    entry = (ROOT / "packaging" / "linux" / "printpicker.desktop").read_text()
+    entry = (ROOT / "packaging" / "linux" / "printpicker.desktop").read_text(encoding="utf-8")
     assert 'Exec="@EXEC@"' in entry and "Icon=printpicker" in entry
 
 

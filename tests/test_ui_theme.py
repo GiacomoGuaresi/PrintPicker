@@ -44,7 +44,7 @@ def test_colours_come_from_the_theme():
         f"{path.name}: {match}"
         for path in UI_DIR.glob("*.py")
         if path.name != "theme.py"
-        for match in hex_colour.findall(path.read_text())
+        for match in hex_colour.findall(path.read_text(encoding="utf-8"))
     ]
     assert offenders == []
 
@@ -58,7 +58,7 @@ def test_every_icon_used_exists():
         name
         for path in UI_DIR.glob("*.py")
         for call in calls
-        for name in call.findall(path.read_text())
+        for name in call.findall(path.read_text(encoding="utf-8"))
     }
     assert {"check", "chevron-left", "arrow-right"} <= names
     missing = [name for name in names if not (theme.ICONS_DIR / f"{name}.svg").exists()]

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation (Italian)
+    url: https://github.com/GiacomoGuaresi/PrintPicker/tree/main/docs
+    about: Specification, architecture and development notes.

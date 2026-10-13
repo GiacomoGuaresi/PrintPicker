@@ -4,19 +4,21 @@
 
 Needs ``samples/`` (``scripts/make_samples.py``). Creates a few selections in a temporary
 folder with throwaway settings, drives the app through them and saves the screens to
-``docs/screenshots/`` (English interface). Your settings are not touched.
+``docs/screenshots/`` and a short animated tour to ``docs/images/demo.gif`` (English
+interface). Your settings are not touched.
 """
 
 from __future__ import annotations
 
+import io
 import sys
 import tempfile
 import time
 from collections.abc import Callable
 from pathlib import Path
 
-from PySide6.QtCore import QItemSelectionModel, QModelIndex, QSettings, Qt
-from PySide6.QtGui import QGuiApplication
+from PIL import Image
+from PySide6.QtCore import QBuffer, QItemSelectionModel, QModelIndex, QSettings, Qt
 from PySide6.QtWidgets import QApplication, QWidget
 
 from printpicker.selection import Selection
@@ -29,6 +31,8 @@ from printpicker.ui.viewer import PhotoViewer
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLES = ROOT / "samples"
 OUT = ROOT / "docs" / "screenshots"
+DEMO = ROOT / "docs" / "images" / "demo.gif"
+DEMO_WIDTH = 960
 WINDOW = (1200, 800)
 WIDTH = 1600  # saved width in pixels
 
@@ -95,7 +99,6 @@ def main() -> int:
     QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, str(work / "conf"))
 
     _app = create_application([sys.argv[0]])  # keep a reference while the script runs
-    QGuiApplication.styleHints().setColorScheme(Qt.ColorScheme.Light)
     settings = AppSettings()
     settings.base_dir = work / "PrintPicker"
     settings.base_dir.mkdir()
@@ -110,17 +113,14 @@ def main() -> int:
         time.sleep(1.1)  # distinct "last change" times
 
     window = MainWindow(settings)
-    window.resize(WINDOW[0], 470)
+    window.menuBar().hide()  # native on macOS: not part of the window there
+    window.resize(WINDOW[0], 520)
     window.show()
     start = window.start_screen
     start.refresh()
-    # Show the default location instead of the temporary folder.
-    start.location.setText(
-        start.location.text().replace(str(settings.base_dir), "~/Documents/PrintPicker")
-    )
+    hide_temp_folder(start, settings)
     start.cards.clearSelection()
     start.cards.setCurrentIndex(QModelIndex())
-    start.settings_button.setFocus()
     settle(2)
     save(window, "start")
     window.resize(*WINDOW)
@@ -169,9 +169,99 @@ def main() -> int:
     settle(2)
     save(window, "crop")
 
-    session.close_selection()
+    record_demo(window, settings)
     window.close()
     return 0
+
+
+def hide_temp_folder(start, settings: AppSettings) -> None:
+    """Show the default location instead of the temporary folder."""
+    start.location.setText(
+        start.location.text().replace(str(settings.base_dir), "~/Documents/PrintPicker")
+    )
+
+
+class Recorder:
+    """Frames of the animated tour: (image, how long it stays on screen)."""
+
+    def __init__(self) -> None:
+        self.frames: list[tuple[Image.Image, int]] = []
+
+    def add(self, widget: QWidget, ms: int) -> None:
+        settle(0.8)
+        image = widget.grab().toImage()
+        image = image.scaledToWidth(DEMO_WIDTH, Qt.TransformationMode.SmoothTransformation)
+        buffer = QBuffer()
+        buffer.open(QBuffer.OpenModeFlag.WriteOnly)
+        image.save(buffer, "PNG")
+        self.frames.append((Image.open(io.BytesIO(bytes(buffer.data()))).convert("RGB"), ms))
+
+    def save(self, path: Path) -> None:
+        images = [img.quantize(colors=256, dither=Image.Dither.NONE) for img, _ in self.frames]
+        images[0].save(
+            path,
+            save_all=True,
+            append_images=images[1:],
+            duration=[ms for _, ms in self.frames],
+            loop=0,
+            optimize=True,
+        )
+        print(f"  {path.relative_to(ROOT)}")
+
+
+def record_demo(window: MainWindow, settings: AppSettings) -> None:
+    """Home → a group → pick → preview → crop warning → done."""
+    rec = Recorder()
+    window.show_start()
+    hide_temp_folder(window.start_screen, settings)
+    window.start_screen.cards.setCurrentIndex(QModelIndex())
+    rec.add(window, 2200)
+
+    window.open_selection(settings.base_dir / "Summer prints")
+    session = window.session
+    wait_until(lambda: session.pages.currentWidget() is session.groups_page)
+    burst = next(i for i, g in enumerate(session.groups) if len(g.photos) == 4)
+    session.show_group(burst)
+    set_picks(session, [])
+    rec.add(window, 1600)
+    set_picks(session, [0])
+    rec.add(window, 1300)
+    set_picks(session, [0, 3], current=3)
+    rec.add(window, 1500)
+
+    group_view = session.group_view
+    viewer = PhotoViewer(
+        group_view.photo_model.photos,
+        session._paths_for,
+        lambda p: session.loader.cached(p.rel_path),
+        group_view.picked(),
+        0,
+        window,
+        show_crop=False,
+    )
+    viewer.resize(*WINDOW)
+    viewer.show()
+    wait_until(lambda: viewer.full_image is not None)
+    wait_until(lambda: viewer.picked_overlay.size() == viewer.view.viewport().size())
+    viewer._show_controls()
+    rec.add(viewer, 2000)
+    viewer.close()
+
+    set_picks(session, [0])
+    session.next_group()
+    phone = next(
+        i
+        for i, g in enumerate(session.groups)
+        if any(p.rel_path.endswith("IMG_1012.jpg") for p in g.photos)
+    )
+    session.show_group(phone)
+    set_picks(session, [1], current=1)
+    rec.add(window, 1800)
+
+    session.show_end()
+    rec.add(window, 2600)
+    session.close_selection()
+    rec.save(DEMO)
 
 
 if __name__ == "__main__":

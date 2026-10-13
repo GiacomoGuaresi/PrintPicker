@@ -47,8 +47,8 @@ metodo cerca la soglia con il richiamo più alto (meno doppioni rimasti separati
 precisione ≥ 0,9 (poche foto diverse nello stesso gruppo), e dà i numeri su tutte le cartelle
 e su quelle difficili (`Hard cases`, `Work desk`); con `-v` elenca le coppie sbagliate.
 
-Gli screenshot del README (`docs/screenshots/`) si rigenerano dall'app vera, con le foto di
-esempio, in inglese (le impostazioni dell'utente non vengono toccate):
+Gli screenshot del README (`docs/screenshots/`) e la GIF dimostrativa (`docs/images/demo.gif`)
+si rigenerano dall'app vera, con le foto di esempio, in inglese (le impostazioni dell'utente non vengono toccate):
 
 ```sh
 uv run python scripts/make_screenshots.py

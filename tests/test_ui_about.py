@@ -40,3 +40,10 @@ def test_new_selection_action(qtbot, monkeypatch):
     monkeypatch.setattr(window.start_screen, "new_selection", lambda: calls.append(1))
     window.new_action.trigger()
     assert calls == [1]
+
+
+def test_bug_form_has_the_prefilled_field():
+    from pathlib import Path
+
+    form = Path(__file__).resolve().parent.parent / ".github" / "ISSUE_TEMPLATE" / "bug_report.yml"
+    assert "id: environment" in form.read_text(encoding="utf-8")

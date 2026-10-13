@@ -1,0 +1,39 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem!
+        Tip: **Help → Report a problem…** in the app opens this form with your system details already filled in.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+      placeholder: |
+        1. Opened a selection
+        2. Added a folder from a USB stick
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Version and system
+      description: From **Help → About PrintPicker → Copy**.
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: formats
+    attributes:
+      label: Photo formats involved (if any)
+      multiple: true
+      options: [JPG, PNG, HEIC, RAW, TIFF, WebP, Not related to a format]
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else
+      description: Please don't attach photos you don't want to make public.

@@ -164,7 +164,7 @@ Obiettivo: un'app curata nei dettagli, pronta per il portfolio: identità grafic
 | 12.5 | **Rifinitura schermate**: home, barra superiore e inferiore, vista gruppo, stati vuoti, impostazioni, geometria finestra salvata | `feat(ui): polished screens` | ✅ |
 | 12.6 | **Barra dei menu** e finestra **Informazioni** (versione, link, info di sistema, crediti) | `feat(ui): menu bar and about dialog` | ✅ |
 | 12.7 | **Controllo aggiornamenti** via API GitHub: manuale e automatico (1 volta al giorno, disattivabile) | `feat(ui): update check` | ✅ |
-| 12.8 | **README** con banner, badge, GIF demo, "come funziona"; `CONTRIBUTING.md` e template GitHub | `docs: portfolio-ready readme and github templates` | ⬜ |
+| 12.8 | **README** con banner, badge, GIF demo, "come funziona"; `CONTRIBUTING.md` e template GitHub | `docs: portfolio-ready readme and github templates` | ✅ |
 | 12.9 | Traduzioni e documentazione di M12 | `docs: m12 polish` | ⬜ |
 
 > Il 7.5 (prova manuale e tag `v1.0.0`) si fa dopo M12.

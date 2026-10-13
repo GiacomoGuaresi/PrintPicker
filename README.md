@@ -1,14 +1,27 @@
 <p align="center">
-  <img src="packaging/icons/printpicker.png" alt="PrintPicker icon" width="128">
+  <img src="docs/images/banner.png" alt="PrintPicker — pick the best shots from your photo archive and get them ready for print" width="100%">
 </p>
 
-# PrintPicker
+<p align="center">
+  <a href="https://github.com/GiacomoGuaresi/PrintPicker/actions/workflows/ci.yml"><img src="https://github.com/GiacomoGuaresi/PrintPicker/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/GiacomoGuaresi/PrintPicker/releases/latest"><img src="https://img.shields.io/github/v/release/GiacomoGuaresi/PrintPicker?display_name=tag&sort=semver" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/platforms-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-22B5AA" alt="Platforms: macOS, Windows, Linux">
+  <img src="https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/GiacomoGuaresi/PrintPicker" alt="MIT License"></a>
+</p>
 
-**Pick the best shots from your photo archive and get them ready for print — fast.**
+<p align="center">
+  <a href="#download"><b>Download</b></a> ·
+  <a href="#how-to-use-it">How to use it</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="docs/README.md">Docs</a>
+</p>
 
-PrintPicker is a small cross-platform desktop utility for people who keep their photos on an external drive, organized in folders. Point it at a folder, and it walks you through groups of visually similar photos one at a time: pick the ones you want, and they're copied into a print-ready folder on your computer, with a running estimate of what the print order will cost.
+PrintPicker is a small cross-platform desktop app for people who keep their photos on an external drive, organized in folders. Point it at a folder and it walks you through **groups of visually similar photos**, one at a time: pick the best shots, and they're copied into a print-ready folder on your computer, with a running estimate of what the print order will cost.
 
-![Reviewing a group of similar photos](docs/screenshots/group.png)
+<p align="center">
+  <img src="docs/images/demo.gif" alt="A quick tour: selections, picking photos in a group, full-screen preview, crop warning, done" width="100%">
+</p>
 
 ## Features
 
@@ -23,15 +36,23 @@ PrintPicker is a small cross-platform desktop utility for people who keep their 
 - **Print-ready output** — flat folder, file names prefixed with their source path, HEIC/RAW/TIFF/WebP converted to JPG.
 - **Cost estimate** — configurable tiered price list (PhotoSì 10×15 prices by default) with a live total.
 - **Never touches your archive** — read-only on the source, always.
+- **Private by design** — everything runs on your computer. The only network request is the optional daily update check to GitHub.
+- **Native feel** — one dark theme on every platform, full keyboard control, menus where your OS expects them, English and Italian.
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/start.png" alt="Start screen with the print selections"></td>
+    <td width="50%"><img src="docs/screenshots/group.png" alt="Reviewing a group of similar photos"></td>
+    <td width="50%"><img src="docs/screenshots/start.png" alt="Start screen with the print selections"></td>
+  </tr>
+  <tr>
+    <td align="center">Pick the best shots of each group</td>
+    <td align="center">Print selections</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/preview.png" alt="Full-screen preview with filmstrip"></td>
     <td><img src="docs/screenshots/crop.png" alt="Crop preview for 10×15 prints"></td>
   </tr>
   <tr>
-    <td align="center">Print selections</td>
     <td align="center">Full-screen preview</td>
     <td align="center">Crop preview</td>
   </tr>
@@ -44,7 +65,7 @@ Interface in English and Italian (follows the system language).
 
 ## Download
 
-Get the latest build for your system from the [Releases](https://github.com/GiacomoGuaresi/PrintPicker/releases) page:
+Get the latest build for your system from the [Releases](https://github.com/GiacomoGuaresi/PrintPicker/releases/latest) page:
 
 | System | File |
 |---|---|
@@ -57,6 +78,8 @@ The builds are not signed, so the first launch needs one extra step:
 - **macOS** — unzip, move `PrintPicker.app` to Applications, then right-click it and choose **Open** (or run `xattr -dr com.apple.quarantine /Applications/PrintPicker.app`).
 - **Windows** — unzip and run `PrintPicker.exe`; if SmartScreen appears, click **More info → Run anyway**.
 - **Linux** — extract and run `PrintPicker/PrintPicker`; `PrintPicker/install-desktop-entry.sh` adds it to the application menu.
+
+PrintPicker tells you when a new version is out (*Help → Check for updates…*, or automatically once a day — you can turn it off in *Settings*).
 
 ## How to use it
 
@@ -76,14 +99,36 @@ The builds are not signed, so the first launch needs one extra step:
 | ↑ ↓, Tab | Move between the photos of the group |
 | Space, `1`–`9` | Pick / unpick the current (or n-th) photo |
 | `A` | Pick all / none |
-| `F`, double-click or 🔍 on the photo | Full-screen preview |
+| `F`, double-click or the expand button on the photo | Full-screen preview |
 | `C` | Hide / show the crop preview (on by default) |
 
-In the full-screen preview: ← → to browse, Space to pick, `+` / `−` / mouse wheel to zoom, `0` fit, `1` 100%, double-click to switch between fit and 100%, `R` / `Shift+R` rotate, `Esc` to close. With the mouse: the ‹ › arrows and ✕ appear when you move it, the bottom bar has *Pick*, zoom and rotate buttons, and a click on the filmstrip jumps to that photo.
+In the full-screen preview: ← → to browse, Space to pick, `+` / `−` / mouse wheel to zoom, `0` fit, `1` 100%, double-click to switch between fit and 100%, `R` / `Shift+R` rotate, `Esc` to close. With the mouse: the arrows and the close button appear when you move it, the bottom bar has *Pick*, zoom and rotate buttons, and a click on the filmstrip jumps to that photo.
+
+Anywhere: `Ctrl/⌘+N` new selection, `Ctrl/⌘+,` settings.
 
 ### Price list
 
 *Settings…* holds the folder where selections are created and the price list used for the estimate: price tiers (the tier reached prices *all* the photos, as with PhotoSì quantity discounts) and fixed costs such as shipping.
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[(Photo archive<br/>read-only)] --> B[Scan folders<br/>JPG · HEIC · RAW · …]
+    B --> C[Decode once<br/>thumbnail + signature]
+    C --> D[pHash<br/>64-bit perceptual hash]
+    C --> E[DINOv2 embedding<br/>on-device, ONNX]
+    D --> F{Distance =<br/>min of the two}
+    E --> F
+    F --> G[Group per folder<br/>complete linkage + threshold]
+    G --> H[You pick]
+    H --> I[Copy to the selection<br/>convert to JPG]
+    I --> J[(Print-ready folder<br/>+ cost estimate)]
+```
+
+- **Two complementary signals.** A perceptual hash catches copies and near-identical bursts; a small vision model ([DINOv2](https://github.com/facebookresearch/dinov2) ViT-S/14, 44 MB, run with ONNX Runtime on the CPU) recognises the *same scene shot again* — reframed, rotated, in other light. Their distances share one scale, so the threshold slider stays meaningful.
+- **Measured, not guessed.** A benchmark on sample photos with ground truth (`scripts/eval_grouping.py`) picked the method: pHash alone found 55% of the same-scene pairs on the hard cases, pHash + DINOv2 finds all of them with no false merges. Details in [architecture](docs/architecture.md).
+- **Fast on slow drives.** Each photo is read once, decoded in parallel, and its signature and thumbnail are cached in the selection, so reopening is instant.
 
 ## Run from source
 
@@ -100,7 +145,7 @@ Tests, lint, translations and builds are described in [docs/development.md](docs
 
 ## Tech stack
 
-Python + Qt ([PySide6](https://doc.qt.io/qtforpython-6/)), [Pillow](https://python-pillow.org/), [NumPy](https://numpy.org/), [pillow-heif](https://github.com/bigcat88/pillow_heif), [rawpy](https://github.com/letmaik/rawpy). Packaged with PyInstaller.
+Python + Qt ([PySide6](https://doc.qt.io/qtforpython-6/)), [Pillow](https://python-pillow.org/), [NumPy](https://numpy.org/), [pillow-heif](https://github.com/bigcat88/pillow_heif), [rawpy](https://github.com/letmaik/rawpy), [ONNX Runtime](https://onnxruntime.ai/). Packaged with PyInstaller and released by GitHub Actions for macOS, Windows and Linux. Icons by [Lucide](https://lucide.dev), typeface [Inter](https://rsms.me/inter/).
 
 ## Documentation
 
@@ -118,10 +163,10 @@ The full specification (in Italian) lives in [`docs/`](docs/README.md):
 
 ## Contributing
 
-Issues and suggestions are welcome — see the [open questions](docs/open-questions.md) for the points still being decided.
+Bug reports, ideas and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). The quickest way to report a problem is *Help → Report a problem…* in the app: it opens an issue with your version and system already filled in.
 
 ## License
 
 [MIT](LICENSE) © 2026 Giacomo Guaresi
 
-The bundled grouping model, DINOv2 ViT-S/14 by Meta AI, is distributed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) (see [NOTICE](src/printpicker/resources/models/NOTICE.md)).
+The bundled grouping model, DINOv2 ViT-S/14 by Meta AI, is distributed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) (see [NOTICE](src/printpicker/resources/models/NOTICE.md)). [Lucide](https://lucide.dev) icons: ISC License. [Inter](https://rsms.me/inter/) typeface: SIL Open Font License 1.1.

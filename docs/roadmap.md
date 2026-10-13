@@ -145,9 +145,11 @@ Obiettivo: unire gli scatti "dello stesso momento" anche quando cambiano inquadr
 |---|---|---|---|
 | 11.1 | **Casi difficili** nelle foto di esempio (reinquadratura, telefono girato, bilanciamento del bianco, soggetto spostato, foto diverse che si somigliano) e **verità di riferimento** `samples/truth.json` | `test(samples): hard grouping cases with ground truth` | ✅ |
 | 11.2 | **Benchmark** `scripts/eval_grouping.py`: precisione / richiamo sulle coppie, gruppi contro l'ideale, sweep della soglia | `test: grouping benchmark` | ✅ |
-| 11.3 | **Miglioramenti classici** che migliorano il benchmark (clustering indipendente dall'ordine, colore, data di scatto) | `feat(core): better similarity grouping` | ⬜ |
-| 11.4 | **Prova IA**: embedding DINOv2 (ONNX) nel benchmark; si integra solo con richiamo +20 punti a precisione ≥ 0,9 e ≤ 50 ms/foto | `test: image embeddings in grouping benchmark` | ⬜ |
-| 11.5 | **Integrazione IA** (se la prova passa): embedding in cache, slider rimappato, modello incluso nel pacchetto | `feat(core): image embeddings for grouping` | ⬜ |
+| 11.3 | **Miglioramenti classici**: provati colore HSV, data di scatto, clustering agglomerativo, pHash a 256 bit; nessuno migliora in modo solido (il colore unisce foto diverse) → scartati | — | ⏭️ |
+| 11.4 | **Prova IA** nel benchmark: DINOv2-small porta il richiamo sui casi difficili da 0,55 a 1,00 a precisione 1,00 (soglia 0,15), ~50 ms/foto; CLIP peggio del pHash → si integra DINOv2 | — | ✅ |
+| 11.5a | **Modello di embedding**: DINOv2 ONNX fp16 scaricato da `scripts/fetch_model.py`, onnxruntime, incluso nel pacchetto e nel self-test | `feat(core): image embedding model` | ✅ |
+| 11.5b | **Raggruppamento con embedding**: distanza = minima tra pHash ed embedding (stessa scala dello slider), embedding in cache nel database, matrice delle distanze per cartella | `feat(core): group by image embeddings` | ⬜ |
+| 11.5c | **Benchmark** sul raggruppamento vero dell'app, documentazione dei risultati | `test: benchmark the app grouping` | ⬜ |
 | 11.6 | Documentazione e traduzioni | `docs: grouping algorithm` | ⬜ |
 
 ---

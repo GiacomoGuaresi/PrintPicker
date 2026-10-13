@@ -33,6 +33,13 @@ def run_self_test(app: QApplication) -> int:
                 ok = False
             checks.append((f"format {ext}", ok))
     try:
+        from printpicker.core.embedding import EMBEDDING_SIZE, embed
+
+        vector = embed(Image.new("RGB", (64, 48), (10, 20, 30)))
+        checks.append(("embedding model", vector is not None and vector.shape == (EMBEDDING_SIZE,)))
+    except Exception:
+        checks.append(("embedding model", False))
+    try:
         import rawpy
 
         checks.append(("rawpy / LibRaw " + str(rawpy.libraw_version), True))

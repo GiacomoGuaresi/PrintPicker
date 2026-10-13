@@ -31,6 +31,11 @@ jobs:
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libxkbcommon0 libfontconfig1 libdbus-1-3
       - run: uv sync --locked --all-groups
+      - uses: actions/cache@v4
+        with:
+          path: src/printpicker/resources/models/*.onnx
+          key: model-${{ hashFiles('scripts/fetch_model.py') }}
+      - run: uv run python scripts/fetch_model.py
       - run: uv run pyinstaller packaging/printpicker.spec --noconfirm
 
       - name: Self-test and archive (macOS)

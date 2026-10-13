@@ -59,10 +59,15 @@ Il progetto usa [uv](https://docs.astral.sh/uv/) per gestire Python (3.12) e le 
 
 ```sh
 uv sync                    # crea .venv e installa le dipendenze
+uv run python scripts/fetch_model.py   # modello per il raggruppamento (~44 MB, non in git)
 uv run pytest              # test
 uv run ruff check .        # lint
 uv run ruff format .       # formattazione
 ```
+
+Il modello (DINOv2, vedi [architettura](architecture.md)) finisce in
+`src/printpicker/resources/models/`; senza, l'app funziona lo stesso raggruppando solo con il
+perceptual hash e i test che lo usano vengono saltati (in CI sono obbligatori).
 
 ## CLI di debug
 
@@ -94,8 +99,9 @@ uv run pyinstaller packaging/printpicker.spec --noconfirm
 ```
 
 Risultato in `dist/`: `PrintPicker.app` su macOS, cartella `PrintPicker/` su Windows e Linux
-(~135 MB, quasi tutto Qt). Per verificare che l'eseguibile contenga tutto (formati HEIC/RAW,
-traduzioni, interfaccia):
+(~250 MB: Qt, onnxruntime ~70 MB e il modello ~44 MB, che va scaricato prima con
+`scripts/fetch_model.py`). Per verificare che l'eseguibile contenga tutto (formati HEIC/RAW,
+modello, traduzioni, interfaccia):
 
 ```sh
 dist/PrintPicker.app/Contents/MacOS/PrintPicker --self-test   # macOS

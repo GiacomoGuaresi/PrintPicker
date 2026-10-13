@@ -26,3 +26,7 @@ Thumbs.db
 
 # Sample photos (scripts/make_samples.py)
 samples/
+
+# Embedding model (scripts/fetch_model.py)
+src/printpicker/resources/models/*.onnx
+src/printpicker/resources/models/*.part

@@ -36,6 +36,16 @@ Per misurare il raggruppamento ci sono anche:
   separate (`must_not`). Con `"complete": true` ogni coppia fuori dallo stesso gruppo va tenuta
   separata; altrimenti le coppie non elencate sono ambigue e non si misurano.
 
+Il benchmark confronta i metodi di raggruppamento con questa verità:
+
+```sh
+uv run python scripts/eval_grouping.py -v     # --fresh per misurare i tempi senza cache
+```
+
+Per ogni metodo cerca la soglia con il richiamo più alto (meno doppioni rimasti separati) a
+precisione ≥ 0,9 (poche foto diverse nello stesso gruppo), e dà i numeri su tutte le cartelle
+e su quelle difficili (`Hard cases`, `Work desk`); con `-v` elenca le coppie sbagliate.
+
 Gli screenshot del README (`docs/screenshots/`) si rigenerano dall'app vera, con le foto di
 esempio, in inglese e con tema chiaro (le impostazioni dell'utente non vengono toccate):
 

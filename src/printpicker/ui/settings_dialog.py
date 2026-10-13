@@ -57,7 +57,7 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
         self.settings = settings
         self.setWindowTitle(self.tr("Settings"))
-        self.setMinimumWidth(560)
+        self.setMinimumWidth(640)
 
         self.base_dir_edit = QLineEdit(str(settings.base_dir))
         browse = QPushButton(self.tr("Browse…"))
@@ -72,6 +72,7 @@ class SettingsDialog(QDialog):
             QLabel(self.tr("New selections are created here. Existing ones are not moved.")),
             "muted",
         )
+        hint.setWordWrap(True)
 
         self.general = QGroupBox(self.tr("General"))
         form = QFormLayout(self.general)

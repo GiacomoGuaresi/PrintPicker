@@ -234,6 +234,16 @@ QComboBox QAbstractItemView {
     selection-background-color: @SURFACE_3; selection-color: @TEXT;
 }
 
+QCheckBox { spacing: 8px; }
+QCheckBox::indicator {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1px solid @BORDER_STRONG; background: @SURFACE_2;
+}
+QCheckBox::indicator:hover { border-color: @ACCENT; }
+QCheckBox::indicator:checked {
+    background: @ACCENT; border-color: @ACCENT; image: url(@CHECK_ICON);
+}
+
 QSlider::groove:horizontal { height: 4px; background: @SURFACE_3; border-radius: 2px; }
 QSlider::sub-page:horizontal { background: @ACCENT; border-radius: 2px; }
 QSlider::handle:horizontal {
@@ -302,11 +312,36 @@ def style_sheet() -> str:
         for name, value in globals().items()
         if name.isupper() and isinstance(value, (QColor, int))
     }
-    text = STYLE_SHEET
+    text = STYLE_SHEET.replace("@CHECK_ICON", _check_icon_path())
     # Longest names first, so @SURFACE_2 is not read as @SURFACE + "_2".
     for name in sorted(tokens, key=len, reverse=True):
         text = text.replace(f"@{name}", tokens[name])
     return text
+
+
+def _check_icon_path() -> str:
+    """The check mark of checked checkboxes: style sheets need an image file, so the Lucide
+    icon is written once, in the checkbox text colour, to the app's cache folder."""
+    from PySide6.QtCore import QStandardPaths
+
+    folder = Path(
+        QStandardPaths.writableLocation(QStandardPaths.StandardLocation.CacheLocation)
+        or Path.home()
+    )
+    path = folder / f"check-{ON_ACCENT.name()[1:]}.svg"
+    if not path.exists():
+        try:
+            folder.mkdir(parents=True, exist_ok=True)
+            svg = (ICONS_DIR / "check.svg").read_text(encoding="utf-8")
+            path.write_text(
+                svg.replace("currentColor", ON_ACCENT.name()).replace(
+                    'stroke-width="2"', 'stroke-width="3"'
+                ),
+                encoding="utf-8",
+            )
+        except OSError:
+            return ""
+    return path.as_posix()
 
 
 def load_fonts() -> bool:

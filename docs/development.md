@@ -117,3 +117,9 @@ modello, traduzioni, interfaccia):
 dist/PrintPicker.app/Contents/MacOS/PrintPicker --self-test   # macOS
 dist/PrintPicker/PrintPicker --self-test                      # Linux (PrintPicker.exe su Windows)
 ```
+
+## Interfaccia: regole
+
+- Colori, font e icone vengono solo da `src/printpicker/ui/theme.py` (token, `set_role`, `icon`): un test vieta i colori esadecimali negli altri file dell'interfaccia.
+- Ogni testo dell'interfaccia passa da `tr()` ed è tradotto in `scripts/update_translations.py`; `tests/test_i18n.py` controlla che il file `.ts` sia aggiornato e completo.
+- I testi italiani sono più lunghi: dopo aver cambiato una schermata conviene guardarla anche in italiano.

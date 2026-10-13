@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
 )
 
 from printpicker.core.pricing import DEFAULT_PRICE_LIST, FixedCost, PriceList, PriceTier
+from printpicker.ui import theme
 from printpicker.ui.money import format_money
 from printpicker.ui.settings import AppSettings, default_base_dir
 
@@ -226,7 +227,7 @@ class SettingsDialog(QDialog):
         try:
             price_list = self.price_list()
         except ValueError as exc:
-            self.examples.setText(f"<span style='color:#c33'>{exc}</span>")
+            self.examples.setText(f"<span style='color:{theme.DANGER.name()}'>{exc}</span>")
             return
         parts = [
             self.tr("%1 photos ≈ %2")

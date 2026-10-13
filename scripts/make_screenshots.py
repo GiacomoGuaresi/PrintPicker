@@ -4,7 +4,7 @@
 
 Needs ``samples/`` (``scripts/make_samples.py``). Creates a few selections in a temporary
 folder with throwaway settings, drives the app through them and saves the screens to
-``docs/screenshots/`` (English interface, light theme). Your settings are not touched.
+``docs/screenshots/`` (English interface). Your settings are not touched.
 """
 
 from __future__ import annotations

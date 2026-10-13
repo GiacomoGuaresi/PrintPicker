@@ -3,6 +3,7 @@ from decimal import Decimal
 from PySide6.QtCore import QLocale, QSettings
 
 from printpicker.core.pricing import DEFAULT_PRICE_LIST, PriceList, PriceTier
+from printpicker.ui import theme
 from printpicker.ui.money import format_money
 from printpicker.ui.settings import AppSettings
 
@@ -72,7 +73,7 @@ def test_invalid_price_list_is_rejected(qtbot, tmp_path, monkeypatch):
     warnings = []
     monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a))
     dialog.tiers_table.item(0, 0).setText("5")  # no tier from 1 photo
-    assert "color:#c33" in dialog.examples.text()
+    assert f"color:{theme.DANGER.name()}" in dialog.examples.text()
     dialog.accept()
     assert warnings
     assert s.price_list == DEFAULT_PRICE_LIST

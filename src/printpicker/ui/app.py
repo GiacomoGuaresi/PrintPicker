@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QApplication
 
 from printpicker.about import APP_NAME, __version__
 from printpicker.ui.main_window import MainWindow
+from printpicker.ui.theme import apply_theme
 
 PACKAGE_DIR = Path(__file__).resolve().parent.parent
 I18N_DIR = PACKAGE_DIR / "i18n"
@@ -39,6 +40,7 @@ def create_application(argv: list[str] | None = None) -> QApplication:
     app.setOrganizationName(APP_NAME)
     app.setApplicationVersion(__version__)
     app.setWindowIcon(QIcon(str(ICON_PATH)))
+    apply_theme(app)
     return app
 
 

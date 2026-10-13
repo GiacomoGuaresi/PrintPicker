@@ -63,3 +63,9 @@ Sulle foto di esempio realistiche le coppie della stessa scena stanno sotto 0,14
 
 - `src/printpicker/about.py` è l'unica fonte di nome, versione, autore, copyright e link GitHub: li usano l'interfaccia, la build PyInstaller (`packaging/printpicker.spec`) e i test.
 - La versione sta solo in `src/printpicker/__init__.py`; il `pyproject.toml` la legge da lì (`dynamic = ["version"]`). Per una nuova release basta cambiarla lì e creare il tag.
+
+## Aspetto
+
+- **Un solo tema scuro**, uguale su macOS, Windows e Linux: le foto risaltano meglio su un fondo scuro, come nei programmi di fotoritocco. Stile Qt *Fusion* + palette + un foglio di stile globale (`src/printpicker/ui/theme.py`); anche la barra del titolo è scura dove il sistema lo permette.
+- I colori sono **token** presi dal logo: teal (`ACCENT`) per azioni, focus e selezione, ambra (`PICK`) per le foto scelte. Nessun colore scritto a mano fuori da `theme.py` (lo controlla un test); i widget scelgono una variante con `set_role` (`primary`, `muted`, `title`…).
+- Font **Inter** (SIL OFL) incluso nell'app; se manca resta il font di sistema.

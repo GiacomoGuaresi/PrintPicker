@@ -38,9 +38,11 @@ from PySide6.QtWidgets import (
 from printpicker.core.images import ImageLoadError, load_image
 from printpicker.core.print_format import needs_crop
 from printpicker.core.scanner import PhotoFile
+from printpicker.ui import theme
 from printpicker.ui.group_view import PathsFn, draw_crop_overlay
 from printpicker.ui.key_hints import KeyHints
 from printpicker.ui.qimage import to_qimage
+from printpicker.ui.theme import css
 
 
 class _Relay(QObject):
@@ -65,16 +67,15 @@ ZOOM_STEP = 1.25
 MAX_ZOOM = 8.0  # relative to actual pixels
 HIDE_CONTROLS_MS = 2000  # the controls over the photo hide after this much mouse stillness
 
-OVERLAY_BUTTON_STYLE = """
-QToolButton { color: white; background: rgba(0, 0, 0, 110); border: none; border-radius: %dpx;
-              font-size: %dpx; }
-QToolButton:hover { background: rgba(0, 0, 0, 170); }
+OVERLAY_BUTTON_STYLE = f"""
+QToolButton {{ color: white; background: {css(theme.OVERLAY)}; border: none;
+              border-radius: %dpx; font-size: %dpx; padding: 0px; }}
+QToolButton:hover {{ background: {css(theme.OVERLAY_HOVER)}; }}
 """
-BAR_BUTTON_STYLE = """
-QToolButton { color: #ddd; background: transparent; border: none; border-radius: 4px;
-              padding: 4px 10px; font-size: 14px; }
-QToolButton:hover { background: #2a2a2a; }
-QToolButton:checked { background: palette(highlight); color: white; }
+BAR_STYLE = f"""
+#bar {{ background: {css(theme.VIEWER_BG)}; border-top: 1px solid {css(theme.SURFACE_2)}; }}
+#bar QToolButton {{ padding: 4px 10px; font-size: 14px; }}
+#bar QToolButton:checked {{ background: {css(theme.PICK)}; color: {css(theme.ON_PICK)}; }}
 """
 
 
@@ -89,7 +90,7 @@ class ImageView(QGraphicsView):
         self.item = QGraphicsPixmapItem()
         self.item.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
         self.scene().addItem(self.item)
-        self.setBackgroundBrush(QColor(20, 20, 20))
+        self.setBackgroundBrush(theme.VIEWER_BG)
         self.setFrameShape(QGraphicsView.Shape.NoFrame)
         self.setRenderHints(QPainter.RenderHint.SmoothPixmapTransform)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -311,7 +312,7 @@ class _FilmstripDelegate(QStyledItemDelegate):
             frame.moveCenter(area.center())
             painter.drawImage(frame, image)
         else:
-            painter.fillRect(frame, QColor(42, 42, 42))
+            painter.fillRect(frame, theme.SURFACE_2)
         current = index.row() == self.strip.current
         if not current:
             painter.fillRect(frame, QColor(0, 0, 0, 90))
@@ -349,7 +350,7 @@ class Filmstrip(QListView):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setFrameShape(QListView.Shape.NoFrame)
         self.setFixedHeight(CELL.height() + 8)
-        self.setStyleSheet("QListView { background: #141414; padding: 4px; }")
+        self.setStyleSheet(f"QListView {{ background: {css(theme.VIEWER_BG)}; padding: 4px; }}")
 
     def set_state(self, current: int, picked: set[str]) -> None:
         self.current = current
@@ -413,7 +414,7 @@ class PhotoViewer(QDialog):
         self.picked_overlay = PickedOverlay(self.view)
         self.picked_overlay.text = self.tr("Picked")
         self.caption = QLabel()
-        self.caption.setStyleSheet("color: #ddd; padding: 6px;")
+        self.caption.setStyleSheet(f"color: {css(theme.TEXT_MUTED)}; padding: 6px;")
         self.help = KeyHints(
             [
                 (["←", "→"], self.tr("browse")),
@@ -425,7 +426,6 @@ class PhotoViewer(QDialog):
                 (["C"], self.tr("crop")),
                 (["Esc"], self.tr("close")),
             ],
-            dark=True,
         )
 
         # Controls over the photo, hidden with the cursor while the mouse is still.
@@ -471,7 +471,7 @@ class PhotoViewer(QDialog):
         bar_widget.setObjectName("bar")
         bar_widget.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
         bar_widget.setLayout(bar)
-        bar_widget.setStyleSheet("#bar { background: #141414; }" + BAR_BUTTON_STYLE)
+        bar_widget.setStyleSheet(BAR_STYLE)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)

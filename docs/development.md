@@ -48,7 +48,7 @@ precisione ≥ 0,9 (poche foto diverse nello stesso gruppo), e dà i numeri su t
 e su quelle difficili (`Hard cases`, `Work desk`); con `-v` elenca le coppie sbagliate.
 
 Gli screenshot del README (`docs/screenshots/`) si rigenerano dall'app vera, con le foto di
-esempio, in inglese e con tema chiaro (le impostazioni dell'utente non vengono toccate):
+esempio, in inglese (le impostazioni dell'utente non vengono toccate):
 
 ```sh
 uv run python scripts/make_screenshots.py

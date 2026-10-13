@@ -137,10 +137,22 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 10.5 | **Tasti come chip** (`[Spazio]` scegli · …) nella vista gruppo e nell'anteprima | `feat(ui): key hint chips` | ✅ |
 | 10.6 | **Anteprima ritaglio attiva di default**, niente icona forbice sulle miniature | `feat(ui): crop preview on by default` | ✅ |
 
+## M11 — Raggruppamento migliore
+
+Obiettivo: unire gli scatti "dello stesso momento" anche quando cambiano inquadratura, colore o soggetto, così si stampa il minimo. Prima si misura, poi si sceglie: l'IA entra solo se batte in modo misurabile i miglioramenti classici.
+
+| # | Step | Commit | Stato |
+|---|---|---|---|
+| 11.1 | **Casi difficili** nelle foto di esempio (reinquadratura, telefono girato, bilanciamento del bianco, soggetto spostato, foto diverse che si somigliano) e **verità di riferimento** `samples/truth.json` | `test(samples): hard grouping cases with ground truth` | ✅ |
+| 11.2 | **Benchmark** `scripts/eval_grouping.py`: precisione / richiamo sulle coppie, gruppi contro l'ideale, sweep della soglia | `test: grouping benchmark` | ⬜ |
+| 11.3 | **Miglioramenti classici** che migliorano il benchmark (clustering indipendente dall'ordine, colore, data di scatto) | `feat(core): better similarity grouping` | ⬜ |
+| 11.4 | **Prova IA**: embedding DINOv2 (ONNX) nel benchmark; si integra solo con richiamo +20 punti a precisione ≥ 0,9 e ≤ 50 ms/foto | `test: image embeddings in grouping benchmark` | ⬜ |
+| 11.5 | **Integrazione IA** (se la prova passa): embedding in cache, slider rimappato, modello incluso nel pacchetto | `feat(core): image embeddings for grouping` | ⬜ |
+| 11.6 | Documentazione e traduzioni | `docs: grouping algorithm` | ⬜ |
+
 ---
 
 ## Dopo la v1.0 (idee)
 
 - Più formati di stampa (7×10, 13×19, 15×20…) con scelta del formato per foto.
-- Somiglianza "semantica" con embedding di immagini.
 - Più listini, uno per provider.

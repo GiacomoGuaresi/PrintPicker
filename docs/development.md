@@ -20,11 +20,21 @@ uv run python scripts/make_samples.py          # --force per rigenerarlo
 ```
 
 Scarica ~45 foto da [Lorem Picsum](https://picsum.photos) (licenza Unsplash) e crea in
-`samples/` (ignorata da git, ~85 MB) 80 foto in cartelle-viaggio: raffiche di scatti quasi
+`samples/` (ignorata da git, ~100 MB) 102 foto in cartelle-viaggio: raffiche di scatti quasi
 identici (spostamenti, esposizione, uno sfocato) che formano 21 gruppi con la soglia 14,
 foto verticali, 4:3 e quadrate per l'anteprima di ritaglio, HEIC/PNG/WebP/TIFF e una cartella
 `Edge cases` (orientamento EXIF, panorama, file illeggibili, video e file nascosti da ignorare).
 Gli autori sono in `samples/CREDITS.md`. RAW non incluso.
+
+Per misurare il raggruppamento ci sono anche:
+
+- `Hard cases`: lo stesso scatto reinquadrato, col telefono girato, con un altro bilanciamento
+  del bianco o col soggetto spostato, accanto a foto diverse che si somigliano (due scogliere,
+  due ponti di notte, …), anche scattate a pochi secondi di distanza;
+- `Work desk`: una sessione fotografica vera, etichettata a mano;
+- `samples/truth.json`: per ogni cartella i gruppi attesi (`groups`) e le coppie da tenere
+  separate (`must_not`). Con `"complete": true` ogni coppia fuori dallo stesso gruppo va tenuta
+  separata; altrimenti le coppie non elencate sono ambigue e non si misurano.
 
 Gli screenshot del README (`docs/screenshots/`) si rigenerano dall'app vera, con le foto di
 esempio, in inglese e con tema chiaro (le impostazioni dell'utente non vengono toccate):

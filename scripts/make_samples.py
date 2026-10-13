@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import numpy as np
 import pillow_heif
 from PIL import Image, ImageEnhance, ImageFilter
 
@@ -111,13 +112,23 @@ def crop_to(
     img: Image.Image, ratio: tuple[int, int], rng: random.Random, jitter: float
 ) -> Image.Image:
     """Crop to ``ratio`` (slightly zoomed in so frames can be shifted by ``jitter``)."""
+    shift = (rng.uniform(-jitter, jitter), rng.uniform(-jitter, jitter))
+    return frame(img, ratio, shift=shift)
+
+
+def frame(
+    img: Image.Image,
+    ratio: tuple[int, int],
+    zoom: float = 0.94,
+    shift: tuple[float, float] = (0, 0),
+) -> Image.Image:
+    """Crop to ``ratio``, keeping ``zoom`` of the largest crop, moved by ``shift`` × size."""
     w, h = img.size
     rw, rh = ratio
     cw, ch = (w, w * rh / rw) if w * rh / rw <= h else (h * rw / rh, h)
-    zoom = 0.94
     cw, ch = cw * zoom, ch * zoom
-    cx = (w - cw) / 2 + rng.uniform(-jitter, jitter) * w
-    cy = (h - ch) / 2 + rng.uniform(-jitter, jitter) * h
+    cx = (w - cw) / 2 + shift[0] * w
+    cy = (h - ch) / 2 + shift[1] * h
     cx = min(max(cx, 0), w - cw)
     cy = min(max(cy, 0), h - ch)
     out = img.crop((round(cx), round(cy), round(cx + cw), round(cy + ch)))
@@ -158,27 +169,130 @@ def save(img: Image.Image, path: Path, taken: datetime, rng: random.Random) -> N
         raise ValueError(ext)
 
 
-def build_folder(folder: str, shots: list[Shot], start: datetime, credits: dict) -> int:
+def build_folder(folder: str, shots: list[Shot], start: datetime, credits: dict) -> list[list[str]]:
+    """Write the photos of ``folder``; return the file names of each burst (one per shot)."""
     target = OUT / folder
     target.mkdir(parents=True, exist_ok=True)
     rng = random.Random(folder)
     taken = start
     n = 0
+    groups = []
     for shot in shots:
         original, meta = fetch(shot.picsum_id)
         credits[shot.picsum_id] = meta
         base = crop_to(original, shot.ratio, rng, jitter=0)
-        for frame in range(shot.burst):
+        groups.append([])
+        for i in range(shot.burst):
             n += 1
             img = (
                 base
-                if frame == 0
-                else variant(crop_to(original, shot.ratio, rng, jitter=0.012), frame, rng)
+                if i == 0
+                else variant(crop_to(original, shot.ratio, rng, jitter=0.012), i, rng)
             )
-            save(img, target / f"IMG_{1000 + n:04d}{shot.ext}", taken, rng)
+            name = f"IMG_{1000 + n:04d}{shot.ext}"
+            save(img, target / name, taken, rng)
+            groups[-1].append(name)
             taken += timedelta(seconds=rng.uniform(0.4, 2.5))
         taken += timedelta(minutes=rng.uniform(3, 90))
-    return n
+    return groups
+
+
+# Harder near-duplicates, as a real photographer takes them: (seconds since the previous
+# photo, edit). Each scene is one expected group. Scenes of one photo next to a look-alike
+# (two shores, two night bridges, …) are different photos that must stay apart, even when
+# taken a few seconds apart.
+HARD_CASES: list[tuple[int, list[tuple[float, str]]]] = [
+    (13, [(0, "base")]),
+    (14, [(45, "base")]),
+    (164, [(600, "base"), (6, "reframe"), (3, "zoom")]),
+    (177, [(900, "base"), (20, "portrait")]),
+    (16, [(1200, "base"), (90, "warm"), (150, "cool")]),
+    (124, [(700, "base"), (8, "moved")]),
+    (43, [(3600, "base")]),
+    (249, [(60, "base")]),
+    (66, [(1800, "base"), (5, "handheld")]),
+    (231, [(900, "base")]),
+    (235, [(120, "base")]),
+    (238, [(2400, "base")]),
+    (259, [(30, "base")]),
+    (12, [(1500, "base")]),
+    (199, [(40, "base")]),
+]
+
+
+def tint(img: Image.Image, brightness: float, red: float, blue: float) -> Image.Image:
+    """Exposure change and a warm (red > 1) or cool (blue > 1) white balance."""
+    img = ImageEnhance.Brightness(img).enhance(brightness)
+    r, g, b = img.split()
+    r = r.point(lambda v: min(255, round(v * red)))
+    b = b.point(lambda v: min(255, round(v * blue)))
+    return Image.merge("RGB", (r, g, b))
+
+
+def move_subject(img: Image.Image, box: tuple[float, ...], dx: float) -> Image.Image:
+    """Move the subject inside ``box`` (fractions of the size) by ``dx`` × width, filling
+    its old place with the background found ``dx`` × width to its right.
+
+    The subject is told apart from a plain background by its colour, so only its pixels move.
+    """
+    w, h = img.size
+    left, top, right, bottom = (round(v * s) for v, s in zip(box, (w, h, w, h), strict=True))
+    shift = round(dx * w)
+    subject = img.crop((left, top, right, bottom))
+    background = img.crop((left + shift, top, right + shift, bottom))
+    # Distance from the background colour (the median of the box), then grown and feathered.
+    pixels = np.asarray(subject, dtype=np.int16)
+    diff = np.abs(pixels - np.median(pixels, axis=(0, 1))).max(axis=2)
+    mask = Image.fromarray(np.where(diff > 80, 255, 0).astype(np.uint8))
+    grow = max(3, (bottom - top) // 40) | 1
+    mask = mask.filter(ImageFilter.MaxFilter(grow)).filter(ImageFilter.GaussianBlur(grow / 2))
+    out = img.copy()
+    out.paste(background, (left, top), mask)
+    out.paste(subject, (left + shift, top), mask)
+    return out
+
+
+def hard_case(original: Image.Image, edit: str) -> Image.Image:
+    if edit == "base":
+        return frame(original, (3, 2))
+    if edit == "reframe":
+        return frame(original, (3, 2), zoom=0.78, shift=(0.08, 0.05))
+    if edit == "zoom":
+        return frame(original, (3, 2), zoom=0.62, shift=(-0.05, 0.02))
+    if edit == "portrait":
+        return frame(original, (2, 3))
+    if edit == "warm":
+        return tint(frame(original, (3, 2), shift=(0.01, 0)), 0.72, 1.15, 0.82)
+    if edit == "cool":
+        return tint(frame(original, (3, 2), shift=(-0.01, 0.01)), 1.3, 0.85, 1.15)
+    if edit == "moved":
+        return move_subject(frame(original, (3, 2)), (0.04, 0.34, 0.42, 0.86), 0.44)
+    if edit == "handheld":
+        img = tint(frame(original, (3, 2), zoom=0.82, shift=(0.04, -0.03)), 0.85, 1.0, 1.0)
+        m = round(max(img.size) * 0.04)
+        rotated = img.rotate(3, resample=Image.BICUBIC, expand=False)
+        return rotated.crop((m, m, img.width - m, img.height - m)).resize(img.size, Image.LANCZOS)
+    raise ValueError(edit)
+
+
+def build_hard_cases(start: datetime, credits: dict) -> list[list[str]]:
+    target = OUT / "Hard cases"
+    target.mkdir(parents=True, exist_ok=True)
+    rng = random.Random("hard")
+    taken = start
+    n = 0
+    groups = []
+    for picsum_id, takes in HARD_CASES:
+        original, meta = fetch(picsum_id)
+        credits[picsum_id] = meta
+        groups.append([])
+        for seconds, edit in takes:
+            n += 1
+            taken += timedelta(seconds=seconds)
+            name = f"IMG_{1000 + n:04d}.jpg"
+            save(hard_case(original, edit), target / name, taken, rng)
+            groups[-1].append(name)
+    return groups
 
 
 def build_edge_cases(credits: dict) -> int:
@@ -216,6 +330,55 @@ def build_edge_cases(credits: dict) -> int:
     return 9
 
 
+# Ground truth of the folders that are not built from bursts: the groups a person would
+# expect, and pairs that must stay apart. Pairs not listed are ambiguous and not measured.
+TRUTH_BY_HAND: dict[str, dict] = {
+    # The same photo saved in different ways (panorama: a wider crop of the same scene).
+    "Edge cases": {
+        "groups": [
+            [
+                "exif_rotated.jpg",
+                "small.jpg",
+                "large.jpg",
+                "grayscale.jpg",
+                "transparent.png",
+                "panorama.jpg",
+                "àccénti e spazi.JPG",
+            ]
+        ],
+        "must_not": [],
+    },
+    # A real photo session: same pose from the same spot -> together; a different subject or
+    # point of view -> apart. Similar laptop shots from other angles are left ambiguous.
+    "Work desk": {
+        "groups": [["IMG_1002.jpg", "IMG_1006.jpg"], ["IMG_1009.jpg", "IMG_1010.jpg"]],
+        "must_not": [
+            ["IMG_1003.jpg", "IMG_1007.jpg"],
+            ["IMG_1001.jpg", "IMG_1009.jpg"],
+            ["IMG_1001.jpg", "IMG_1010.jpg"],
+            ["IMG_1005.jpg", "IMG_1009.jpg"],
+            ["IMG_1005.jpg", "IMG_1010.jpg"],
+            ["IMG_1002.jpg", "IMG_1005.jpg"],
+            *[[f"IMG_{1000 + i:04d}.jpg", "IMG_1008.jpg"] for i in range(1, 8)],
+            ["IMG_1008.jpg", "IMG_1009.jpg"],
+            ["IMG_1008.jpg", "IMG_1010.jpg"],
+        ],
+    },
+}
+
+
+def write_truth(complete: dict[str, list[list[str]]]) -> None:
+    """``samples/truth.json``: per folder, the expected ``groups`` and the ``must_not`` pairs.
+
+    With ``complete``, every pair not in the same group must stay apart; otherwise only the
+    ``must_not`` pairs do and the other pairs are not measured.
+    """
+    truth = {folder: {"complete": True, "groups": groups} for folder, groups in complete.items()}
+    for folder, labels in TRUTH_BY_HAND.items():
+        truth[folder] = {"complete": False, **labels}
+    (OUT / "truth.json").write_text(json.dumps(truth, indent=2, ensure_ascii=False) + "\n")
+
+
 def write_credits(credits: dict) -> None:
     lines = [
         "# Sample photo credits",
@@ -249,11 +412,19 @@ def main() -> int:
     credits: dict = {}
     start = datetime(2025, 7, 12, 9, 30)
     total = 0
+    complete: dict[str, list[list[str]]] = {}
     for i, (folder, shots) in enumerate(FOLDERS.items()):
         print(folder)
-        total += build_folder(folder, shots, start + timedelta(days=9 * i), credits)
+        groups = build_folder(folder, shots, start + timedelta(days=9 * i), credits)
+        if folder not in TRUTH_BY_HAND:
+            complete[folder] = groups
+        total += sum(len(g) for g in groups)
+    print("Hard cases")
+    complete["Hard cases"] = build_hard_cases(start + timedelta(days=60), credits)
+    total += sum(len(g) for g in complete["Hard cases"])
     print("Edge cases")
     total += build_edge_cases(credits)
+    write_truth(complete)
     write_credits(credits)
     print(f"{total} photos in {OUT}")
     return 0

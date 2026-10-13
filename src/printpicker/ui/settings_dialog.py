@@ -7,6 +7,7 @@ from pathlib import Path
 
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QFileDialog,
@@ -77,6 +78,12 @@ class SettingsDialog(QDialog):
         form.setVerticalSpacing(8)
         form.addRow(self.tr("Selections folder:"), row)
         form.addRow("", hint)
+        self.auto_updates = QCheckBox(self.tr("Check for updates automatically"))
+        self.auto_updates.setChecked(settings.auto_update_check)
+        self.auto_updates.setToolTip(
+            self.tr("At most once a day, PrintPicker asks GitHub whether a new version exists.")
+        )
+        form.addRow(self.tr("Updates:"), self.auto_updates)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -260,4 +267,5 @@ class SettingsDialog(QDialog):
         text = self.base_dir_edit.text().strip()
         if text:
             self.settings.base_dir = Path(text)
+        self.settings.auto_update_check = self.auto_updates.isChecked()
         super().accept()

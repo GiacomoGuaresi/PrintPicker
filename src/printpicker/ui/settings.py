@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 
 from PySide6.QtCore import QByteArray, QSettings, QStandardPaths
@@ -51,3 +52,33 @@ class AppSettings:
     @window_geometry.setter
     def window_geometry(self, geometry: QByteArray) -> None:
         self._s.setValue("window/geometry", geometry)
+
+    # Updates -----------------------------------------------------------------------------
+
+    @property
+    def auto_update_check(self) -> bool:
+        return bool(self._s.value("updates/auto", True, type=bool))
+
+    @auto_update_check.setter
+    def auto_update_check(self, enabled: bool) -> None:
+        self._s.setValue("updates/auto", enabled)
+
+    @property
+    def last_update_check(self) -> datetime | None:
+        value = self._s.value("updates/last_check")
+        try:
+            return datetime.fromisoformat(value) if value else None
+        except (TypeError, ValueError):
+            return None
+
+    @last_update_check.setter
+    def last_update_check(self, when: datetime) -> None:
+        self._s.setValue("updates/last_check", when.isoformat(timespec="seconds"))
+
+    @property
+    def skipped_version(self) -> str:
+        return str(self._s.value("updates/skipped", "") or "")
+
+    @skipped_version.setter
+    def skipped_version(self, version: str) -> None:
+        self._s.setValue("updates/skipped", version)

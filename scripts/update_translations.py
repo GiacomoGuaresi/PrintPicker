@@ -80,6 +80,29 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "Copy": "Copia",
     "Copied": "Copiato",
     "Built with": "Realizzato con",
+    # Updates
+    "Check for updates…": "Controlla aggiornamenti…",
+    "Check for updates": "Controlla aggiornamenti",
+    "No updates": "Nessun aggiornamento",
+    "You're up to date: %1 %2 is the latest version.": (
+        "Sei aggiornato: %1 %2 è l'ultima versione."
+    ),
+    "Could not reach GitHub to check for updates.\n\n%1": (
+        "Impossibile contattare GitHub per controllare gli aggiornamenti.\n\n%1"
+    ),
+    "Update available": "Aggiornamento disponibile",
+    "%1 %2 is available": "È disponibile %1 %2",
+    "You have version %1.": "Hai la versione %1.",
+    "No release notes.": "Nessuna nota di rilascio.",
+    "Skip this version": "Salta questa versione",
+    "Later": "Più tardi",
+    "Download": "Scarica",
+    "What's new": "Novità",
+    "Check for updates automatically": "Controlla automaticamente gli aggiornamenti",
+    "At most once a day, PrintPicker asks GitHub whether a new version exists.": (
+        "Al massimo una volta al giorno PrintPicker chiede a GitHub se c'è una nuova versione."
+    ),
+    "Updates:": "Aggiornamenti:",
     "Add a folder of your photo archive to start choosing photos.": (
         "Aggiungi una cartella del tuo archivio di foto per iniziare a scegliere."
     ),

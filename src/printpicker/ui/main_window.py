@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QTimer, QUrl
 from PySide6.QtGui import QAction, QDesktopServices, QKeySequence
-from PySide6.QtWidgets import QMainWindow, QMenu, QStackedWidget
+from PySide6.QtWidgets import QMainWindow, QMenu, QMessageBox, QStackedWidget
 
 from printpicker import about
-from printpicker.about import APP_NAME
+from printpicker.about import APP_NAME, __version__
+from printpicker.core.updates import ReleaseInfo, should_auto_check, should_offer
 from printpicker.ui import theme
 from printpicker.ui.about_dialog import AboutDialog, open_url
 from printpicker.ui.session_screen import SessionScreen
 from printpicker.ui.settings import AppSettings
 from printpicker.ui.start_screen import StartScreen
+from printpicker.ui.update_checker import UpdateChecker, UpdateDialog
 
 
 class MainWindow(QMainWindow):
@@ -33,6 +36,8 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.start_screen)
         self.current_selection: Path | None = None
         self.session: SessionScreen | None = None
+        self.update_checker: UpdateChecker | None = None
+        self._manual_check = False
         self._build_menus()
 
     # Menus -------------------------------------------------------------------------------
@@ -111,6 +116,13 @@ class MainWindow(QMainWindow):
             icon="bug",
         )
         self.help_menu.addSeparator()
+        self.update_action = self._action(
+            self.help_menu,
+            self.tr("Check for updates…"),
+            lambda: self.check_for_updates(manual=True),
+            role=QAction.MenuRole.ApplicationSpecificRole,
+            icon="refresh-cw",
+        )
         self.about_action = self._action(
             self.help_menu,
             self.tr("About %1").replace("%1", APP_NAME),
@@ -137,6 +149,55 @@ class MainWindow(QMainWindow):
 
     def show_about(self) -> None:
         AboutDialog(self).exec()
+
+    # Updates -----------------------------------------------------------------------------
+
+    def schedule_update_check(self, delay_ms: int = 4000) -> None:
+        """Check for a new version shortly after start-up, at most once a day (if enabled)."""
+        if should_auto_check(
+            self.settings.auto_update_check, self.settings.last_update_check, datetime.now()
+        ):
+            QTimer.singleShot(delay_ms, lambda: self.check_for_updates(manual=False))
+
+    def check_for_updates(self, manual: bool = True) -> None:
+        if self.update_checker is None:
+            self.update_checker = UpdateChecker(parent=self)
+            self.update_checker.update_available.connect(self._update_available)
+            self.update_checker.up_to_date.connect(self._up_to_date)
+            self.update_checker.failed.connect(self._update_failed)
+        self._manual_check = manual
+        self.update_checker.check()
+
+    def _update_available(self, release: ReleaseInfo) -> None:
+        self.settings.last_update_check = datetime.now()
+        if not should_offer(
+            release, __version__, self.settings.skipped_version, self._manual_check
+        ):
+            return
+        result = UpdateDialog(release, __version__, self).exec()
+        if result == UpdateDialog.DOWNLOAD:
+            open_url(release.url)
+        elif result == UpdateDialog.SKIP:
+            self.settings.skipped_version = release.version
+
+    def _up_to_date(self) -> None:
+        self.settings.last_update_check = datetime.now()
+        if self._manual_check:
+            QMessageBox.information(
+                self,
+                self.tr("No updates"),
+                self.tr("You're up to date: %1 %2 is the latest version.")
+                .replace("%1", APP_NAME)
+                .replace("%2", __version__),
+            )
+
+    def _update_failed(self, error: str) -> None:
+        if self._manual_check:
+            QMessageBox.warning(
+                self,
+                self.tr("Check for updates"),
+                self.tr("Could not reach GitHub to check for updates.\n\n%1").replace("%1", error),
+            )
 
     # Screens -----------------------------------------------------------------------------
 

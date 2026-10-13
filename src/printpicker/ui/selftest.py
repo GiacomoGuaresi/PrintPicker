@@ -71,6 +71,11 @@ def run_self_test(app: QApplication) -> int:
         checks.append(("inter font", theme.load_fonts()))
     except Exception:
         checks.append(("svg icons", False))
+    from PySide6.QtNetwork import QSslSocket
+
+    checks.append(
+        ("TLS for update check (" + QSslSocket.activeBackend() + ")", QSslSocket.supportsSsl())
+    )
     try:
         MainWindow().close()
         checks.append(("main window", True))

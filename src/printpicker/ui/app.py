@@ -54,4 +54,5 @@ def main(argv: list[str] | None = None) -> int:
     install_translations(app)
     window = MainWindow()
     window.show()
+    window.schedule_update_check()
     return app.exec()

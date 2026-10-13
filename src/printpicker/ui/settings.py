@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from PySide6.QtCore import QSettings, QStandardPaths
+from PySide6.QtCore import QByteArray, QSettings, QStandardPaths
 
 from printpicker.about import APP_NAME
 from printpicker.core.pricing import DEFAULT_PRICE_LIST, PriceList
@@ -42,3 +42,12 @@ class AppSettings:
     @price_list.setter
     def price_list(self, price_list: PriceList) -> None:
         self._s.setValue("pricing/price_list", json.dumps(price_list.to_dict()))
+
+    @property
+    def window_geometry(self) -> QByteArray:
+        value = self._s.value("window/geometry")
+        return value if isinstance(value, QByteArray) else QByteArray()
+
+    @window_geometry.setter
+    def window_geometry(self, geometry: QByteArray) -> None:
+        self._s.setValue("window/geometry", geometry)

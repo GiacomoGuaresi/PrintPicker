@@ -17,7 +17,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.settings = settings or AppSettings()
         self.setWindowTitle(APP_NAME)
-        self.resize(1200, 800)
+        self.setMinimumSize(900, 600)
+        if not self.restoreGeometry(self.settings.window_geometry):
+            self.resize(1280, 820)
 
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
@@ -49,4 +51,5 @@ class MainWindow(QMainWindow):
         if self.session is not None:
             self.session.close_selection()
         self.start_screen.shutdown()
+        self.settings.window_geometry = self.saveGeometry()
         super().closeEvent(event)

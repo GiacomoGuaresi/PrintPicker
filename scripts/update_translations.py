@@ -57,6 +57,7 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "Add source…": "Aggiungi origine…",
     "Source:": "Origine:",
     "Settings…": "Impostazioni…",
+    "General": "Generali",
     "Add a folder of your photo archive to start choosing photos.": (
         "Aggiungi una cartella del tuo archivio di foto per iniziare a scegliere."
     ),
@@ -102,8 +103,10 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "Could not copy the photo:\n%1": "Impossibile copiare la foto:\n%1",
     "Open the selection folder": "Apri la cartella della selezione",
     "Add another source…": "Aggiungi un'altra origine…",
-    "<h2>Done!</h2>All the photos of “%1” have been reviewed.<br><br>%2": (
-        "<h2>Fatto!</h2>Hai visto tutte le foto di “%1”.<br><br>%2"
+    "All done!": "Fatto!",
+    "All the photos of “%1” have been reviewed.<br>%2": "Hai visto tutte le foto di “%1”.<br>%2",
+    "Each photo is read once, then remembered.": (
+        "Ogni foto viene letta una volta sola, poi viene ricordata."
     ),
     "Photos to print: <b>%1</b>": "Foto da stampare: <b>%1</b>",
     "Estimate with “%1”: %2 per photo": "Stima con “%1”: %2 a foto",
@@ -142,10 +145,11 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "Examples: ": "Esempi: ",
     # Start screen
     "Selections in %1": "Selezioni in %1",
-    "<b>Welcome!</b> A print selection is a folder on your computer where the "
-    "photos you choose from your archive are copied, ready to be sent to print. "
+    "Welcome!": "Benvenuto!",
+    "A print selection is a folder on your computer where the photos you choose "
+    "from your archive are copied, ready to be sent to print. "
     "Create your first one to start.": (
-        "<b>Benvenuto!</b> Una selezione per la stampa è una cartella sul tuo computer in cui "
+        "Una selezione per la stampa è una cartella sul tuo computer in cui "
         "vengono copiate le foto che scegli dal tuo archivio, pronte da mandare in stampa. "
         "Crea la prima per iniziare."
     ),

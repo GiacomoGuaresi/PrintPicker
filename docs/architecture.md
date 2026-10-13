@@ -70,3 +70,5 @@ Sulle foto di esempio realistiche le coppie della stessa scena stanno sotto 0,14
 - I colori sono **token** presi dal logo: teal (`ACCENT`) per azioni, focus e selezione, ambra (`PICK`) per le foto scelte. Nessun colore scritto a mano fuori da `theme.py` (lo controlla un test); i widget scelgono una variante con `set_role` (`primary`, `muted`, `title`…).
 - Font **Inter** (SIL OFL) incluso nell'app; se manca resta il font di sistema.
 - **Icone** [Lucide](https://lucide.dev) (ISC) in `resources/icons/`, colorate al volo con `theme.icon(nome, colore)`; il logo dell'app (`resources/logo.svg`) con `theme.logo(dimensione)`. Il self-test della build verifica che le icone SVG vengano disegnate.
+- **Stati visivi** coerenti ovunque: foto scelta = anello e spunta **ambra** (vista gruppo, anteprima, striscia); cursore della tastiera = anello **teal** sottile; passaggio del mouse = anello grigio. Le pagine senza foto (nessuna origine, analisi, errore, fine) hanno icona, titolo, testo e pulsanti.
+- La finestra ricorda posizione e dimensione (`window/geometry` nelle impostazioni).

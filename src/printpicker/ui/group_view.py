@@ -20,7 +20,7 @@ from PySide6.QtCore import (
     Qt,
     Signal,
 )
-from PySide6.QtGui import QColor, QImage, QPainter, QPainterPath, QPalette, QPen
+from PySide6.QtGui import QColor, QImage, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import (
     QApplication,
     QListView,
@@ -31,6 +31,7 @@ from PySide6.QtWidgets import (
 
 from printpicker.core.print_format import needs_crop, print_area
 from printpicker.core.scanner import PhotoFile
+from printpicker.ui import theme
 from printpicker.ui.thumbnails import ThumbnailLoader
 
 LABEL_HEIGHT = 20
@@ -99,10 +100,9 @@ class PhotoDelegate(QStyledItemDelegate):
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-        palette = option.palette
         selected = bool(option.state & QStyle.StateFlag.State_Selected)
         hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
-        accent = palette.color(QPalette.ColorRole.Highlight)
+        focused = bool(option.state & QStyle.StateFlag.State_HasFocus) and self.view.hasFocus()
 
         cell = option.rect
         image: QImage | None = index.data(Qt.ItemDataRole.DecorationRole)
@@ -110,30 +110,34 @@ class PhotoDelegate(QStyledItemDelegate):
         if image is not None and not image.isNull():
             painter.drawImage(frame, image)
         else:
-            painter.fillRect(frame, palette.color(QPalette.ColorRole.AlternateBase))
+            painter.fillRect(frame, theme.SURFACE_2)
             unreadable = QCoreApplication.translate("GroupView", "Unreadable")
             text = unreadable if image is not None else "…"
-            painter.setPen(palette.color(QPalette.ColorRole.PlaceholderText))
+            painter.setPen(theme.TEXT_MUTED)
             painter.drawText(frame, Qt.AlignmentFlag.AlignCenter, text)
 
         if image is not None and not image.isNull() and self.view.show_crop:
             draw_crop_overlay(painter, QRectF(frame), image.width(), image.height())
 
-        if selected or hovered:
-            color = accent if selected else palette.color(QPalette.ColorRole.Mid)
-            painter.setPen(QPen(color, 5 if selected else 3))
-            painter.setBrush(Qt.BrushStyle.NoBrush)
-            painter.drawRect(frame.adjusted(-2, -2, 2, 2))
-        draw_checkbox(painter, frame, selected, hovered, accent)
+        # Rings around the photo: amber when picked, teal for the keyboard cursor, grey on hover.
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        ring = QRectF(frame)
+        if selected:
+            painter.setPen(QPen(theme.PICK, 4))
+            painter.drawRoundedRect(ring.adjusted(-3, -3, 3, 3), 4, 4)
+        elif hovered:
+            painter.setPen(QPen(theme.BORDER_STRONG, 2))
+            painter.drawRoundedRect(ring.adjusted(-2, -2, 2, 2), 3, 3)
+        if focused:
+            painter.setPen(QPen(theme.ACCENT, 2))
+            offset = 8 if selected else 5
+            painter.drawRoundedRect(ring.adjusted(-offset, -offset, offset, offset), 6, 6)
+        draw_checkbox(painter, frame, selected, hovered)
         if hovered:
             draw_preview_button(painter, frame)
-        if option.state & QStyle.StateFlag.State_HasFocus and self.view.hasFocus():
-            painter.setPen(QPen(palette.color(QPalette.ColorRole.Text), 1, Qt.PenStyle.DashLine))
-            painter.setBrush(Qt.BrushStyle.NoBrush)
-            painter.drawRect(cell.adjusted(1, 1, -2, -2))
 
         label = cell.adjusted(4, cell.height() - LABEL_HEIGHT, -4, 0)
-        painter.setPen(palette.color(QPalette.ColorRole.Text))
+        painter.setPen(theme.TEXT if selected else theme.TEXT_MUTED)
         name = painter.fontMetrics().elidedText(
             index.data(Qt.ItemDataRole.DisplayRole), Qt.TextElideMode.ElideMiddle, label.width()
         )
@@ -157,34 +161,42 @@ def preview_button_rect(frame: QRect) -> QRect:
 
 
 def draw_preview_button(painter: QPainter, frame: QRect) -> None:
-    """Magnifier in the top-right corner, shown on hover: opens the full-screen preview."""
+    """Expand icon in the top-right corner, shown on hover: opens the full-screen preview."""
     painter.save()
     button = preview_button_rect(frame)
     painter.setPen(Qt.PenStyle.NoPen)
-    painter.setBrush(QColor(0, 0, 0, 150))
+    painter.setBrush(theme.OVERLAY_HOVER)
     painter.drawRoundedRect(button, 6, 6)
-    painter.setPen(QPen(QColor("white"), 2))
-    painter.setBrush(Qt.BrushStyle.NoBrush)
-    c = button.center()
-    painter.drawEllipse(c + QPoint(-2, -2), 7, 7)
-    painter.drawLine(c + QPoint(3, 3), c + QPoint(8, 8))
+    icon = QRect(0, 0, 18, 18)
+    icon.moveCenter(button.center())
+    theme.icon("maximize-2", QColor("white")).paint(painter, icon)
     painter.restore()
 
 
-def draw_checkbox(
-    painter: QPainter, frame: QRect, checked: bool, hovered: bool, accent: QColor
-) -> None:
+def draw_checkbox(painter: QPainter, frame: QRect, checked: bool, hovered: bool) -> None:
     """Checkbox in the top-left corner of the photo: always visible, so it's clear that a
     click picks the photo."""
     painter.save()
     box = QRect(frame.left() + 8, frame.top() + 8, 26, 26)
-    painter.setPen(QPen(QColor("white"), 2))
-    painter.setBrush(accent if checked else QColor(0, 0, 0, 140 if hovered else 90))
-    painter.drawRoundedRect(box, 6, 6)
+    if checked:
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(theme.PICK)
+    else:
+        painter.setPen(QPen(QColor(255, 255, 255, 230 if hovered else 190), 2))
+        painter.setBrush(theme.OVERLAY_HOVER if hovered else theme.OVERLAY)
+    painter.drawRoundedRect(box, 7, 7)
     if checked:
         c = box.center()
-        painter.setPen(QPen(QColor("white"), 3))
-        painter.drawPolyline([c + QPoint(-6, 0), c + QPoint(-2, 5), c + QPoint(6, -5)])
+        painter.setPen(
+            QPen(
+                theme.ON_PICK,
+                3,
+                Qt.PenStyle.SolidLine,
+                Qt.PenCapStyle.RoundCap,
+                Qt.PenJoinStyle.RoundJoin,
+            )
+        )
+        painter.drawPolyline([c + QPoint(-6, 0), c + QPoint(-2, 4), c + QPoint(6, -4)])
     painter.restore()
 
 
@@ -193,6 +205,8 @@ def draw_crop_overlay(painter: QPainter, frame: QRectF, width: int, height: int)
     x, y, w, h = print_area(width, height)
     sx, sy = frame.width() / width, frame.height() / height
     kept = QRectF(frame.x() + x * sx, frame.y() + y * sy, w * sx, h * sy)
+    if width - w < 0.5 and height - h < 0.5:
+        return  # nothing is cut away
     outside = QPainterPath()
     outside.addRect(frame)
     inside = QPainterPath()
@@ -201,7 +215,7 @@ def draw_crop_overlay(painter: QPainter, frame: QRectF, width: int, height: int)
     painter.setPen(Qt.PenStyle.NoPen)
     painter.setBrush(QColor(0, 0, 0, 150))
     painter.drawPath(outside.subtracted(inside))
-    painter.setPen(QPen(QColor(255, 255, 255, 200), 1, Qt.PenStyle.DashLine))
+    painter.setPen(QPen(QColor(255, 255, 255, 110), 1))
     painter.setBrush(Qt.BrushStyle.NoBrush)
     painter.drawRect(kept)
     painter.restore()
@@ -241,6 +255,9 @@ class GroupView(QListView):
         self.setTabKeyNavigation(True)
         self.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover)
         self.setFrameShape(QListView.Shape.NoFrame)
+        palette = self.palette()
+        palette.setColor(palette.ColorRole.Base, theme.BG)
+        self.setPalette(palette)
         self.show_crop = True
         self._last_press: tuple[int, bool, float] = (-1, False, 0.0)
         self.photo_model = PhotoModel(loader, self)

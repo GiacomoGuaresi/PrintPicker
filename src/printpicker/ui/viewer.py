@@ -19,7 +19,7 @@ from PySide6.QtCore import (
     QTimer,
     Signal,
 )
-from PySide6.QtGui import QColor, QImage, QPainter, QPalette, QPen, QPixmap
+from PySide6.QtGui import QColor, QImage, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
@@ -207,13 +207,16 @@ class ImageView(QGraphicsView):
             self.fit()
 
 
-def draw_check(painter: QPainter, center: QPoint, radius: int, color: QColor) -> None:
-    """A filled circle with a white check mark, the "picked" sign."""
+def draw_check(painter: QPainter, center: QPoint, radius: int, color: QColor = theme.PICK) -> None:
+    """A filled circle with a check mark, the "picked" sign (as in the logo)."""
     painter.setPen(Qt.PenStyle.NoPen)
     painter.setBrush(color)
     painter.drawEllipse(center, radius, radius)
     k = radius / 14
-    painter.setPen(QPen(QColor("white"), max(2.0, 3 * k)))
+    pen = QPen(theme.ON_PICK, max(2.0, 3 * k))
+    pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+    pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+    painter.setPen(pen)
     painter.drawPolyline(
         [
             center + QPoint(round(-6 * k), 0),
@@ -250,7 +253,7 @@ class PickedOverlay(QWidget):
         return QRect(self.width() - self.MARGIN - width, self.MARGIN, width, height)
 
     def paintEvent(self, event) -> None:
-        accent = self.palette().color(QPalette.ColorRole.Highlight)
+        accent = theme.PICK
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         half = self.BORDER / 2
@@ -263,7 +266,7 @@ class PickedOverlay(QWidget):
         painter.drawRoundedRect(badge, badge.height() / 2, badge.height() / 2)
         r = badge.height() // 2
         draw_check(painter, QPoint(badge.left() + r + 2, badge.center().y()), 14, accent)
-        painter.setPen(QColor("white"))
+        painter.setPen(theme.ON_PICK)
         font = painter.font()
         font.setBold(True)
         painter.setFont(font)
@@ -316,7 +319,7 @@ class _FilmstripDelegate(QStyledItemDelegate):
         current = index.row() == self.strip.current
         if not current:
             painter.fillRect(frame, QColor(0, 0, 0, 90))
-        accent = option.palette.color(QPalette.ColorRole.Highlight)
+        accent = theme.PICK
         if self.strip.photos[index.row()].rel_path in self.strip.picked:
             painter.setPen(QPen(accent, 2))
             painter.setBrush(Qt.BrushStyle.NoBrush)

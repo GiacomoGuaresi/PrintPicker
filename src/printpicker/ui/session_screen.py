@@ -5,11 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, QUrl, Signal
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QColor, QDesktopServices
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QMessageBox,
@@ -41,14 +42,37 @@ from printpicker.ui.workers import AnalysisThread
 MAX_THRESHOLD = 24
 
 
-def _centered(*widgets: QWidget) -> QWidget:
+def _state_page(icon: str, color: QColor, *widgets: QWidget) -> QWidget:
+    """A centred column for the pages without photos: a round icon, then ``widgets``."""
+    badge = QLabel()
+    badge.setObjectName("stateIcon")
+    badge.setFixedSize(76, 76)
+    badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    badge.setPixmap(theme.icon(icon, color).pixmap(36))
     page = QWidget()
     layout = QVBoxLayout(page)
+    layout.setSpacing(12)
     layout.addStretch()
+    layout.addWidget(badge, 0, Qt.AlignmentFlag.AlignHCenter)
+    layout.addSpacing(6)
     for w in widgets:
+        if isinstance(w, QLabel):
+            w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            w.setWordWrap(True)
+            w.setMaximumWidth(560)
         layout.addWidget(w, 0, Qt.AlignmentFlag.AlignHCenter)
     layout.addStretch()
     return page
+
+
+def _button_row(*buttons: QPushButton) -> QWidget:
+    row = QWidget()
+    layout = QHBoxLayout(row)
+    layout.setContentsMargins(0, 8, 0, 0)
+    layout.setSpacing(10)
+    for b in buttons:
+        layout.addWidget(b)
+    return row
 
 
 class SessionScreen(QWidget):
@@ -71,48 +95,79 @@ class SessionScreen(QWidget):
         self.back_button = QPushButton(theme.icon("arrow-left"), self.tr("Selections"))
         theme.set_role(self.back_button, "flat")
         self.back_button.clicked.connect(self.close_selection)
-        title = QLabel(f"<b>{self.selection.name}</b>")
+        title = theme.set_role(QLabel(self.selection.name), "heading")
         self.source_combo = QComboBox()
         self.source_combo.setMinimumWidth(220)
         self.source_combo.currentIndexChanged.connect(self._source_changed)
         self.add_source_button = QPushButton(theme.icon("folder-plus"), self.tr("Add source…"))
         self.add_source_button.clicked.connect(self.choose_source)
-        top = QHBoxLayout()
-        top.addWidget(self.back_button)
-        top.addSpacing(12)
-        top.addWidget(title)
-        top.addStretch()
-        top.addWidget(QLabel(self.tr("Source:")))
-        top.addWidget(self.source_combo)
-        top.addWidget(self.add_source_button)
         self.settings_button = QPushButton(theme.icon("settings"), "")
         self.settings_button.setToolTip(self.tr("Settings…"))
         self.settings_button.setAccessibleName(self.tr("Settings…"))
         self.settings_button.clicked.connect(self.open_settings)
+        top_bar = QFrame()
+        top_bar.setObjectName("topBar")
+        top = QHBoxLayout(top_bar)
+        top.setContentsMargins(12, 10, 16, 10)
+        top.addWidget(self.back_button)
+        separator = QFrame()
+        separator.setObjectName("separator")
+        separator.setFixedSize(1, 22)
+        top.addWidget(separator)
+        top.addSpacing(6)
+        top.addWidget(title)
+        top.addStretch()
+        top.addWidget(theme.set_role(QLabel(self.tr("Source:")), "muted"))
+        top.addWidget(self.source_combo)
+        top.addWidget(self.add_source_button)
         top.addWidget(self.settings_button)
 
         # Pages.
         self.pages = QStackedWidget()
-        self.empty_page = _centered(
+        empty_title = theme.set_role(QLabel(self.tr("No photos yet")), "heading")
+        empty_text = theme.set_role(
             QLabel(self.tr("Add a folder of your photo archive to start choosing photos.")),
+            "muted",
         )
-        self.progress_label = QLabel()
+        empty_button = QPushButton(
+            theme.icon("folder-plus", theme.ON_ACCENT), self.tr("Add source…")
+        )
+        theme.set_role(empty_button, "primary")
+        empty_button.clicked.connect(self.choose_source)
+        self.empty_page = _state_page(
+            "images", theme.ACCENT, empty_title, empty_text, _button_row(empty_button)
+        )
+
+        self.progress_label = theme.set_role(QLabel(), "heading")
         self.progress_bar = QProgressBar()
-        self.progress_bar.setMinimumWidth(400)
+        self.progress_bar.setFixedWidth(420)
+        self.progress_detail = theme.set_role(
+            QLabel(self.tr("Each photo is read once, then remembered.")), "muted"
+        )
         self.cancel_button = QPushButton(self.tr("Cancel"))
         self.cancel_button.clicked.connect(self._cancel_clicked)
-        self.progress_page = _centered(self.progress_label, self.progress_bar, self.cancel_button)
+        self.progress_page = _state_page(
+            "sparkles",
+            theme.ACCENT,
+            self.progress_label,
+            self.progress_bar,
+            self.progress_detail,
+            _button_row(self.cancel_button),
+        )
+
         self.message_label = QLabel()
-        self.message_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.retry_button = QPushButton(self.tr("Retry"))
+        self.retry_button = QPushButton(theme.icon("refresh-cw"), self.tr("Retry"))
         self.retry_button.clicked.connect(self._source_changed)
-        self.relink_button = QPushButton(self.tr("The folder has moved: choose it…"))
+        self.relink_button = QPushButton(
+            theme.icon("folder-open"), self.tr("The folder has moved: choose it…")
+        )
         self.relink_button.clicked.connect(self.choose_relink)
-        message_buttons = QWidget()
-        row = QHBoxLayout(message_buttons)
-        row.addWidget(self.retry_button)
-        row.addWidget(self.relink_button)
-        self.message_page = _centered(self.message_label, message_buttons)
+        self.message_page = _state_page(
+            "triangle-alert",
+            theme.PICK,
+            self.message_label,
+            _button_row(self.retry_button, self.relink_button),
+        )
         self.groups_page = self._build_groups_page()
         self.end_page = self._build_end_page()
         pages = (self.empty_page, self.progress_page, self.message_page, self.groups_page)
@@ -120,7 +175,9 @@ class SessionScreen(QWidget):
             self.pages.addWidget(page)
 
         layout = QVBoxLayout(self)
-        layout.addLayout(top)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(top_bar)
         layout.addWidget(self.pages, 1)
 
         self._reload_sources()
@@ -221,6 +278,7 @@ class SessionScreen(QWidget):
         assert self.source is not None
         self.progress_label.setText(self.tr("Analysing “%1”…").replace("%1", self.source.name))
         self.progress_bar.setRange(0, 0)
+        self.progress_detail.setText(self.tr("Each photo is read once, then remembered."))
         self.pages.setCurrentWidget(self.progress_page)
         self.add_source_button.setEnabled(False)
         thread = AnalysisThread(self.selection.folder, self.source.id, self)
@@ -250,9 +308,9 @@ class SessionScreen(QWidget):
     def _on_progress(self, done: int, total: int) -> None:
         self.progress_bar.setRange(0, max(total, 1))
         self.progress_bar.setValue(done)
-        self.progress_bar.setFormat(
-            self.tr("%1 of %2 photos").replace("%1", str(done)).replace("%2", str(total))
-        )
+        text = self.tr("%1 of %2 photos").replace("%1", str(done)).replace("%2", str(total))
+        self.progress_bar.setFormat(text)
+        self.progress_detail.setText(text)
 
     def _on_thread_finished(self) -> None:
         if self.sender() is self.thread:
@@ -332,26 +390,33 @@ class SessionScreen(QWidget):
         self._regroup_timer.setInterval(120)
         self._regroup_timer.timeout.connect(self._threshold_changed)
         similarity = QHBoxLayout()
-        similarity.addWidget(QLabel(self.tr("Grouping: strict")))
+        similarity.setSpacing(8)
+        similarity.addWidget(theme.set_role(QLabel(self.tr("Grouping: strict")), "muted"))
         similarity.addWidget(self.threshold_slider)
-        similarity.addWidget(QLabel(self.tr("loose")))
+        similarity.addWidget(theme.set_role(QLabel(self.tr("loose")), "muted"))
 
-        bottom = QHBoxLayout()
+        theme.set_role(self.picked_label, "muted")
+        bottom_bar = QFrame()
+        bottom_bar.setObjectName("bottomBar")
+        bottom = QHBoxLayout(bottom_bar)
+        bottom.setContentsMargins(10, 8, 10, 8)
         bottom.addWidget(self.previous_button)
-        bottom.addSpacing(24)
-        bottom.addWidget(self.picked_label)
-        bottom.addSpacing(24)
+        bottom.addSpacing(20)
         bottom.addWidget(self.total_label)
+        bottom.addSpacing(16)
+        bottom.addWidget(self.picked_label)
         bottom.addStretch()
         bottom.addLayout(similarity)
-        bottom.addSpacing(24)
+        bottom.addSpacing(20)
         bottom.addWidget(self.next_button)
 
         page = QWidget()
         layout = QVBoxLayout(page)
+        layout.setContentsMargins(20, 14, 20, 10)
+        layout.setSpacing(10)
         layout.addWidget(self.group_title)
         layout.addWidget(self.group_view, 1)
-        layout.addLayout(bottom)
+        layout.addWidget(bottom_bar)
         layout.addWidget(self.help_label, 0, Qt.AlignmentFlag.AlignHCenter)
         return page
 
@@ -408,8 +473,8 @@ class SessionScreen(QWidget):
             self.show_group(self.index + 1)
 
     def _build_end_page(self) -> QWidget:
-        self.end_label = QLabel()
-        self.end_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.end_title = theme.set_role(QLabel(self.tr("All done!")), "heading")
+        self.end_label = theme.set_role(QLabel(), "muted")
         open_button = QPushButton(
             theme.icon("folder-open", theme.ON_ACCENT), self.tr("Open the selection folder")
         )
@@ -420,17 +485,19 @@ class SessionScreen(QWidget):
         back_button.clicked.connect(self.previous_group)
         add_button = QPushButton(theme.icon("folder-plus"), self.tr("Add another source…"))
         add_button.clicked.connect(self.choose_source)
-        buttons = QWidget()
-        row = QHBoxLayout(buttons)
-        for b in (back_button, add_button, open_button):
-            row.addWidget(b)
-        return _centered(self.end_label, buttons)
+        return _state_page(
+            "circle-check",
+            theme.ACCENT,
+            self.end_title,
+            self.end_label,
+            _button_row(back_button, add_button, open_button),
+        )
 
     def show_end(self) -> None:
         assert self.source is not None
         self.index = len(self.groups)
         self.end_label.setText(
-            self.tr("<h2>Done!</h2>All the photos of “%1” have been reviewed.<br><br>%2")
+            self.tr("All the photos of “%1” have been reviewed.<br>%2")
             .replace("%1", self.source.name)
             .replace("%2", self.summary_text())
         )

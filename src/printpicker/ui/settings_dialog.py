@@ -67,10 +67,14 @@ class SettingsDialog(QDialog):
         row.addWidget(self.base_dir_edit, 1)
         row.addWidget(browse)
         row.addWidget(reset)
-        hint = QLabel(self.tr("New selections are created here. Existing ones are not moved."))
-        hint.setEnabled(False)
+        hint = theme.set_role(
+            QLabel(self.tr("New selections are created here. Existing ones are not moved.")),
+            "muted",
+        )
 
-        form = QFormLayout()
+        self.general = QGroupBox(self.tr("General"))
+        form = QFormLayout(self.general)
+        form.setVerticalSpacing(8)
         form.addRow(self.tr("Selections folder:"), row)
         form.addRow("", hint)
 
@@ -81,7 +85,9 @@ class SettingsDialog(QDialog):
         buttons.rejected.connect(self.reject)
 
         self.body = QVBoxLayout(self)
-        self.body.addLayout(form)
+        self.body.setContentsMargins(20, 16, 20, 16)
+        self.body.setSpacing(14)
+        self.body.addWidget(self.general)
         self.body.addWidget(self._build_prices())
         self.body.addWidget(buttons)
         self.load_price_list(settings.price_list)
@@ -99,9 +105,9 @@ class SettingsDialog(QDialog):
         self.examples.setWordWrap(True)
 
         def buttons_for(table: QTableWidget, defaults: tuple[str, str]) -> QHBoxLayout:
-            add = QPushButton(self.tr("Add"))
+            add = QPushButton(theme.icon("plus"), self.tr("Add"))
             add.clicked.connect(lambda: self._add_row(table, *defaults))
-            remove = QPushButton(self.tr("Remove"))
+            remove = QPushButton(theme.icon("minus"), self.tr("Remove"))
             remove.clicked.connect(lambda: self._remove_rows(table))
             row = QHBoxLayout()
             row.addWidget(add)
@@ -109,7 +115,7 @@ class SettingsDialog(QDialog):
             row.addStretch()
             return row
 
-        restore = QPushButton(self.tr("Restore PhotoSì 10×15 prices"))
+        restore = QPushButton(theme.icon("rotate-cw"), self.tr("Restore PhotoSì 10×15 prices"))
         restore.clicked.connect(lambda: self.load_price_list(DEFAULT_PRICE_LIST))
 
         tiers = QVBoxLayout()
@@ -134,7 +140,7 @@ class SettingsDialog(QDialog):
             )
         )
         hint.setWordWrap(True)
-        hint.setEnabled(False)
+        theme.set_role(hint, "muted")
 
         layout = QVBoxLayout(box)
         layout.addLayout(name_row)

@@ -5,8 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import QFile, QModelIndex, QPoint, Qt, QUrl, Signal
-from PySide6.QtGui import QDesktopServices, QPalette
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
+    QFrame,
     QHBoxLayout,
     QInputDialog,
     QLabel,
@@ -17,6 +18,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from printpicker.about import APP_NAME
 from printpicker.selection import (
     InvalidSelectionError,
     Selection,
@@ -44,35 +46,49 @@ class StartScreen(QWidget):
         super().__init__(parent)
         self.settings = settings
 
-        title = QLabel("PrintPicker")
-        font = title.font()
-        font.setPointSize(font.pointSize() * 2)
-        font.setBold(True)
-        title.setFont(font)
+        logo = QLabel()
+        logo.setPixmap(theme.logo(52))
+        title = theme.set_role(QLabel(APP_NAME), "title")
 
-        self.location = QLabel()
+        self.location = theme.set_role(QLabel(), "muted")
         self.location.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        self.location.setForegroundRole(QPalette.ColorRole.PlaceholderText)
 
+        self.new_button = QPushButton(theme.icon("plus", theme.ON_ACCENT), self.tr("New selection"))
+        theme.set_role(self.new_button, "primary")
+        self.new_button.clicked.connect(self.new_selection)
         self.settings_button = QPushButton(theme.icon("settings"), self.tr("Settings…"))
         self.settings_button.clicked.connect(self.open_settings)
 
         heading = QVBoxLayout()
-        heading.setSpacing(2)
+        heading.setSpacing(0)
         heading.addWidget(title)
         heading.addWidget(self.location)
         top = QHBoxLayout()
+        top.setSpacing(14)
+        top.addWidget(logo)
         top.addLayout(heading, 1)
-        top.addWidget(self.settings_button, 0, Qt.AlignmentFlag.AlignTop)
+        top.addWidget(self.settings_button)
+        top.addWidget(self.new_button)
 
-        self.welcome = QLabel(
-            self.tr(
-                "<b>Welcome!</b> A print selection is a folder on your computer where the "
-                "photos you choose from your archive are copied, ready to be sent to print. "
-                "Create your first one to start."
-            )
+        # Shown instead of an empty grid the first time.
+        self.welcome = QFrame()
+        self.welcome.setObjectName("welcome")
+        welcome_title = theme.set_role(QLabel(self.tr("Welcome!")), "heading")
+        welcome_text = theme.set_role(
+            QLabel(
+                self.tr(
+                    "A print selection is a folder on your computer where the photos you choose "
+                    "from your archive are copied, ready to be sent to print. "
+                    "Create your first one to start."
+                )
+            ),
+            "muted",
         )
-        self.welcome.setWordWrap(True)
+        welcome_text.setWordWrap(True)
+        welcome_layout = QVBoxLayout(self.welcome)
+        welcome_layout.setContentsMargins(20, 16, 20, 18)
+        welcome_layout.addWidget(welcome_title)
+        welcome_layout.addWidget(welcome_text)
 
         self.loader = ThumbnailLoader(self)
         self.cards = SelectionCardView(self.loader)
@@ -82,8 +98,8 @@ class StartScreen(QWidget):
         self.cards.delete_requested.connect(lambda _index: self.delete_selection())
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(40, 28, 40, 20)
-        layout.setSpacing(16)
+        layout.setContentsMargins(40, 32, 40, 20)
+        layout.setSpacing(20)
         layout.addLayout(top)
         layout.addWidget(self.welcome)
         layout.addWidget(self.cards, 1)

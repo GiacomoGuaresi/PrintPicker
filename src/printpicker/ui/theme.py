@@ -167,6 +167,15 @@ QLabel[role="heading"] { font-size: 15pt; font-weight: 600; }
 QLabel[role="muted"] { color: @TEXT_MUTED; }
 QLabel[role="danger"] { color: @DANGER; }
 
+QFrame#welcome { background: @SURFACE; border: 1px solid @BORDER; border-radius: @RADIUS_LARGEpx; }
+
+QFrame#topBar { background: @BG; border-bottom: 1px solid @BORDER; }
+QFrame#separator { background: @BORDER; }
+QFrame#bottomBar {
+    background: @SURFACE; border: 1px solid @BORDER; border-radius: @RADIUS_LARGEpx;
+}
+QLabel#stateIcon { background: @SURFACE_2; border-radius: 38px; }
+
 /* Keyboard hints (key_hints.py): keycap chips and what they do. */
 QLabel#key {
     background: @SURFACE_2; color: @TEXT; border: 1px solid @BORDER_STRONG;

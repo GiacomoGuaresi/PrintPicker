@@ -15,11 +15,12 @@ from PySide6.QtCore import (
     Qt,
     Signal,
 )
-from PySide6.QtGui import QColor, QFont, QImage, QPainter, QPainterPath, QPalette, QPen
+from PySide6.QtGui import QColor, QFont, QImage, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import QListView, QStyle, QStyledItemDelegate, QStyleOptionViewItem
 
 from printpicker.core.pricing import PriceList
 from printpicker.selection import SelectionSummary
+from printpicker.ui import theme
 from printpicker.ui.money import format_money
 from printpicker.ui.thumbnails import ThumbnailLoader
 
@@ -27,7 +28,7 @@ SPACING = 16
 MIN_CARD = 200
 MAX_CARD = 280
 TEXT_HEIGHT = 74
-RADIUS = 10
+RADIUS = theme.RADIUS_LARGE
 MENU_SIZE = 30
 
 SUMMARY_ROLE = Qt.ItemDataRole.UserRole
@@ -185,14 +186,14 @@ class SelectionCardDelegate(QStyledItemDelegate):
         card = card_rect(option.rect, self.sizeHint(option, index))
         hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
         current = bool(option.state & QStyle.StateFlag.State_HasFocus) and self.view.hasFocus()
-        accent = palette.color(QPalette.ColorRole.Highlight)
+        accent = theme.ACCENT
 
         if index.data(SUMMARY_ROLE) is None:
             self._paint_new(painter, card, palette, hovered or current, accent)
         else:
-            self._paint_selection(painter, card, index, palette)
+            self._paint_selection(painter, card, index, palette, hovered)
             if hovered or current:
-                painter.setPen(QPen(accent, 3 if current else 2))
+                painter.setPen(QPen(accent if current else theme.BORDER_STRONG, 2))
                 painter.setBrush(Qt.BrushStyle.NoBrush)
                 painter.drawRoundedRect(QRectF(card).adjusted(1, 1, -1, -1), RADIUS, RADIUS)
                 self._paint_menu_button(painter, menu_rect(card))
@@ -200,56 +201,60 @@ class SelectionCardDelegate(QStyledItemDelegate):
 
     def _paint_menu_button(self, painter: QPainter, rect: QRect) -> None:
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(0, 0, 0, 150))
+        painter.setBrush(theme.OVERLAY_HOVER)
         painter.drawEllipse(rect)
-        painter.setBrush(QColor("white"))
-        center = rect.center()
-        for dx in (-7, 0, 7):
-            painter.drawEllipse(center + QPoint(dx, 1), 2, 2)
+        icon = QRect(0, 0, 18, 18)
+        icon.moveCenter(rect.center())
+        theme.icon("ellipsis", QColor("white")).paint(painter, icon)
 
     def _paint_new(self, painter, card: QRect, palette, active: bool, accent: QColor) -> None:
-        color = accent if active else palette.color(QPalette.ColorRole.PlaceholderText)
-        painter.setPen(QPen(color, 2, Qt.PenStyle.DashLine))
-        painter.setBrush(Qt.BrushStyle.NoBrush)
+        color = accent if active else theme.TEXT_MUTED
+        pen = QPen(accent if active else theme.BORDER_STRONG, 2, Qt.PenStyle.DashLine)
+        painter.setPen(pen)
+        painter.setBrush(theme.SURFACE if active else Qt.BrushStyle.NoBrush)
         painter.drawRoundedRect(QRectF(card).adjusted(1, 1, -1, -1), RADIUS, RADIUS)
+        # Round "+" badge above the label.
+        badge = QRect(0, 0, 52, 52)
+        badge.moveCenter(QPoint(card.center().x(), card.center().y() - 22))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(accent if active else theme.SURFACE_2)
+        painter.drawEllipse(badge)
+        icon = QRect(0, 0, 26, 26)
+        icon.moveCenter(badge.center())
+        theme.icon("plus", theme.ON_ACCENT if active else theme.TEXT).paint(painter, icon)
         painter.setPen(color)
-        font = QFont(painter.font())
-        font.setPointSizeF(font.pointSizeF() * 3)
-        painter.setFont(font)
-        plus = QRect(card.left(), card.center().y() - 50, card.width(), 50)
-        painter.drawText(plus, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom, "+")
         font = QFont(self.view.font())
         font.setBold(True)
         painter.setFont(font)
-        label = QRect(card.left(), card.center().y() + 4, card.width(), 30)
+        label = QRect(card.left(), card.center().y() + 16, card.width(), 30)
         painter.drawText(
             label, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop, self.view.new_label()
         )
 
-    def _paint_selection(self, painter, card: QRect, index: QModelIndex, palette) -> None:
+    def _paint_selection(
+        self, painter, card: QRect, index: QModelIndex, palette, hovered: bool = False
+    ) -> None:
         outline = QPainterPath()
         outline.addRoundedRect(QRectF(card), RADIUS, RADIUS)
-        painter.fillPath(outline, palette.color(QPalette.ColorRole.Base))
+        painter.fillPath(outline, theme.SURFACE_2 if hovered else theme.SURFACE)
 
         cover = QRect(card.left(), card.top(), card.width(), card.height() - TEXT_HEIGHT)
         painter.save()
         painter.setClipPath(outline)
         images = index.data(COVER_ROLE) or []
         if not images:
-            painter.fillRect(cover, palette.color(QPalette.ColorRole.AlternateBase))
-            painter.setPen(palette.color(QPalette.ColorRole.PlaceholderText))
-            font = QFont(painter.font())
-            font.setPointSizeF(font.pointSizeF() * 2.5)
-            painter.setFont(font)
-            painter.drawText(cover, Qt.AlignmentFlag.AlignCenter, "🖼")
+            painter.fillRect(cover, theme.SURFACE_2)
+            icon = QRect(0, 0, 40, 40)
+            icon.moveCenter(cover.center())
+            theme.icon("images", theme.TEXT_FAINT).paint(painter, icon)
         for tile, image in zip(cover_tiles(cover, len(images)), images, strict=True):
             if image is not None and not image.isNull():
                 draw_cropped(painter, tile, image)
             else:
-                painter.fillRect(tile, palette.color(QPalette.ColorRole.AlternateBase))
+                painter.fillRect(tile, theme.SURFACE_2)
         painter.restore()
 
-        painter.setPen(QPen(palette.color(QPalette.ColorRole.Mid), 1))
+        painter.setPen(QPen(theme.BORDER, 1))
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawPath(outline)
 
@@ -258,7 +263,7 @@ class SelectionCardDelegate(QStyledItemDelegate):
         font = QFont(self.view.font())
         font.setBold(True)
         painter.setFont(font)
-        painter.setPen(palette.color(QPalette.ColorRole.Text))
+        painter.setPen(theme.TEXT)
         name = painter.fontMetrics().elidedText(
             index.data(Qt.ItemDataRole.DisplayRole), Qt.TextElideMode.ElideRight, text.width()
         )
@@ -267,7 +272,7 @@ class SelectionCardDelegate(QStyledItemDelegate):
         painter.drawText(
             QRect(text.left(), text.top() + line, text.width(), line), 0, index.data(DETAILS_ROLE)
         )
-        painter.setPen(palette.color(QPalette.ColorRole.PlaceholderText))
+        painter.setPen(theme.TEXT_MUTED)
         painter.drawText(
             QRect(text.left(), text.top() + 2 * line, text.width(), line),
             0,

@@ -59,7 +59,7 @@ def _state_page(icon: str, color: QColor, *widgets: QWidget) -> QWidget:
         if isinstance(w, QLabel):
             w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             w.setWordWrap(True)
-            w.setMaximumWidth(560)
+            w.setFixedWidth(560)
         layout.addWidget(w, 0, Qt.AlignmentFlag.AlignHCenter)
     layout.addStretch()
     return page

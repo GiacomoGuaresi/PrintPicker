@@ -20,3 +20,10 @@ PrintPicker è una piccola applicazione di utility per selezionare foto da un ar
 2. [Anteprima costi di stampa](cost-estimate.md)
 
 Entrambe lavorano all'interno di una [selezione per stampa](selections.md).
+
+## Menu e informazioni
+
+- **File**: nuova selezione (Ctrl/⌘+N), mostra la cartella delle selezioni, impostazioni (⌘, su macOS), esci.
+- **Aiuto**: guida (README su GitHub), note di rilascio, segnala un problema (apre una issue con versione e sistema già compilati), controlla aggiornamenti, informazioni.
+- Su macOS *Informazioni*, *Impostazioni* ed *Esci* stanno nel menu dell'app, come nelle app native.
+- La finestra **Informazioni** mostra versione, link (GitHub, segnalazione, licenza), le informazioni di sistema con un pulsante *Copia* da incollare nelle segnalazioni, e i crediti delle librerie usate.

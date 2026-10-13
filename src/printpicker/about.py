@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import platform
 import sys
+from urllib.parse import urlencode
 
 from printpicker import __version__
 
@@ -39,6 +40,7 @@ __all__ = [
     "REPO_URL",
     "TAGLINE",
     "__version__",
+    "bug_report_url",
     "build_info",
 ]
 
@@ -65,3 +67,9 @@ def build_info() -> str:
         "Bundled build" if getattr(sys, "frozen", False) else "Run from source",
     ]
     return "\n".join(lines)
+
+
+def bug_report_url() -> str:
+    """New-issue link with the bug form and this system's details already filled in."""
+    query = urlencode({"template": "bug_report.yml", "labels": "bug", "environment": build_info()})
+    return f"{NEW_ISSUE_URL}?{query}"

@@ -58,6 +58,28 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "Source:": "Origine:",
     "Settings…": "Impostazioni…",
     "General": "Generali",
+    # Menus
+    "&File": "&File",
+    "New selection…": "Nuova selezione…",
+    "Show selections folder": "Mostra la cartella delle selezioni",
+    "Quit": "Esci",
+    "&Help": "&Aiuto",
+    "User guide": "Guida",
+    "Release notes": "Note di rilascio",
+    "Report a problem…": "Segnala un problema…",
+    "About %1": "Informazioni su %1",
+    # About
+    "Version %1": "Versione %1",
+    "Pick the best shots from your photo archive and get them ready for print.": (
+        "Scegli le foto migliori dal tuo archivio e preparale per la stampa."
+    ),
+    "GitHub": "GitHub",
+    "Report a problem": "Segnala un problema",
+    "License": "Licenza",
+    "System information": "Informazioni di sistema",
+    "Copy": "Copia",
+    "Copied": "Copiato",
+    "Built with": "Realizzato con",
     "Add a folder of your photo archive to start choosing photos.": (
         "Aggiungi una cartella del tuo archivio di foto per iniziare a scegliere."
     ),

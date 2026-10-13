@@ -1,11 +1,117 @@
 <?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="it_IT">
 <context>
+    <name>AboutDialog</name>
+    <message>
+        <location filename="../ui/about_dialog.py" line="38" />
+        <source>About %1</source>
+        <translation>Informazioni su %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/about_dialog.py" line="45" />
+        <source>Version %1</source>
+        <translation>Versione %1</translation>
+    </message>
+    <message>
+        <location filename="../ui/about_dialog.py" line="48" />
+        <source>Pick the best shots from your photo archive and get them ready for print.</source>
+        <translation>Scegli le foto migliori dal tuo archivio e preparale per la stampa.</translation>
+    </message>
+    <message>
+        <location filename="../ui/about_dialog.py" line="57" />
+        <source>GitHub</source>
+        <translation>GitHub</translation>
+    </message>
+    <message>
+        <location filename="../ui/about_dialog.py" line="58" />
+        <source>Report a problem</source>
+        <translation>Segnala un problema</translation>
+    </message>
+    <message>
+        <location filename="../ui/about_dialog.py" line="59" />
+        <source>License</source>
+        <translation>Licenza</translation>
+    </message>
+    <message>
+        <location filename="../ui/about_dialog.py" line="70" />
+        <source>System information</source>
+        <translation>Informazioni di sistema</translation>
+    </message>
+    <message>
+        <location filename="../ui/about_dialog.py" line="74" />
+        <source>Copy</source>
+        <translation>Copia</translation>
+    </message>
+    <message>
+        <location filename="../ui/about_dialog.py" line="83" />
+        <source>Built with</source>
+        <translation>Realizzato con</translation>
+    </message>
+    <message>
+        <location filename="../ui/about_dialog.py" line="124" />
+        <source>Copied</source>
+        <translation>Copiato</translation>
+    </message>
+</context>
+<context>
     <name>GroupView</name>
     <message>
         <location filename="../ui/group_view.py" line="114" />
         <source>Unreadable</source>
         <translation>Illeggibile</translation>
+    </message>
+</context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../ui/main_window.py" line="61" />
+        <source>&amp;File</source>
+        <translation>&amp;File</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.py" line="64" />
+        <source>New selection…</source>
+        <translation>Nuova selezione…</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.py" line="71" />
+        <source>Show selections folder</source>
+        <translation>Mostra la cartella delle selezioni</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.py" line="78" />
+        <source>Settings…</source>
+        <translation>Impostazioni…</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.py" line="87" />
+        <source>Quit</source>
+        <translation>Esci</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.py" line="93" />
+        <source>&amp;Help</source>
+        <translation>&amp;Aiuto</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.py" line="96" />
+        <source>User guide</source>
+        <translation>Guida</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.py" line="103" />
+        <source>Release notes</source>
+        <translation>Note di rilascio</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.py" line="109" />
+        <source>Report a problem…</source>
+        <translation>Segnala un problema…</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.py" line="116" />
+        <source>About %1</source>
+        <translation>Informazioni su %1</translation>
     </message>
 </context>
 <context>

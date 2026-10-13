@@ -24,6 +24,7 @@ Flusso principale dell'app.
 
 ## Soglia di somiglianza
 
+- **"Simili"** vuol dire **stessa scena**: raffiche, ma anche lo stesso soggetto reinquadrato, scattato in verticale, con un'altra luce o con chi si è spostato. Foto diverse dello stesso tema (due spiagge, due skyline) restano separate. Come funziona: [architettura](architecture.md#somiglianza).
 - **Cursore live** sempre visibile ("più rigido ↔ più permissivo"): i gruppi si ricalcolano al volo.
 
 ## Navigazione e revisione

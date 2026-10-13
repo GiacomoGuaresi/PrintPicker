@@ -9,6 +9,7 @@
   - [NumPy](https://numpy.org/) – perceptual hash (pHash) implementato direttamente, per evitare la dipendenza da `imagehash` + SciPy (~40 MB in più negli eseguibili)
   - [pillow-heif](https://github.com/bigcat88/pillow_heif) – supporto HEIC
   - [rawpy](https://github.com/letmaik/rawpy) – supporto RAW (anteprima e conversione)
+  - [ONNX Runtime](https://onnxruntime.ai/) – esegue il modello di embedding ([DINOv2](https://github.com/facebookresearch/dinov2) ViT-S/14, fp16, ~44 MB, Apache 2.0) in locale sulla CPU: le foto non lasciano mai il computer
 
 ## Lingua
 
@@ -16,18 +17,41 @@
 
 ## Somiglianza
 
-- Perceptual hash (pHash a 64 bit: DCT di un'immagine 32×32 in scala di grigi, 8×8 frequenze basse confrontate con la mediana) + distanza di Hamming tra gli hash.
-- L'hash si calcola su una versione ridotta (max 256 px, decodifica JPEG in modalità *draft*): sulla chiavetta di test ~230 ms/foto, dominati dalla lettura del file.
-- Confronto solo tra foto della stessa cartella.
+Ogni foto ha una **firma** con due misure, calcolate dalla stessa decodifica della miniatura:
+
+- **Perceptual hash** (pHash a 64 bit: DCT di un'immagine 32×32 in scala di grigi, 8×8 frequenze basse confrontate con la mediana), distanza di Hamming. Riconosce le **copie** della stessa foto (ridimensionata, in bianco e nero, ricompressa) e le raffiche quasi identiche.
+- **Embedding DINOv2** (vettore di 384 numeri, distanza coseno): riconosce la **stessa scena scattata di nuovo** anche se reinquadrata, col telefono girato, con un'altra luce o col soggetto spostato, dove il pHash fallisce. L'immagine intera è schiacciata a 224×224 (non ritagliata), così una reinquadratura conserva quasi tutto il contenuto.
+
+La **distanza** tra due foto è la **minore** delle due, espressa in bit di hash: una distanza coseno di 0,15 vale 14 bit (`EMBEDDING_PER_BIT`). Così:
+
+- soglia, cursore (0–24) e selezioni esistenti mantengono lo stesso significato;
+- senza modello (o se non si carica) il raggruppamento è identico a prima, solo pHash.
+
+Raggruppamento:
+
+- Confronto solo tra foto della stessa cartella; per ogni cartella la matrice delle distanze si calcola una volta (`PhotoIndex`), il cursore rifà solo l'assegnazione ai gruppi (2000 foto: ~50 ms).
 - **Complete linkage**: una foto entra in un gruppo solo se è entro la soglia da **tutte** le foto del gruppo (scegliendo il gruppo col membro più lontano più vicino). Con il *single linkage* i gruppi si "concatenavano" (a soglia 20 un gruppo di 65 foto scattate in ore diverse).
-- **Soglia predefinita 14** (su 64 bit), tarata sulla chiavetta di test con `python -m printpicker.cli`: fino a ~14 i gruppi sono raffiche vere; da ~18 compaiono abbinamenti sbagliati tra paesaggi con la stessa struttura cielo/terra.
-- La soglia è la distanza massima ammessa ed è regolabile dal cursore live.
-- Alternativa futura, se servisse una somiglianza più "semantica": embedding di immagini (più lenti e pesanti).
+- **Soglia predefinita 14**. Solo pHash era stata tarata sulla chiavetta di test (fino a ~14 raffiche vere, da ~18 abbinamenti sbagliati tra paesaggi con la stessa struttura cielo/terra); con gli embedding è confermata dal benchmark sulle foto di esempio (intervallo buono 12–21,5).
+
+### Come è stato scelto (benchmark)
+
+`scripts/eval_grouping.py` misura i metodi sulle foto di esempio con la verità `samples/truth.json` (vedi [sviluppo](development.md)), privilegiando il richiamo (meno doppioni stampati) a precisione ≥ 0,9. Sui casi difficili (reinquadratura, telefono girato, luce diversa, soggetto spostato, una sessione fotografica vera, foto diverse che si somigliano):
+
+| Metodo | Precisione | Richiamo | Note |
+|---|---|---|---|
+| pHash | 1,00 | 0,55 | separa reinquadrature, verticali, stessa posa |
+| pHash + istogramma colore | 0,90 | 0,82 | unisce skyline e spiaggia: fragile |
+| pHash + data di scatto / clustering agglomerativo / pHash 256 bit | 1,00 | ≤ 0,64 | nessun guadagno |
+| CLIP ViT-B/32 | 0,62 | 0,45 | troppo "semantico": stesso tema ≠ stessa scena |
+| **DINOv2-small + pHash (app)** | **1,00** | **1,00** | ~50 ms/foto; int8 più veloce ma con margine più stretto |
+
+Sulle foto di esempio realistiche le coppie della stessa scena stanno sotto 0,14 di distanza coseno, le foto diverse sopra 0,166 (le più vicine: due ponti di Brooklyn di notte da punti diversi).
 
 ## Prestazioni
 
 - Analisi in background, per mantenere l'interfaccia reattiva.
-- Cache di hash e miniature, per restare veloci anche con centinaia di foto da un disco esterno lento.
+- Cache di firme (hash ed embedding float16) e miniature, per restare veloci anche con centinaia di foto da un disco esterno lento. Le foto analizzate prima che il modello fosse disponibile ricevono l'embedding alla prossima analisi.
+- L'analisi usa più thread (uno per core, ONNX Runtime a un thread ciascuno): ~50 ms/foto in tutto sulle foto di esempio, meno della sola lettura da una chiavetta (~230 ms/foto).
 
 ## Dati
 

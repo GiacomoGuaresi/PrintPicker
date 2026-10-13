@@ -149,7 +149,7 @@ Obiettivo: unire gli scatti "dello stesso momento" anche quando cambiano inquadr
 | 11.4 | **Prova IA** nel benchmark: DINOv2-small porta il richiamo sui casi difficili da 0,55 a 1,00 a precisione 1,00 (soglia 0,15), ~50 ms/foto; CLIP peggio del pHash → si integra DINOv2 | — | ✅ |
 | 11.5a | **Modello di embedding**: DINOv2 ONNX fp16 scaricato da `scripts/fetch_model.py`, onnxruntime, incluso nel pacchetto e nel self-test | `feat(core): image embedding model` | ✅ |
 | 11.5b | **Raggruppamento con embedding**: distanza = minima tra pHash ed embedding (stessa scala dello slider, 14 ↔ coseno 0,15), embedding in cache nel database, matrice delle distanze per cartella; benchmark sul raggruppamento vero dell'app | `feat(core): group by image embeddings` | ✅ |
-| 11.6 | Documentazione e traduzioni | `docs: grouping algorithm` | ⬜ |
+| 11.6 | Documentazione dell'algoritmo e dei risultati del benchmark | `docs: grouping algorithm` | ✅ |
 
 ---
 

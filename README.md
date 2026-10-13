@@ -12,7 +12,7 @@ PrintPicker is a small cross-platform desktop utility for people who keep their 
 
 ## Features
 
-- **Similar-photo groups** — photos are grouped by visual similarity (perceptual hashing), so bursts and near-duplicates are shown side by side and you pick the best one(s).
+- **Similar-photo groups** — photos of the same scene are grouped together, so bursts, near-duplicates and shots retaken with another framing, orientation or light are shown side by side and you pick the best one(s). Grouping uses perceptual hashing plus a small on-device AI model ([DINOv2](https://github.com/facebookresearch/dinov2)): your photos never leave your computer.
 - **Fast review** — click a photo to pick or unpick it (each one has a checkbox), ← → to move between groups: your picks are saved as you go, also when going back.
 - **Live similarity threshold** — a slider regroups photos on the fly, from strict to loose.
 - **Full-screen preview** with zoom and rotation to check focus and closed eyes, a filmstrip of the group and on-screen controls; neighbouring photos are preloaded for instant browsing — view only, files are never altered.
@@ -123,3 +123,5 @@ Issues and suggestions are welcome — see the [open questions](docs/open-questi
 ## License
 
 [MIT](LICENSE) © 2026 Giacomo Guaresi
+
+The bundled grouping model, DINOv2 ViT-S/14 by Meta AI, is distributed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) (see [NOTICE](src/printpicker/resources/models/NOTICE.md)).

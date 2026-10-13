@@ -1,97 +1,162 @@
-"""Draw the PrintPicker icon and write it in every format the builds need.
+"""Render the PrintPicker logo and write it in every format the builds and the README need.
 
     uv run python scripts/make_icon.py
 
-Writes ``src/printpicker/resources/icon.png`` (window icon) and ``packaging/icons/``
-(``printpicker.icns`` for macOS, ``printpicker.ico`` for Windows, ``printpicker.png``).
+The source is ``assets/brand/logo.svg``. Writes:
+
+- ``src/printpicker/resources/icon.png`` (window icon) and ``logo.svg`` (shown in the app);
+- ``packaging/icons/``: ``printpicker.icns`` (macOS), ``printpicker.ico`` (Windows),
+  ``printpicker.png`` (Linux, 512×512);
+- ``docs/images/``: ``logo.png`` (README), ``banner.png`` (README header) and
+  ``social-preview.png`` (GitHub repository settings → Social preview).
 """
 
 from __future__ import annotations
 
+import io
+import os
+import shutil
+import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+from PIL import Image  # noqa: E402
+from PySide6.QtCore import QBuffer, QPointF, QRectF, Qt  # noqa: E402
+from PySide6.QtGui import (  # noqa: E402
+    QColor,
+    QFont,
+    QFontDatabase,
+    QFontMetrics,
+    QGuiApplication,
+    QImage,
+    QPainter,
+    QRadialGradient,
+)
+from PySide6.QtSvg import QSvgRenderer  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-SIZE = 1024
-SCALE = 4  # draw larger, then downsample for smooth edges
+SOURCE = ROOT / "assets" / "brand" / "logo.svg"
+RESOURCES = ROOT / "src" / "printpicker" / "resources"
+FONTS = RESOURCES / "fonts"
+ICONS = ROOT / "packaging" / "icons"
+IMAGES = ROOT / "docs" / "images"
+
+sys.path.insert(0, str(ROOT / "src"))
+from printpicker.about import APP_NAME, TAGLINE  # noqa: E402
+
+BG = QColor("#111315")
+TEXT = QColor("#E7E9EC")
+MUTED = QColor("#9198A1")
+ACCENT = QColor("#22B5AA")
 
 
-def draw() -> Image.Image:
-    s = SIZE * SCALE
-    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
+def render_logo(size: int) -> QImage:
+    image = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
+    image.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(image)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    QSvgRenderer(str(SOURCE)).render(painter, QRectF(0, 0, size, size))
+    painter.end()
+    return image
 
-    def box(x0, y0, x1, y1):
-        return [int(v * s) for v in (x0, y0, x1, y1)]
 
-    # Background: rounded square with a vertical gradient (deep blue -> teal).
-    gradient = Image.new("RGBA", (1, s))
-    top, bottom = (31, 64, 150), (22, 160, 160)
-    for y in range(s):
-        t = y / (s - 1)
-        gradient.putpixel(
-            (0, y), tuple(int(a + (b - a) * t) for a, b in zip(top, bottom, strict=True)) + (255,)
+def to_pil(image: QImage) -> Image.Image:
+    buffer = QBuffer()
+    buffer.open(QBuffer.OpenModeFlag.WriteOnly)
+    image.save(buffer, "PNG")
+    return Image.open(io.BytesIO(bytes(buffer.data()))).convert("RGBA")
+
+
+def font(size: int, weight: QFont.Weight) -> QFont:
+    f = QFont("Inter")
+    f.setPixelSize(size)
+    f.setWeight(weight)
+    return f
+
+
+def render_banner(width: int, height: int) -> QImage:
+    """Dark card with a soft glow, the logo and the name: README header and social preview."""
+    image = QImage(width, height, QImage.Format.Format_ARGB32_Premultiplied)
+    image.fill(BG)
+    painter = QPainter(image)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setRenderHint(QPainter.RenderHint.TextAntialiasing)
+
+    title_font = font(int(height * 0.15), QFont.Weight.Bold)
+    tagline_font = font(int(height * 0.045), QFont.Weight.Normal)
+    platforms_font = font(int(height * 0.036), QFont.Weight.DemiBold)
+    platforms = "macOS  ·  Windows  ·  Linux"
+
+    # Centre logo + text as one block.
+    logo = height * 0.5
+    gap = height * 0.08
+    text_w = min(
+        width * 0.62,
+        max(
+            QFontMetrics(title_font).horizontalAdvance(APP_NAME),
+            QFontMetrics(tagline_font).horizontalAdvance(TAGLINE),
         )
-    gradient = gradient.resize((s, s))
-    mask = Image.new("L", (s, s), 0)
-    ImageDraw.Draw(mask).rounded_rectangle(
-        box(0.06, 0.06, 0.94, 0.94), radius=int(0.2 * s), fill=255
+        + 8,  # slack so rounding never wraps the tagline
     )
-    img.paste(gradient, (0, 0), mask)
+    x = (width - logo - gap - text_w) / 2
+    glow = QRadialGradient(QPointF(x + logo / 2, height / 2), height * 0.9)
+    glow.setColorAt(0, QColor(34, 181, 170, 70))
+    glow.setColorAt(1, QColor(34, 181, 170, 0))
+    painter.fillRect(image.rect(), glow)
+    QSvgRenderer(str(SOURCE)).render(painter, QRectF(x, (height - logo) / 2, logo, logo))
+    text_x = x + logo + gap
+    left = Qt.AlignmentFlag.AlignLeft
 
-    # A print behind (semi-transparent, composited), then the main print.
-    behind = Image.new("RGBA", (s, s), (0, 0, 0, 0))
-    ImageDraw.Draw(behind).rounded_rectangle(
-        box(0.29, 0.18, 0.83, 0.64), radius=int(0.03 * s), fill=(255, 255, 255, 120)
+    painter.setPen(TEXT)
+    painter.setFont(title_font)
+    painter.drawText(
+        QRectF(text_x, height * 0.29, text_w, height * 0.2),
+        left | Qt.AlignmentFlag.AlignVCenter,
+        APP_NAME,
     )
-    img.alpha_composite(behind)
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle(
-        box(0.17, 0.30, 0.73, 0.78), radius=int(0.03 * s), fill=(255, 255, 255, 255)
+    painter.setPen(MUTED)
+    painter.setFont(tagline_font)
+    painter.drawText(
+        QRectF(text_x, height * 0.5, text_w, height * 0.16),
+        left | Qt.TextFlag.TextWordWrap,
+        TAGLINE,
     )
-    # Photo inside the print: sky, sun, mountains.
-    d.rectangle(box(0.21, 0.34, 0.69, 0.70), fill=(120, 190, 240, 255))
-    d.ellipse(box(0.55, 0.38, 0.63, 0.46), fill=(255, 205, 70, 255))
-    d.polygon(
-        [tuple(int(v * s) for v in p) for p in ((0.21, 0.70), (0.36, 0.48), (0.49, 0.70))],
-        fill=(40, 110, 90, 255),
-    )
-    d.polygon(
-        [tuple(int(v * s) for v in p) for p in ((0.38, 0.70), (0.53, 0.52), (0.69, 0.70))],
-        fill=(30, 85, 75, 255),
-    )
-
-    # Check badge.
-    d.ellipse(
-        box(0.58, 0.58, 0.86, 0.86),
-        fill=(255, 176, 32, 255),
-        outline=(255, 255, 255, 255),
-        width=int(0.018 * s),
-    )
-    d.line(
-        [tuple(int(v * s) for v in p) for p in ((0.645, 0.725), (0.705, 0.785), (0.80, 0.665))],
-        fill=(255, 255, 255, 255),
-        width=int(0.04 * s),
-        joint="curve",
-    )
-    return img.resize((SIZE, SIZE), Image.Resampling.LANCZOS)
+    painter.setPen(ACCENT)
+    painter.setFont(platforms_font)
+    painter.drawText(QRectF(text_x, height * 0.66, text_w, height * 0.08), left, platforms)
+    painter.end()
+    return image
 
 
 def main() -> None:
-    icon = draw()
-    out = ROOT / "packaging" / "icons"
-    out.mkdir(parents=True, exist_ok=True)
-    icon.save(out / "printpicker.png")
-    icon.save(out / "printpicker.icns", format="ICNS")
-    icon.save(
-        out / "printpicker.ico",
+    app = QGuiApplication.instance() or QGuiApplication(sys.argv)  # noqa: F841 - fonts need it
+    for path in sorted(FONTS.glob("*.ttf")):
+        QFontDatabase.addApplicationFont(str(path))
+
+    ICONS.mkdir(parents=True, exist_ok=True)
+    IMAGES.mkdir(parents=True, exist_ok=True)
+
+    big = to_pil(render_logo(1024))
+    # Small sizes are rendered from the vector source, not downscaled, so they stay sharp.
+    ico_sizes = (16, 24, 32, 48, 64, 128, 256)
+    big.save(
+        ICONS / "printpicker.ico",
         format="ICO",
-        sizes=[(s, s) for s in (16, 24, 32, 48, 64, 128, 256)],
+        sizes=[(s, s) for s in ico_sizes],
+        append_images=[to_pil(render_logo(s)) for s in ico_sizes],
     )
-    res = ROOT / "src" / "printpicker" / "resources"
-    res.mkdir(parents=True, exist_ok=True)
-    icon.resize((256, 256), Image.Resampling.LANCZOS).save(res / "icon.png")
+    big.save(ICONS / "printpicker.icns", format="ICNS")
+    to_pil(render_logo(512)).save(ICONS / "printpicker.png")
+
+    to_pil(render_logo(256)).save(RESOURCES / "icon.png")
+    shutil.copyfile(SOURCE, RESOURCES / "logo.svg")
+
+    to_pil(render_logo(256)).save(IMAGES / "logo.png")
+    render_banner(1280, 400).save(str(IMAGES / "banner.png"))
+    render_banner(1280, 640).save(str(IMAGES / "social-preview.png"))
+    for path in (ICONS, RESOURCES / "icon.png", IMAGES):
+        print(f"  {path.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

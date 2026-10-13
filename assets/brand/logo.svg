@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- PrintPicker logo: a print picked from a small stack. Source for every icon (scripts/make_icon.py). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1F4AA0"/>
+      <stop offset="1" stop-color="#14A39C"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9ADCFF"/>
+      <stop offset="1" stop-color="#5DB4F0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Tile -->
+  <rect x="80" y="80" width="864" height="864" rx="200" fill="url(#tile)"/>
+
+  <!-- Prints behind -->
+  <rect x="318" y="198" width="460" height="390" rx="28" fill="#FFFFFF" fill-opacity="0.22"
+        transform="rotate(9 548 393)"/>
+  <rect x="262" y="236" width="480" height="404" rx="28" fill="#FFFFFF" fill-opacity="0.38"
+        transform="rotate(-5 502 438)"/>
+
+  <!-- The picked print: white border, wider at the bottom -->
+  <rect x="184" y="300" width="528" height="452" rx="30" fill="#FFFFFF"/>
+  <rect x="222" y="338" width="452" height="320" rx="10" fill="url(#sky)"/>
+  <circle cx="584" cy="414" r="40" fill="#FFD25A"/>
+  <path d="M222 658 L222 590 L352 468 L452 562 L520 506 L674 646 L674 658 Z" fill="#2E8C78"/>
+  <path d="M222 658 L222 626 L330 556 L444 618 L540 574 L674 640 L674 658 Z" fill="#1F6B5C"/>
+
+  <!-- Pick badge -->
+  <circle cx="724" cy="724" r="156" fill="#FFB020" stroke="#FFFFFF" stroke-width="30"/>
+  <path d="M650 726 L704 780 L800 672" fill="none" stroke="#FFFFFF" stroke-width="46"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

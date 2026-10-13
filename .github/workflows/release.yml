@@ -54,6 +54,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           dist/PrintPicker/PrintPicker --self-test
+          cp packaging/linux/* packaging/icons/printpicker.png dist/PrintPicker/
           tar -czf "${{ matrix.archive }}" -C dist PrintPicker
 
       - uses: actions/upload-artifact@v4

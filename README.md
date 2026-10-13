@@ -56,7 +56,7 @@ The builds are not signed, so the first launch needs one extra step:
 
 - **macOS** — unzip, move `PrintPicker.app` to Applications, then right-click it and choose **Open** (or run `xattr -dr com.apple.quarantine /Applications/PrintPicker.app`).
 - **Windows** — unzip and run `PrintPicker.exe`; if SmartScreen appears, click **More info → Run anyway**.
-- **Linux** — extract and run `PrintPicker/PrintPicker`.
+- **Linux** — extract and run `PrintPicker/PrintPicker`; `PrintPicker/install-desktop-entry.sh` adds it to the application menu.
 
 ## How to use it
 

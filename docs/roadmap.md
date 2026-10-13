@@ -158,7 +158,7 @@ Obiettivo: un'app curata nei dettagli, pronta per il portfolio: identità grafic
 | # | Step | Commit | Stato |
 |---|---|---|---|
 | 12.1 | **Metadati in un solo posto** (`printpicker/about.py`): nome, versione, autore, link; versione letta da `__init__.py` anche nel `pyproject.toml` | `chore: single-source app metadata` | ✅ |
-| 12.2 | **Logo vettoriale** (`assets/brand/*.svg`) da cui si generano icone, banner e social preview; icona e `.desktop` anche per Linux | `feat(brand): vector logo and icons` | ⬜ |
+| 12.2 | **Logo vettoriale** (`assets/brand/*.svg`) da cui si generano icone, banner e social preview; icona e `.desktop` anche per Linux | `feat(brand): vector logo and icons` | ✅ |
 | 12.3 | **Tema scuro** unico (token colore, Fusion, QSS globale, font Inter) | `feat(ui): dark theme` | ⬜ |
 | 12.4 | **Icone SVG** (Lucide) al posto dei glifi Unicode | `feat(ui): svg icon set` | ⬜ |
 | 12.5 | **Rifinitura schermate**: home, barra superiore e inferiore, vista gruppo, stati vuoti, impostazioni, geometria finestra salvata | `feat(ui): polished screens` | ⬜ |

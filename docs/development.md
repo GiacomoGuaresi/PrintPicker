@@ -54,6 +54,15 @@ esempio, in inglese e con tema chiaro (le impostazioni dell'utente non vengono t
 uv run python scripts/make_screenshots.py
 ```
 
+Il **logo** ha un solo sorgente vettoriale, `assets/brand/logo.svg`. Da lì si generano icone
+dell'app (`.icns`, `.ico`, PNG per Linux), icona della finestra, banner del README e immagine
+di anteprima per i social (`docs/images/social-preview.png`, da caricare a mano in GitHub →
+Settings → Social preview):
+
+```sh
+uv run python scripts/make_icon.py
+```
+
 ## Ambiente di sviluppo
 
 Il progetto usa [uv](https://docs.astral.sh/uv/) per gestire Python (3.12) e le dipendenze.

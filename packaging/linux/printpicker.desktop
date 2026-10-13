@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=PrintPicker
+GenericName=Photo print picker
+GenericName[it]=Scelta foto da stampare
+Comment=Pick the best shots from your photo archive and get them ready for print
+Comment[it]=Scegli le foto migliori dal tuo archivio e preparale per la stampa
+Exec="@EXEC@"
+Icon=printpicker
+Terminal=false
+Categories=Graphics;Photography;
+Keywords=photo;print;duplicates;selection;
+StartupWMClass=PrintPicker

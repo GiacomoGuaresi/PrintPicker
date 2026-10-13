@@ -38,6 +38,8 @@ a = Analysis(
     datas=[
         (str(SRC / "printpicker" / "i18n" / "*.qm"), "printpicker/i18n"),
         (str(SRC / "printpicker" / "resources" / "*.png"), "printpicker/resources"),
+        (str(SRC / "printpicker" / "resources" / "*.svg"), "printpicker/resources"),
+        (str(SRC / "printpicker" / "resources" / "fonts" / "*"), "printpicker/resources/fonts"),
         # Run scripts/fetch_model.py first; --self-test fails without it.
         (str(SRC / "printpicker" / "resources" / "models" / "*.onnx"), "printpicker/resources/models"),
         (str(SRC / "printpicker" / "resources" / "models" / "NOTICE.md"), "printpicker/resources/models"),

@@ -59,6 +59,19 @@ def run_self_test(app: QApplication) -> int:
 
     checks.append(("app icon", ICON_PATH.is_file()))
     try:
+        from printpicker.ui import theme
+
+        image = theme.icon("check").pixmap(24).toImage()
+        drawn = any(
+            image.pixelColor(x, y).alpha()
+            for x in range(image.width())
+            for y in range(image.height())
+        )
+        checks.append(("svg icons", drawn and not theme.logo(64).isNull()))
+        checks.append(("inter font", theme.load_fonts()))
+    except Exception:
+        checks.append(("svg icons", False))
+    try:
         MainWindow().close()
         checks.append(("main window", True))
     except Exception:

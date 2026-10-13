@@ -53,7 +53,7 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "Rotate (R)": "Ruota (R)",
     "will be cropped to 10×15": "verrà ritagliata per il 10×15",
     # Session
-    "← Selections": "← Selezioni",
+    "Selections": "Selezioni",
     "Add source…": "Aggiungi origine…",
     "Source:": "Origine:",
     "Settings…": "Impostazioni…",
@@ -85,8 +85,8 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     ),
     "%1 of %2 photos": "%1 di %2 foto",
     "The analysis failed:\n%1": "L'analisi non è riuscita:\n%1",
-    "Next group →": "Gruppo successivo →",
-    "← Previous group": "← Gruppo precedente",
+    "Next group": "Gruppo successivo",
+    "Previous group": "Gruppo precedente",
     "← or Backspace · your picks are kept": "← o Backspace · le scelte restano salvate",
     "→ or Enter · your picks are kept": "→ o Invio · le scelte restano salvate",
     "How different two photos can be to end up in the same group": (

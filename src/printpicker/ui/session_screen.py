@@ -27,6 +27,7 @@ from printpicker.core.scanner import PhotoFile
 from printpicker.core.similarity import Signature
 from printpicker.selection import Selection, Source, SourceExistsError
 from printpicker.selection.choices import first_unseen_group
+from printpicker.ui import theme
 from printpicker.ui.group_view import GroupView
 from printpicker.ui.key_hints import KeyHints
 from printpicker.ui.money import format_money
@@ -67,13 +68,14 @@ class SessionScreen(QWidget):
         self.index = 0
 
         # Top bar.
-        self.back_button = QPushButton(self.tr("← Selections"))
+        self.back_button = QPushButton(theme.icon("arrow-left"), self.tr("Selections"))
+        theme.set_role(self.back_button, "flat")
         self.back_button.clicked.connect(self.close_selection)
         title = QLabel(f"<b>{self.selection.name}</b>")
         self.source_combo = QComboBox()
         self.source_combo.setMinimumWidth(220)
         self.source_combo.currentIndexChanged.connect(self._source_changed)
-        self.add_source_button = QPushButton(self.tr("Add source…"))
+        self.add_source_button = QPushButton(theme.icon("folder-plus"), self.tr("Add source…"))
         self.add_source_button.clicked.connect(self.choose_source)
         top = QHBoxLayout()
         top.addWidget(self.back_button)
@@ -83,7 +85,9 @@ class SessionScreen(QWidget):
         top.addWidget(QLabel(self.tr("Source:")))
         top.addWidget(self.source_combo)
         top.addWidget(self.add_source_button)
-        self.settings_button = QPushButton(self.tr("Settings…"))
+        self.settings_button = QPushButton(theme.icon("settings"), "")
+        self.settings_button.setToolTip(self.tr("Settings…"))
+        self.settings_button.setAccessibleName(self.tr("Settings…"))
         self.settings_button.clicked.connect(self.open_settings)
         top.addWidget(self.settings_button)
 
@@ -292,11 +296,15 @@ class SessionScreen(QWidget):
         self.group_view.preview_requested.connect(self.open_preview)
         self.picked_label = QLabel()
         self.total_label = QLabel()
-        self.next_button = QPushButton(self.tr("Next group →"))
+        self.next_button = QPushButton(
+            theme.icon("arrow-right", theme.ON_ACCENT), self.tr("Next group")
+        )
+        self.next_button.setLayoutDirection(Qt.LayoutDirection.RightToLeft)  # arrow after text
+        theme.set_role(self.next_button, "primary")
         self.next_button.setDefault(True)
         self.next_button.clicked.connect(self.next_group)
 
-        self.previous_button = QPushButton(self.tr("← Previous group"))
+        self.previous_button = QPushButton(theme.icon("arrow-left"), self.tr("Previous group"))
         self.previous_button.setToolTip(self.tr("← or Backspace · your picks are kept"))
         self.next_button.setToolTip(self.tr("→ or Enter · your picks are kept"))
         self.help_label = KeyHints(
@@ -402,12 +410,15 @@ class SessionScreen(QWidget):
     def _build_end_page(self) -> QWidget:
         self.end_label = QLabel()
         self.end_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        open_button = QPushButton(self.tr("Open the selection folder"))
+        open_button = QPushButton(
+            theme.icon("folder-open", theme.ON_ACCENT), self.tr("Open the selection folder")
+        )
+        theme.set_role(open_button, "primary")
         open_button.setDefault(True)
         open_button.clicked.connect(self.open_folder)
-        back_button = QPushButton(self.tr("← Previous group"))
+        back_button = QPushButton(theme.icon("arrow-left"), self.tr("Previous group"))
         back_button.clicked.connect(self.previous_group)
-        add_button = QPushButton(self.tr("Add another source…"))
+        add_button = QPushButton(theme.icon("folder-plus"), self.tr("Add another source…"))
         add_button.clicked.connect(self.choose_source)
         buttons = QWidget()
         row = QHBoxLayout(buttons)

@@ -8,13 +8,27 @@ tokens directly. Widgets opt into variants with :func:`set_role` (e.g. a primary
 
 from __future__ import annotations
 
+from functools import cache
 from pathlib import Path
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QFont, QFontDatabase, QGuiApplication, QPalette
+from PySide6.QtCore import QByteArray, QRectF, Qt
+from PySide6.QtGui import (
+    QColor,
+    QFont,
+    QFontDatabase,
+    QGuiApplication,
+    QIcon,
+    QPainter,
+    QPalette,
+    QPixmap,
+)
+from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QApplication, QWidget
 
-FONTS_DIR = Path(__file__).resolve().parent.parent / "resources" / "fonts"
+RESOURCES = Path(__file__).resolve().parent.parent / "resources"
+FONTS_DIR = RESOURCES / "fonts"
+ICONS_DIR = RESOURCES / "icons"
+LOGO_PATH = RESOURCES / "logo.svg"
 FONT_FAMILY = "Inter"
 
 # Surfaces, from the window background up.
@@ -60,6 +74,51 @@ def set_role(widget: QWidget, role: str) -> QWidget:
     widget.style().unpolish(widget)
     widget.style().polish(widget)
     return widget
+
+
+ICON_SIZES = (16, 20, 24, 32, 48, 64, 96)
+
+
+def svg_pixmap(svg: bytes, size: int) -> QPixmap:
+    pixmap = QPixmap(size, size)
+    pixmap.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    QSvgRenderer(QByteArray(svg)).render(painter, QRectF(0, 0, size, size))
+    painter.end()
+    return pixmap
+
+
+@cache
+def _icon(name: str, color: str, checked: str | None) -> QIcon:
+    source = (ICONS_DIR / f"{name}.svg").read_text(encoding="utf-8")
+    result = QIcon()
+    variants = [
+        (QIcon.Mode.Normal, QIcon.State.Off, color),
+        (QIcon.Mode.Disabled, QIcon.State.Off, TEXT_FAINT.name()),
+    ]
+    if checked:
+        variants.append((QIcon.Mode.Normal, QIcon.State.On, checked))
+    for mode, state, fill in variants:
+        svg = source.replace("currentColor", fill).encode()
+        for size in ICON_SIZES:
+            result.addPixmap(svg_pixmap(svg, size), mode, state)
+    return result
+
+
+def icon(name: str, color: QColor = TEXT, checked: QColor | None = None) -> QIcon:
+    """A Lucide line icon (``resources/icons/<name>.svg``) drawn in ``color``; ``checked``
+    is its colour on a checked button."""
+    return _icon(name, color.name(), checked.name() if checked else None)
+
+
+def logo(size: int) -> QPixmap:
+    """The app logo at ``size`` × ``size`` logical pixels, sharp on high-DPI screens."""
+    app = QGuiApplication.instance()
+    ratio = app.devicePixelRatio() if app is not None else 1.0
+    pixmap = svg_pixmap(LOGO_PATH.read_bytes(), round(size * ratio))
+    pixmap.setDevicePixelRatio(ratio)
+    return pixmap
 
 
 def palette() -> QPalette:

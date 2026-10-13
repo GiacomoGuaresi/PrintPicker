@@ -26,6 +26,7 @@ from printpicker.selection import (
     rename_selection,
     summarize,
 )
+from printpicker.ui import theme
 from printpicker.ui.selection_cards import SelectionCardView
 from printpicker.ui.settings import AppSettings
 from printpicker.ui.settings_dialog import SettingsDialog
@@ -53,7 +54,7 @@ class StartScreen(QWidget):
         self.location.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.location.setForegroundRole(QPalette.ColorRole.PlaceholderText)
 
-        self.settings_button = QPushButton(self.tr("Settings…"))
+        self.settings_button = QPushButton(theme.icon("settings"), self.tr("Settings…"))
         self.settings_button.clicked.connect(self.open_settings)
 
         heading = QVBoxLayout()

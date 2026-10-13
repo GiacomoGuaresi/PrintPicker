@@ -47,3 +47,25 @@ def test_colours_come_from_the_theme():
         for match in hex_colour.findall(path.read_text())
     ]
     assert offenders == []
+
+
+def test_every_icon_used_exists():
+    calls = [
+        re.compile(r'(?:icon|_overlay_button)\(\s*"([a-z0-9-]+)"'),
+        re.compile(r'_bar_button\([^\n]*,\s*"([a-z0-9-]+)"\)'),
+    ]
+    names = {
+        name
+        for path in UI_DIR.glob("*.py")
+        for call in calls
+        for name in call.findall(path.read_text())
+    }
+    assert {"check", "chevron-left", "arrow-right"} <= names
+    missing = [name for name in names if not (theme.ICONS_DIR / f"{name}.svg").exists()]
+    assert missing == []
+
+
+def test_icons_render(qapp):
+    image = theme.icon("check").pixmap(32).toImage()
+    assert any(image.pixelColor(x, y).alpha() for x in range(32) for y in range(32))
+    assert not theme.logo(48).isNull()

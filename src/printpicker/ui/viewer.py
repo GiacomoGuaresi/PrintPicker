@@ -69,7 +69,7 @@ HIDE_CONTROLS_MS = 2000  # the controls over the photo hide after this much mous
 
 OVERLAY_BUTTON_STYLE = f"""
 QToolButton {{ color: white; background: {css(theme.OVERLAY)}; border: none;
-              border-radius: %dpx; font-size: %dpx; padding: 0px; }}
+              border-radius: %dpx; padding: 0px; }}
 QToolButton:hover {{ background: {css(theme.OVERLAY_HOVER)}; }}
 """
 BAR_STYLE = f"""
@@ -430,11 +430,11 @@ class PhotoViewer(QDialog):
 
         # Controls over the photo, hidden with the cursor while the mouse is still.
         viewport = self.view.viewport()
-        self.prev_button = self._overlay_button("‹", self.tr("Previous photo (←)"), 56)
+        self.prev_button = self._overlay_button("chevron-left", self.tr("Previous photo (←)"), 56)
         self.prev_button.clicked.connect(lambda: self.show_row(self.row - 1))
-        self.next_button = self._overlay_button("›", self.tr("Next photo (→)"), 56)
+        self.next_button = self._overlay_button("chevron-right", self.tr("Next photo (→)"), 56)
         self.next_button.clicked.connect(lambda: self.show_row(self.row + 1))
-        self.close_button = self._overlay_button("✕", self.tr("Close (Esc)"), 40)
+        self.close_button = self._overlay_button("x", self.tr("Close (Esc)"), 40)
         self.close_button.clicked.connect(self.accept)
         self.controls_visible = True
         self._hide_timer = QTimer(self, singleShot=True, interval=HIDE_CONTROLS_MS)
@@ -442,16 +442,16 @@ class PhotoViewer(QDialog):
         viewport.setMouseTracking(True)
         viewport.installEventFilter(self)
 
-        self.pick_button = self._bar_button("✓ " + self.tr("Pick"), self.tr("Pick (Space)"))
+        self.pick_button = self._bar_button(self.tr("Pick"), self.tr("Pick (Space)"), "check")
         self.pick_button.setCheckable(True)
         self.pick_button.clicked.connect(self._toggle)
-        zoom_out = self._bar_button("−", self.tr("Zoom out (−)"))
+        zoom_out = self._bar_button("", self.tr("Zoom out (−)"), "minus")
         zoom_out.clicked.connect(self.view.zoom_out)
         fit = self._bar_button(self.tr("Fit"), self.tr("Fit to screen (0)"))
         fit.clicked.connect(self.view.fit)
-        zoom_in = self._bar_button("+", self.tr("Zoom in (+)"))
+        zoom_in = self._bar_button("", self.tr("Zoom in (+)"), "plus")
         zoom_in.clicked.connect(self.view.zoom_in)
-        rotate = self._bar_button("↻", self.tr("Rotate (R)"))
+        rotate = self._bar_button("", self.tr("Rotate (R)"), "rotate-cw")
         rotate.clicked.connect(lambda: self.view.rotate_by(90))
 
         self.filmstrip = Filmstrip(photos, thumbnail_for)
@@ -483,19 +483,25 @@ class PhotoViewer(QDialog):
         self.show_row(row)
         self._hide_timer.start()
 
-    def _overlay_button(self, text: str, tip: str, size: int) -> QToolButton:
+    def _overlay_button(self, icon: str, tip: str, size: int) -> QToolButton:
         button = QToolButton(self.view)  # not on the viewport, which scrolls its children
-        button.setText(text)
+        button.setIcon(theme.icon(icon, QColor("white")))
+        button.setIconSize(QSize(size // 2, size // 2))
         button.setToolTip(tip)
         button.setFixedSize(size, size)
         button.setFocusPolicy(Qt.FocusPolicy.NoFocus)  # keys stay with the viewer
         button.setCursor(Qt.CursorShape.PointingHandCursor)
-        button.setStyleSheet(OVERLAY_BUTTON_STYLE % (size // 2, size * 3 // 5))
+        button.setStyleSheet(OVERLAY_BUTTON_STYLE % (size // 2))
         return button
 
-    def _bar_button(self, text: str, tip: str) -> QToolButton:
+    def _bar_button(self, text: str, tip: str, icon: str | None = None) -> QToolButton:
         button = QToolButton()
         button.setText(text)
+        if icon:
+            button.setIcon(theme.icon(icon, theme.TEXT, checked=theme.ON_PICK))
+            button.setIconSize(QSize(18, 18))
+            if text:
+                button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         button.setToolTip(tip)
         button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         button.setCursor(Qt.CursorShape.PointingHandCursor)

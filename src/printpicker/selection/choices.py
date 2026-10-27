@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 from collections.abc import Collection, Sequence
+from dataclasses import dataclass
 
 from printpicker.core.grouping import DEFAULT_THRESHOLD, Group
+from printpicker.core.scanner import PhotoFile, natural_key
 from printpicker.selection.sources import Source
+
+
+def folder_key(folder: str) -> tuple:
+    """Sort key that orders folders as the scan visits them (a folder before its children)."""
+    return tuple(natural_key(part) for part in folder.split("/")) if folder else ()
 
 
 def first_unseen_group(groups: Sequence[Group], seen: Collection[str]) -> int:
@@ -14,6 +21,18 @@ def first_unseen_group(groups: Sequence[Group], seen: Collection[str]) -> int:
         if any(p.rel_path not in seen for p in group.photos):
             return i
     return len(groups)
+
+
+@dataclass(frozen=True)
+class SourcePicks:
+    """Photos picked from a source, per folder (relative to the source, "" for its root)."""
+
+    source: Source
+    folders: tuple[tuple[str, int], ...] = ()
+
+    @property
+    def total(self) -> int:
+        return sum(count for _, count in self.folders)
 
 
 class ChoicesMixin:
@@ -53,6 +72,22 @@ class ChoicesMixin:
     def selected_count(self) -> int:
         """Photos picked for print, across all sources."""
         return self.conn.execute("SELECT COUNT(*) FROM photos WHERE selected = 1").fetchone()[0]
+
+    def picks_by_folder(self) -> list[SourcePicks]:
+        """Picked photos of every source (also those with none), counted per folder."""
+        counts: dict[int, dict[str, int]] = {}
+        for source_id, rel_path in self.conn.execute(
+            "SELECT source_id, rel_path FROM photos WHERE selected = 1"
+        ):
+            folders = counts.setdefault(source_id, {})
+            folder = PhotoFile(rel_path).folder
+            folders[folder] = folders.get(folder, 0) + 1
+        result = []
+        for source in self.sources():
+            folders = counts.get(source.id, {})
+            ordered = sorted(folders.items(), key=lambda item: folder_key(item[0]))
+            result.append(SourcePicks(source, tuple(ordered)))
+        return result
 
     @property
     def threshold(self) -> int:

@@ -166,8 +166,13 @@ QLabel[role="title"] { font-size: 22pt; font-weight: 700; }
 QLabel[role="heading"] { font-size: 15pt; font-weight: 600; }
 QLabel[role="muted"] { color: @TEXT_MUTED; }
 QLabel[role="danger"] { color: @DANGER; }
+QLabel[role="current"] { color: @ACCENT; font-weight: 600; }
 
 QFrame#welcome { background: @SURFACE; border: 1px solid @BORDER; border-radius: @RADIUS_LARGEpx; }
+QFrame#picksSummary {
+    background: @SURFACE; border: 1px solid @BORDER; border-radius: @RADIUS_LARGEpx;
+}
+#picksRows { background: transparent; }
 
 QFrame#topBar { background: @BG; border-bottom: 1px solid @BORDER; }
 QFrame#separator { background: @BORDER; }

@@ -23,6 +23,7 @@ Il concetto centrale dell'app è la **selezione per stampa**: una cartella sul P
 ## Origini
 
 - **Più origini**: in una selezione si possono aggiungere nel tempo più cartelle sorgente (es. foto da Devero e da Camaggiore nella stessa stampa). L'avanzamento è tracciato per ciascuna origine.
+- **Cartella padre**: se l'origine contiene sottocartelle, le foto vengono proposte cartella per cartella con una pausa tra l'una e l'altra; il [riepilogo](grouping-workflow.md#riepilogo) mostra le foto scelte per origine e per sottocartella.
 - **Origine non trovata** (disco scollegato o percorso cambiato, es. lettera di unità diversa su Windows): l'app avvisa e permette di ricollegare il disco e riprovare, oppure di indicare la nuova posizione della cartella. L'avanzamento resta valido perché le foto sono identificate dal percorso **relativo** all'origine.
 
 ## Dati della selezione

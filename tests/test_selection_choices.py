@@ -81,3 +81,23 @@ def test_failed_copy_leaves_group_unseen(env, monkeypatch):
         sel.apply_choice(source, groups[0], {"a1.jpg"})
     assert "a1.jpg" not in sel.seen_photos(source)
     assert first_unseen_group(groups, sel.seen_photos(source)) == 0
+
+
+def test_picks_by_folder(tmp_path):
+    a, b = tmp_path / "A", tmp_path / "B"
+    for i, rel in enumerate(["r.jpg", "x10/1.jpg", "x2/1.jpg", "x2/2.jpg", "x2/deep/1.jpg"]):
+        make_photo(a / rel, pattern=i)
+    make_photo(b / "b.jpg", pattern=9)
+    with Selection.create(tmp_path / "sels", "S") as sel:
+        source_a = sel.add_source(a)
+        source_b = sel.add_source(b)
+        groups = group_photos(sel.analyze_source(source_a), 0)
+        everything = {p.rel_path for g in groups for p in g.photos}
+        for group in groups:
+            sel.apply_choice(source_a, group, everything - {"x2/1.jpg"})
+
+        picks = sel.picks_by_folder()
+        assert [p.source for p in picks] == [source_a, source_b]
+        assert picks[0].folders == (("", 1), ("x2", 1), ("x2/deep", 1), ("x10", 1))
+        assert picks[0].total == 4
+        assert picks[1].folders == () and picks[1].total == 0

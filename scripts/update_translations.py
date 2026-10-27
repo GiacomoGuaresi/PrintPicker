@@ -151,12 +151,23 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
         "<b>%1</b> — gruppo %2 di %3 · %n foto",
         "<b>%1</b> — gruppo %2 di %3 · %n foto",
     ),
+    "<b>%1</b> — group %2 of %3 · folder %4 of %5 · %n photo(s)": (
+        "<b>%1</b> — gruppo %2 di %3 · cartella %4 di %5 · %n foto",
+        "<b>%1</b> — gruppo %2 di %3 · cartella %4 di %5 · %n foto",
+    ),
     "Copy failed": "Copia non riuscita",
     "Could not copy the photo:\n%1": "Impossibile copiare la foto:\n%1",
     "Open the selection folder": "Apri la cartella della selezione",
     "Add another source…": "Aggiungi un'altra origine…",
     "All done!": "Fatto!",
-    "All the photos of “%1” have been reviewed.<br>%2": "Hai visto tutte le foto di “%1”.<br>%2",
+    "All the photos of “%1” have been reviewed.": "Hai visto tutte le foto di “%1”.",
+    "Summary": "Riepilogo",
+    "Photos picked per folder, with the totals": "Foto scelte per cartella, con i totali",
+    "Photos picked for “%1”, per folder.": "Foto scelte per “%1”, cartella per cartella.",
+    "Continue with “%1”": "Continua con “%1”",
+    "“%1” done": "“%1” completata",
+    "Folder %1 of %2 of “%3”": "Cartella %1 di %2 di “%3”",
+    "Review": "Rivedi",
     "Each photo is read once, then remembered.": (
         "Ogni foto viene letta una volta sola, poi viene ricordata."
     ),
@@ -164,7 +175,6 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "%n page(s)": ("%n pagina", "%n pagine"),
     "Estimate with “%1”: %2 per photo": "Stima con “%1”: %2 a foto",
     "Selected in this group: %1": "Scelte in questo gruppo: %1",
-    "Review picked photos": "Rivedi le foto scelte",
     "Only the picked photos, to unpick some of them": (
         "Solo le foto scelte, per toglierne qualcuna"
     ),

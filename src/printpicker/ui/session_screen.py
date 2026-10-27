@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
-from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, QUrl, Signal
+from PySide6.QtCore import QEvent, QItemSelectionModel, QObject, Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
@@ -32,6 +33,7 @@ from printpicker.ui import theme
 from printpicker.ui.group_view import GroupView
 from printpicker.ui.key_hints import KeyHints
 from printpicker.ui.money import format_money
+from printpicker.ui.picks_summary import PicksSummary
 from printpicker.ui.settings import AppSettings
 from printpicker.ui.settings_dialog import SettingsDialog
 from printpicker.ui.thumbnails import ThumbnailLoader
@@ -40,6 +42,8 @@ from printpicker.ui.workers import AnalysisThread
 
 # Hamming distance on 64-bit hashes; above ~24 almost everything in a folder is "similar".
 MAX_THRESHOLD = 24
+# Between the parts of the totals (rich text: plain spaces would collapse into one).
+TOTALS_GAP = "&nbsp;" * 8
 
 
 def _state_page(icon: str, color: QColor, *widgets: QWidget) -> QWidget:
@@ -92,6 +96,16 @@ class SessionScreen(QWidget):
         self.index = 0
         # The picked photos of the source, while they are reviewed from the end page.
         self.review: Group | None = None
+        # Index of the next group while the end page pauses between two folders.
+        self.pause: int | None = None
+        # How the end page is shown: "end" of the source, "folder" pause or "summary".
+        self.end_mode = "end"
+        # Shows the end page again as it is now (where a review or the summary go back to).
+        self._reshow_end: Callable[[], None] = self.show_end
+        self._review_return: Callable[[], None] = self.show_end
+        self._summary_back: Callable[[], None] = self.show_end
+        # (folder,) to review once the source being switched to is analysed.
+        self._pending_review: tuple[str | None] | None = None
 
         # Top bar.
         self.back_button = QPushButton(theme.icon("arrow-left"), self.tr("Selections"))
@@ -103,6 +117,9 @@ class SessionScreen(QWidget):
         self.source_combo.currentIndexChanged.connect(self._source_changed)
         self.add_source_button = QPushButton(theme.icon("folder-plus"), self.tr("Add source…"))
         self.add_source_button.clicked.connect(self.choose_source)
+        self.summary_button = QPushButton(theme.icon("list-checks"), self.tr("Summary"))
+        self.summary_button.setToolTip(self.tr("Photos picked per folder, with the totals"))
+        self.summary_button.clicked.connect(self.open_summary)
         self.settings_button = QPushButton(theme.icon("settings"), "")
         self.settings_button.setToolTip(self.tr("Settings…"))
         self.settings_button.setAccessibleName(self.tr("Settings…"))
@@ -122,6 +139,7 @@ class SessionScreen(QWidget):
         top.addWidget(theme.set_role(QLabel(self.tr("Source:")), "muted"))
         top.addWidget(self.source_combo)
         top.addWidget(self.add_source_button)
+        top.addWidget(self.summary_button)
         top.addWidget(self.settings_button)
 
         # Pages.
@@ -194,6 +212,7 @@ class SessionScreen(QWidget):
             self.source_combo.addItem(s.name, s.id)
         self.source_combo.blockSignals(False)
         self.source_combo.setEnabled(bool(sources))
+        self.summary_button.setEnabled(bool(sources))
         if not sources:
             self.pages.setCurrentWidget(self.empty_page)
             return
@@ -262,6 +281,8 @@ class SessionScreen(QWidget):
         self.cancel_analysis()
         self.loader.reset()
         self._set_reviewing(None)
+        self.items = []
+        self.groups = []
         self.source = self.selection.source(source_id)
         self.selection.set_meta("last_source", str(source_id))
         if not self.source.is_available:
@@ -283,7 +304,7 @@ class SessionScreen(QWidget):
         self.progress_bar.setRange(0, 0)
         self.progress_detail.setText(self.tr("Each photo is read once, then remembered."))
         self.pages.setCurrentWidget(self.progress_page)
-        self.add_source_button.setEnabled(False)
+        self._set_analysing(True)
         thread = AnalysisThread(self.selection.folder, self.source.id, self)
         thread.progress.connect(self._on_progress)
         thread.analysed.connect(self._on_analysed)
@@ -292,18 +313,23 @@ class SessionScreen(QWidget):
         self.thread = thread
         thread.start()
 
+    def _set_analysing(self, analysing: bool) -> None:
+        self.add_source_button.setEnabled(not analysing)
+        self.summary_button.setEnabled(not analysing)
+
     def cancel_analysis(self) -> None:
         if self.thread is not None:
             self.thread.cancel()
             self.thread.wait()
             self.thread = None
-            self.add_source_button.setEnabled(True)
+            self._set_analysing(False)
 
     def _cancel_clicked(self) -> None:
         self.cancel_analysis()
         self.show_message(self.tr("Analysis interrupted. Photos analysed so far are kept."))
 
     def show_message(self, text: str, relink: bool = False) -> None:
+        self._pending_review = None
         self.message_label.setText(text)
         self.relink_button.setVisible(relink)
         self.pages.setCurrentWidget(self.message_page)
@@ -318,7 +344,7 @@ class SessionScreen(QWidget):
     def _on_thread_finished(self) -> None:
         if self.sender() is self.thread:
             self.thread = None
-            self.add_source_button.setEnabled(True)
+            self._set_analysing(False)
 
     def _on_failed(self, message: str) -> None:
         if self.sender() is self.thread:
@@ -338,6 +364,12 @@ class SessionScreen(QWidget):
         """Group ``items`` from scratch (the slider then only regroups the same photos)."""
         self.photo_index = PhotoIndex(self.items)
         self.groups = self.photo_index.groups(self.selection.threshold)
+        if self._pending_review is not None:
+            (folder,) = self._pending_review
+            self._pending_review = None
+            self._review_return = lambda: self.show_summary(self.show_groups)
+            if self.show_review(folder):
+                return
         self.show_groups()
 
     def show_groups(self) -> None:
@@ -452,16 +484,31 @@ class SessionScreen(QWidget):
     def show_group(self, index: int) -> None:
         assert self.source is not None
         self._set_reviewing(None)
+        self.pause = None
         self.index = index
         if index >= len(self.groups):
             self.show_end()
             return
         group = self.groups[index]
+        # Groups are counted within their folder (folders keep their groups together).
+        in_folder = [i for i, g in enumerate(self.groups) if g.folder == group.folder]
+        folders = self._folders()
+        if len(folders) > 1:
+            title = (
+                self.tr(
+                    "<b>%1</b> — group %2 of %3 · folder %4 of %5 · %n photo(s)",
+                    "",
+                    len(group.photos),
+                )
+                .replace("%4", str(folders.index(group.folder) + 1))
+                .replace("%5", str(len(folders)))
+            )
+        else:
+            title = self.tr("<b>%1</b> — group %2 of %3 · %n photo(s)", "", len(group.photos))
         self.group_title.setText(
-            self.tr("<b>%1</b> — group %2 of %3 · %n photo(s)", "", len(group.photos))
-            .replace("%1", group.folder or self.source.name)
-            .replace("%2", str(index + 1))
-            .replace("%3", str(len(self.groups)))
+            title.replace("%1", group.folder or self.source.name)
+            .replace("%2", str(in_folder.index(index) + 1))
+            .replace("%3", str(len(in_folder)))
         )
         picked = self.selection.selected_photos(self.source)
         self.group_view.set_photos(list(group.photos), self._paths_for, picked)
@@ -492,10 +539,17 @@ class SessionScreen(QWidget):
         return True
 
     def next_group(self) -> None:
+        """Save the group and go on; stop on the end page between two folders."""
         if self.review is not None:
             self.finish_review()
         elif self.index < len(self.groups) and self.save_group():
-            self.show_group(self.index + 1)
+            following = self.index + 1
+            if following < len(self.groups) and (
+                self.groups[following].folder != self.groups[self.index].folder
+            ):
+                self.show_folder_end(following)
+            else:
+                self.show_group(following)
 
     def skip_to_end(self) -> None:
         """Save the group on screen and go straight to the end page; the groups skipped
@@ -503,87 +557,233 @@ class SessionScreen(QWidget):
         if self.review is None and self.index < len(self.groups) and self.save_group():
             self.show_end()
 
-    def show_review(self) -> None:
-        """Show only the photos picked from the source, to unpick some of them."""
+    def review_picks(self, source_id: int, folder: str | None) -> None:
+        """Review the photos picked from a source (or one of its folders), then come back
+        here; another source is analysed first, then the review goes back to the summary."""
+        if self.source is not None and self.source.id == source_id and self.items:
+            self._review_return = self._reshow_end
+            self.show_review(folder)
+            return
+        self._pending_review = (folder,)
+        index = self.source_combo.findData(source_id)
+        if index == self.source_combo.currentIndex():
+            self._source_changed()
+        else:
+            self.source_combo.setCurrentIndex(index)
+
+    def show_review(self, folder: str | None = None) -> bool:
+        """Show only the photos picked from the source (from ``folder`` only, if given), to
+        unpick some of them. False if there are none."""
         assert self.source is not None
         picked = self.selection.selected_photos(self.source)
-        photos = tuple(p for g in self.groups for p in g.photos if p.rel_path in picked)
+        photos = tuple(
+            p
+            for g in self.groups
+            for p in g.photos
+            if p.rel_path in picked and (folder is None or p.folder == folder)
+        )
         if not photos:
-            return
-        self._set_reviewing(Group("", photos))
+            return False
+        self._set_reviewing(Group(folder or "", photos))
         self.group_title.setText(
             self.tr("<b>%1</b> — picked photos · %n photo(s)", "", len(photos)).replace(
-                "%1", self.source.name
+                "%1", folder or self.source.name
             )
         )
         self.group_view.set_photos(list(photos), self._paths_for, picked)
         self.previous_button.setEnabled(True)
         self.pages.setCurrentWidget(self.groups_page)
         self.group_view.setFocus()
+        return True
 
     def finish_review(self) -> None:
-        """Save the review (unpicked photos leave the selection folder), back to the end."""
+        """Save the review (unpicked photos leave the selection folder) and go back to the
+        page the review was opened from."""
         if self.save_group():
             self._set_reviewing(None)
-            self.show_end()
+            self._review_return()
 
     def _build_end_page(self) -> QWidget:
         self.end_title = theme.set_role(QLabel(self.tr("All done!")), "heading")
         self.end_label = theme.set_role(QLabel(), "muted")
-        open_button = QPushButton(
-            theme.icon("folder-open", theme.ON_ACCENT), self.tr("Open the selection folder")
+        self.picks_summary = PicksSummary()
+        self.picks_summary.review_requested.connect(self.review_picks)
+        self.open_button = QPushButton(
+            theme.icon("folder-open"), self.tr("Open the selection folder")
         )
-        theme.set_role(open_button, "primary")
-        open_button.setDefault(True)
-        open_button.clicked.connect(self.open_folder)
-        back_button = QPushButton(theme.icon("arrow-left"), self.tr("Previous group"))
-        back_button.clicked.connect(self.previous_group)
-        self.review_button = QPushButton(theme.icon("images"), self.tr("Review picked photos"))
-        self.review_button.setToolTip(self.tr("Only the picked photos, to unpick some of them"))
-        self.review_button.clicked.connect(self.show_review)
-        add_button = QPushButton(theme.icon("folder-plus"), self.tr("Add another source…"))
-        add_button.clicked.connect(self.choose_source)
+        self.open_button.clicked.connect(self.open_folder)
+        self.end_back_button = QPushButton(theme.icon("arrow-left"), self.tr("Previous group"))
+        self.end_back_button.clicked.connect(self.end_back)
+        self.add_button = QPushButton(theme.icon("folder-plus"), self.tr("Add another source…"))
+        self.add_button.clicked.connect(self.choose_source)
+        self.continue_button = QPushButton(theme.icon("arrow-right", theme.ON_ACCENT), "")
+        self.continue_button.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+        theme.set_role(self.continue_button, "primary")
+        self.continue_button.setToolTip(self.tr("→ or Enter · your picks are kept"))
+        self.continue_button.clicked.connect(self.end_forward)
         page = _state_page(
             "circle-check",
             theme.ACCENT,
             self.end_title,
             self.end_label,
-            _button_row(back_button, self.review_button, add_button, open_button),
+            self.picks_summary,
+            _button_row(
+                self.end_back_button, self.add_button, self.open_button, self.continue_button
+            ),
         )
-        # ← / Backspace go back to the last group, as in the group review.
-        for key in (Qt.Key.Key_Left, Qt.Key.Key_Backspace):
+        # ← / Backspace go back (to the last group, as in the group review), → goes on.
+        # A key held down in the groups does not run through the page: it has to be
+        # pressed again (no auto-repeat on the shortcuts, auto-repeated keys eaten).
+        keys = [(Qt.Key.Key_Left, self.end_back), (Qt.Key.Key_Backspace, self.end_back)]
+        keys.append((Qt.Key.Key_Right, self.end_forward))
+        self.end_shortcuts: list[QShortcut] = []
+        for key, slot in keys:
             shortcut = QShortcut(QKeySequence(key), page)
             shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
-            shortcut.activated.connect(self.previous_group)
-        self.end_focus = open_button
+            shortcut.setAutoRepeat(False)
+            shortcut.activated.connect(slot)
+            self.end_shortcuts.append(shortcut)
+        buttons = (self.end_back_button, self.add_button, self.open_button, self.continue_button)
+        for button in buttons:
+            button.installEventFilter(self)
         return page
+
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        if event.type() == QEvent.Type.KeyPress and event.isAutoRepeat():
+            return True  # a key held down on the end page buttons
+        return super().eventFilter(watched, event)
+
+    def _show_end_page(
+        self, mode: str, title: str, text: str, current: tuple[int, str | None] | None
+    ) -> None:
+        """Show the end page in ``mode`` ("end", "folder" or "summary")."""
+        self.end_mode = mode
+        self.end_title.setText(title)
+        self.end_label.setText(text)
+        self.picks_summary.set_picks(self.selection.picks_by_folder(), self.summary_text(), current)
+        self.end_back_button.setText(
+            self.tr("Back") if mode == "summary" else self.tr("Previous group")
+        )
+        self.end_back_button.setEnabled(mode != "end" or bool(self.groups))
+        self.add_button.setVisible(mode == "end")
+        self.continue_button.setVisible(mode == "folder")
+        # The primary action: Enter on the focused button.
+        primary = self.continue_button if mode == "folder" else self.open_button
+        for button in (self.open_button, self.continue_button):
+            button.setDefault(button is primary)
+        open_primary = primary is self.open_button
+        theme.set_role(self.open_button, "primary" if open_primary else "")
+        self.open_button.setIcon(
+            theme.icon("folder-open", theme.ON_ACCENT if open_primary else theme.TEXT)
+        )
+        self.pages.setCurrentWidget(self.end_page)
+        primary.setFocus()  # keep the focus on the page, for its shortcuts
 
     def show_end(self) -> None:
         assert self.source is not None
         self.index = len(self.groups)
-        self.end_label.setText(
-            self.tr("All the photos of “%1” have been reviewed.<br>%2")
-            .replace("%1", self.source.name)
-            .replace("%2", self.summary_text())
+        self.pause = None
+        self._reshow_end = self.show_end
+        self._show_end_page(
+            "end",
+            self.tr("All done!"),
+            self.tr("All the photos of “%1” have been reviewed.").replace("%1", self.source.name),
+            (self.source.id, None),
         )
-        self.review_button.setEnabled(bool(self.selection.selected_photos(self.source)))
-        self.pages.setCurrentWidget(self.end_page)
-        self.end_focus.setFocus()  # keep the focus on the page, for its shortcuts
+
+    def _folders(self) -> list[str]:
+        """Folders of the source with photos, in scan order."""
+        return list(dict.fromkeys(g.folder for g in self.groups))
+
+    def show_folder_end(self, following: int) -> None:
+        """Pause between two folders of the source; ``following`` is the next group."""
+        assert self.source is not None
+        self.pause = following
+        self._reshow_end = lambda: self.show_folder_end(following)
+        folder = self.groups[following - 1].folder
+        folders = self._folders()
+        self.continue_button.setText(
+            self.tr("Continue with “%1”").replace(
+                "%1", self.groups[following].folder or self.source.name
+            )
+        )
+        self._show_end_page(
+            "folder",
+            self.tr("“%1” done").replace("%1", folder or self.source.name),
+            self.tr("Folder %1 of %2 of “%3”")
+            .replace("%1", str(folders.index(folder) + 1))
+            .replace("%2", str(len(folders)))
+            .replace("%3", self.source.name),
+            (self.source.id, folder),
+        )
+
+    def show_summary(self, back: Callable[[], None]) -> None:
+        """The photos picked per folder; ``back`` goes back to where the user was."""
+        self.pause = None
+        self._summary_back = back
+        self._reshow_end = lambda: self.show_summary(back)
+        self._show_end_page(
+            "summary",
+            self.tr("Summary"),
+            self.tr("Photos picked for “%1”, per folder.").replace("%1", self.selection.name),
+            None,
+        )
+
+    def open_summary(self) -> None:
+        """Show the summary from anywhere, saving the group on screen first."""
+        page = self.pages.currentWidget()
+        if page is self.groups_page:
+            if not self.save_group():
+                return
+            if self.review is not None:
+                self._set_reviewing(None)
+                back = self._review_return
+            else:
+                index = self.index
+                back = lambda: self.show_group(index)  # noqa: E731
+        elif page is self.end_page:
+            if self.end_mode == "summary":
+                return
+            back = self._reshow_end
+        else:
+            back = lambda: self.pages.setCurrentWidget(page)  # noqa: E731
+        self.show_summary(back)
+
+    def end_back(self) -> None:
+        if self.end_mode == "summary":
+            self._summary_back()
+        elif self.end_mode == "folder" and self.pause is not None:
+            self.show_group(self.pause - 1)
+        else:
+            self.previous_group()
+
+    def end_forward(self) -> None:
+        if self.end_mode == "folder" and self.pause is not None:
+            self.show_group(self.pause)
+
+    def photos_to_print(self) -> int:
+        """Photos in the selection, counting the picks of the group on screen as they are
+        now, before they are saved."""
+        count = self.selection.exported_count()
+        if self.source is not None and self.pages.currentWidget() is self.groups_page:
+            on_screen = {p.rel_path for p in self.group_view.photo_model.photos}
+            saved = self.selection.selected_photos(self.source) & on_screen
+            count += len(self.group_view.picked()) - len(saved)
+        return count
 
     def summary_text(self) -> str:
-        """Photos in the selection, pages and cost, e.g. "34 (4 pages + 2 photos) · ~10,20 €"."""
-        count = self.selection.exported_count()
+        """Photos in the selection, pages and cost, e.g. "34   4 pages + 2 photos   ~10,20 €"."""
+        count = self.photos_to_print()
         price_list = self.settings.price_list
         estimate = price_list.estimate(count)
         text = self.tr("Photos to print: <b>%1</b>").replace("%1", str(count))
         pages, rest = divmod(count, self.settings.photos_per_page)
         if pages:
-            text += " (" + self.tr("%n page(s)", "", pages)
+            text += TOTALS_GAP + self.tr("%n page(s)", "", pages)
             if rest:
                 text += " + " + self.tr("%n photo(s)", "", rest)
-            text += ")"
         if count:
-            text += " · ~" + format_money(estimate.total, price_list.currency)
+            text += TOTALS_GAP + "~" + format_money(estimate.total, price_list.currency)
         self.total_label.setToolTip(
             self.tr("Estimate with “%1”: %2 per photo")
             .replace("%1", price_list.name)
@@ -643,14 +843,18 @@ class SessionScreen(QWidget):
         self.show_group(index)
 
     def previous_group(self) -> None:
-        """Go back, keeping the picks of the current group."""
+        """Go back, keeping the picks of the current group; stop on the pause between two
+        folders, as going forward."""
         if self.review is not None:
             self.finish_review()
         elif self.index >= len(self.groups):
             if self.groups:
                 self.show_group(len(self.groups) - 1)  # from the end page
         elif self.index > 0 and self.save_group():
-            self.show_group(self.index - 1)
+            if self.groups[self.index - 1].folder != self.groups[self.index].folder:
+                self.show_folder_end(self.index)  # the pause between the two folders
+            else:
+                self.show_group(self.index - 1)
 
     def _update_counters(self) -> None:
         picked = str(len(self.group_view.picked()))

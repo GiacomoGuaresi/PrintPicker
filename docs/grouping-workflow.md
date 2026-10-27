@@ -51,10 +51,22 @@ Servono solo a **guardare bene** le foto e scegliere la migliore: **non modifica
 - L'**anteprima del ritaglio**, attiva di default (`C` per nasconderla), oscura nelle foto con proporzioni diverse dal formato di stampa (10×15 = **3:2**) le parti che non verranno stampate; il suggerimento della miniatura lo segnala anche a parole.
 - È solo un'indicazione: la foto viene copiata intera, il ritaglio lo fa il servizio di stampa.
 
+### Pausa tra le cartelle
+
+- Se l'origine è una **cartella padre** con sottocartelle, finita una sottocartella l'app si ferma su una **pagina intermedia** ("“x” completata", cartella 2 di 5…) con il riepilogo e le stesse azioni della pagina di fine, tranne *Aggiungi un'altra origine*.
+- **Continua con “y”** (→ / Invio) passa alla cartella successiva; *Gruppo precedente* (← / Backspace) torna all'ultimo gruppo della cartella appena finita.
+- Anche tornando indietro con ← dal primo gruppo di una cartella l'app si ferma sulla stessa pagina intermedia, prima dell'ultimo gruppo della cartella precedente; *Salta alla fine* e la ripresa all'apertura non si fermano sulle pause.
+- In alto il contatore numera i gruppi **dentro la cartella** e indica la cartella: *gruppo 1 di 10 · cartella 2 di 12*.
+- Tenendo premuta una freccia (o Invio) la pausa **non viene saltata**: per proseguire bisogna rilasciare il tasto e premerlo di nuovo.
+
 ### Fine dell'origine
 
-- Visti tutti i gruppi di un'origine, l'app mostra un **messaggio di fine** con il totale (foto e costo stimato) e un pulsante per **aprire la cartella** della selezione.
-- **Rivedi le foto scelte**: dal messaggio di fine si apre una griglia con **solo le foto scelte** dell'origine, tutte spuntate. Un click toglie la foto; con *Fine* (→ / Invio) o *Indietro* (← / Backspace) le foto tolte vengono **rimosse dalla cartella della selezione** e si torna al messaggio di fine. Anteprima e scorciatoie funzionano come nei gruppi; il cursore della soglia è nascosto.
+- Visti tutti i gruppi di un'origine, l'app mostra un **messaggio di fine** con il riepilogo e un pulsante per **aprire la cartella** della selezione o **aggiungere un'altra origine**.
+
+### Riepilogo
+
+- Nella pagina intermedia, in quella di fine e col pulsante **Riepilogo** in alto (sempre disponibile; salva prima le scelte del gruppo a schermo) c'è l'elenco delle foto scelte **per origine**, con il dettaglio **per sottocartella** quando l'origine ne ha, e in fondo il **totale** da stampare (foto, pagine, costo stimato). La cartella appena finita è evidenziata.
+- **Rivedi** su una riga apre una griglia con **solo le foto scelte** di quell'origine o sottocartella, tutte spuntate. Un click toglie la foto; con *Fine* (→ / Invio) o *Indietro* (← / Backspace) le foto tolte vengono **rimosse dalla cartella della selezione** e si torna alla pagina da cui si è partiti. Rivedendo un'altra origine, l'app la apre e al termine torna al riepilogo. Anteprima e scorciatoie funzionano come nei gruppi; il cursore della soglia è nascosto.
 
 ### Scorciatoie da tastiera
 

@@ -262,6 +262,29 @@ Verrà ritagliata per la stampa 10×15</translation>
     </message>
 </context>
 <context>
+    <name>PicksSummary</name>
+    <message numerus="yes">
+        <location filename="../ui/picks_summary.py" line="83" />
+        <source>%n photo(s)</source>
+        <translation><numerusform>%n foto</numerusform><numerusform>%n foto</numerusform></translation>
+    </message>
+    <message>
+        <location filename="../ui/picks_summary.py" line="93" />
+        <source>Review</source>
+        <translation>Rivedi</translation>
+    </message>
+    <message>
+        <location filename="../ui/picks_summary.py" line="94" />
+        <source>Only the picked photos, to unpick some of them</source>
+        <translation>Solo le foto scelte, per toglierne qualcuna</translation>
+    </message>
+    <message>
+        <location filename="../ui/picks_summary.py" line="106" />
+        <source>No photos yet</source>
+        <translation>Ancora nessuna foto</translation>
+    </message>
+</context>
+<context>
     <name>SelectionCardModel</name>
     <message>
         <location filename="../ui/selection_cards.py" line="75" />
@@ -307,76 +330,76 @@ Verrà ritagliata per la stampa 10×15</translation>
 <context>
     <name>SessionScreen</name>
     <message>
-        <location filename="../ui/session_screen.py" line="104" />
-        <location filename="../ui/session_screen.py" line="135" />
+        <location filename="../ui/session_screen.py" line="116" />
+        <location filename="../ui/session_screen.py" line="151" />
         <source>Add source…</source>
         <translation>Aggiungi origine…</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="122" />
+        <location filename="../ui/session_screen.py" line="137" />
         <source>Source:</source>
         <translation>Origine:</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="107" />
-        <location filename="../ui/session_screen.py" line="108" />
+        <location filename="../ui/session_screen.py" line="122" />
+        <location filename="../ui/session_screen.py" line="123" />
         <source>Settings…</source>
         <translation>Impostazioni…</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="131" />
+        <location filename="../ui/session_screen.py" line="147" />
         <source>Add a folder of your photo archive to start choosing photos.</source>
         <translation>Aggiungi una cartella del tuo archivio di foto per iniziare a scegliere.</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="149" />
+        <location filename="../ui/session_screen.py" line="165" />
         <source>Cancel</source>
         <translation>Annulla</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="161" />
+        <location filename="../ui/session_screen.py" line="177" />
         <source>Retry</source>
         <translation>Riprova</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="164" />
+        <location filename="../ui/session_screen.py" line="180" />
         <source>The folder has moved: choose it…</source>
         <translation>La cartella è stata spostata: indicala…</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="208" />
+        <location filename="../ui/session_screen.py" line="225" />
         <source>Choose a folder of photos</source>
         <translation>Scegli una cartella di foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="222" />
+        <location filename="../ui/session_screen.py" line="239" />
         <source>Where is “%1” now?</source>
         <translation>Dove si trova ora “%1”?</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="236" />
+        <location filename="../ui/session_screen.py" line="253" />
         <source>Different folder?</source>
         <translation>Cartella diversa?</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="238" />
+        <location filename="../ui/session_screen.py" line="255" />
         <source>None of the photos analysed before are in “%1”.
 Use this folder for “%2” anyway?</source>
         <translation>Nessuna delle foto analizzate in precedenza si trova in “%1”.
 Usare comunque questa cartella per “%2”?</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="251" />
+        <location filename="../ui/session_screen.py" line="268" />
         <source>Source</source>
         <translation>Origine</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="252" />
+        <location filename="../ui/session_screen.py" line="269" />
         <source>This folder is already another source of the selection.</source>
         <translation>Questa cartella è già un'altra origine della selezione.</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="270" />
+        <location filename="../ui/session_screen.py" line="289" />
         <source>The folder “%1” cannot be found.
 
 Connect the drive and press Retry, or choose where the folder is now.</source>
@@ -385,215 +408,245 @@ Connect the drive and press Retry, or choose where the folder is now.</source>
 Collega il disco e premi Riprova, oppure indica dove si trova ora la cartella.</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="282" />
+        <location filename="../ui/session_screen.py" line="301" />
         <source>Analysing “%1”…</source>
         <translation>Analisi di “%1”…</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="304" />
+        <location filename="../ui/session_screen.py" line="327" />
         <source>Analysis interrupted. Photos analysed so far are kept.</source>
         <translation>Analisi interrotta. Le foto analizzate finora restano salvate.</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="314" />
+        <location filename="../ui/session_screen.py" line="338" />
         <source>%1 of %2 photos</source>
         <translation>%1 di %2 foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="329" />
+        <location filename="../ui/session_screen.py" line="353" />
         <source>The analysis failed:
 %1</source>
         <translation>L'analisi non è riuscita:
 %1</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="372" />
+        <location filename="../ui/session_screen.py" line="402" />
         <source>← or Backspace · your picks are kept</source>
         <translation>← o Backspace · le scelte restano salvate</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="373" />
+        <location filename="../ui/session_screen.py" line="403" />
+        <location filename="../ui/session_screen.py" line="620" />
         <source>→ or Enter · your picks are kept</source>
         <translation>→ o Invio · le scelte restano salvate</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="97" />
+        <location filename="../ui/session_screen.py" line="109" />
         <source>Selections</source>
         <translation>Selezioni</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="129" />
+        <location filename="../ui/session_screen.py" line="118" />
+        <location filename="../ui/session_screen.py" line="725" />
+        <source>Summary</source>
+        <translation>Riepilogo</translation>
+    </message>
+    <message>
+        <location filename="../ui/session_screen.py" line="119" />
+        <source>Photos picked per folder, with the totals</source>
+        <translation>Foto scelte per cartella, con i totali</translation>
+    </message>
+    <message>
+        <location filename="../ui/session_screen.py" line="145" />
         <source>No photos yet</source>
         <translation>Ancora nessuna foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="147" />
-        <location filename="../ui/session_screen.py" line="284" />
+        <location filename="../ui/session_screen.py" line="163" />
+        <location filename="../ui/session_screen.py" line="303" />
         <source>Each photo is read once, then remembered.</source>
         <translation>Ogni foto viene letta una volta sola, poi viene ricordata.</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="361" />
-        <location filename="../ui/session_screen.py" line="447" />
+        <location filename="../ui/session_screen.py" line="391" />
+        <location filename="../ui/session_screen.py" line="477" />
         <source>Next group</source>
         <translation>Gruppo successivo</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="368" />
+        <location filename="../ui/session_screen.py" line="398" />
         <source>Skip to the end of the album · your picks are kept</source>
         <translation>Salta alla fine dell'album · le scelte restano salvate</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="371" />
-        <location filename="../ui/session_screen.py" line="446" />
-        <location filename="../ui/session_screen.py" line="539" />
+        <location filename="../ui/session_screen.py" line="401" />
+        <location filename="../ui/session_screen.py" line="476" />
+        <location filename="../ui/session_screen.py" line="613" />
+        <location filename="../ui/session_screen.py" line="663" />
         <source>Previous group</source>
         <translation>Gruppo precedente</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="376" />
+        <location filename="../ui/session_screen.py" line="406" />
         <source>Click</source>
         <translation>Clic</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="376" />
+        <location filename="../ui/session_screen.py" line="406" />
         <source>Space</source>
         <translation>Spazio</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="376" />
+        <location filename="../ui/session_screen.py" line="406" />
         <source>pick</source>
         <translation>scegli</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="377" />
+        <location filename="../ui/session_screen.py" line="407" />
         <source>all / none</source>
         <translation>tutte / nessuna</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="378" />
+        <location filename="../ui/session_screen.py" line="408" />
         <source>groups</source>
         <translation>gruppi</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="379" />
+        <location filename="../ui/session_screen.py" line="409" />
         <source>photos</source>
         <translation>foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="380" />
+        <location filename="../ui/session_screen.py" line="410" />
         <source>preview</source>
         <translation>anteprima</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="381" />
+        <location filename="../ui/session_screen.py" line="411" />
         <source>crop</source>
         <translation>ritaglio</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="391" />
+        <location filename="../ui/session_screen.py" line="421" />
         <source>How different two photos can be to end up in the same group</source>
         <translation>Quanto possono essere diverse due foto per finire nello stesso gruppo</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="402" />
+        <location filename="../ui/session_screen.py" line="432" />
         <source>Grouping: strict</source>
         <translation>Raggruppamento: rigido</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="404" />
+        <location filename="../ui/session_screen.py" line="434" />
         <source>loose</source>
         <translation>permissivo</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="449" />
+        <location filename="../ui/session_screen.py" line="479" />
+        <location filename="../ui/session_screen.py" line="663" />
         <source>Back</source>
         <translation>Indietro</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="450" />
+        <location filename="../ui/session_screen.py" line="480" />
         <source>Done</source>
         <translation>Fine</translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/session_screen.py" line="461" />
+        <location filename="../ui/session_screen.py" line="497" />
+        <source>&lt;b&gt;%1&lt;/b&gt; — group %2 of %3 · folder %4 of %5 · %n photo(s)</source>
+        <translation><numerusform>&lt;b&gt;%1&lt;/b&gt; — gruppo %2 di %3 · cartella %4 di %5 · %n foto</numerusform><numerusform>&lt;b&gt;%1&lt;/b&gt; — gruppo %2 di %3 · cartella %4 di %5 · %n foto</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../ui/session_screen.py" line="505" />
         <source>&lt;b&gt;%1&lt;/b&gt; — group %2 of %3 · %n photo(s)</source>
         <translation><numerusform>&lt;b&gt;%1&lt;/b&gt; — gruppo %2 di %3 · %n foto</numerusform><numerusform>&lt;b&gt;%1&lt;/b&gt; — gruppo %2 di %3 · %n foto</numerusform></translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="487" />
+        <location filename="../ui/session_screen.py" line="532" />
         <source>Copy failed</source>
         <translation>Copia non riuscita</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="488" />
+        <location filename="../ui/session_screen.py" line="533" />
         <source>Could not copy the photo:
 %1</source>
         <translation>Impossibile copiare la foto:
 %1</translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/session_screen.py" line="515" />
+        <location filename="../ui/session_screen.py" line="587" />
         <source>&lt;b&gt;%1&lt;/b&gt; — picked photos · %n photo(s)</source>
         <translation><numerusform>&lt;b&gt;%1&lt;/b&gt; — foto scelte · %n foto</numerusform><numerusform>&lt;b&gt;%1&lt;/b&gt; — foto scelte · %n foto</numerusform></translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="531" />
+        <location filename="../ui/session_screen.py" line="605" />
+        <location filename="../ui/session_screen.py" line="687" />
         <source>All done!</source>
         <translation>Fatto!</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="534" />
+        <location filename="../ui/session_screen.py" line="610" />
         <source>Open the selection folder</source>
         <translation>Apri la cartella della selezione</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="541" />
-        <source>Review picked photos</source>
-        <translation>Rivedi le foto scelte</translation>
+        <location filename="../ui/session_screen.py" line="688" />
+        <source>All the photos of “%1” have been reviewed.</source>
+        <translation>Hai visto tutte le foto di “%1”.</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="542" />
-        <source>Only the picked photos, to unpick some of them</source>
-        <translation>Solo le foto scelte, per toglierne qualcuna</translation>
+        <location filename="../ui/session_screen.py" line="704" />
+        <source>Continue with “%1”</source>
+        <translation>Continua con “%1”</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="544" />
+        <location filename="../ui/session_screen.py" line="710" />
+        <source>“%1” done</source>
+        <translation>“%1” completata</translation>
+    </message>
+    <message>
+        <location filename="../ui/session_screen.py" line="711" />
+        <source>Folder %1 of %2 of “%3”</source>
+        <translation>Cartella %1 di %2 di “%3”</translation>
+    </message>
+    <message>
+        <location filename="../ui/session_screen.py" line="726" />
+        <source>Photos picked for “%1”, per folder.</source>
+        <translation>Foto scelte per “%1”, cartella per cartella.</translation>
+    </message>
+    <message>
+        <location filename="../ui/session_screen.py" line="615" />
         <source>Add another source…</source>
         <translation>Aggiungi un'altra origine…</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="565" />
-        <source>All the photos of “%1” have been reviewed.&lt;br&gt;%2</source>
-        <translation>Hai visto tutte le foto di “%1”.&lt;br&gt;%2</translation>
-    </message>
-    <message>
-        <location filename="../ui/session_screen.py" line="578" />
+        <location filename="../ui/session_screen.py" line="767" />
         <source>Photos to print: &lt;b&gt;%1&lt;/b&gt;</source>
         <translation>Foto da stampare: &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/session_screen.py" line="581" />
+        <location filename="../ui/session_screen.py" line="770" />
         <source>%n page(s)</source>
         <translation><numerusform>%n pagina</numerusform><numerusform>%n pagine</numerusform></translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/session_screen.py" line="583" />
+        <location filename="../ui/session_screen.py" line="772" />
         <source>%n photo(s)</source>
         <translation><numerusform>%n foto</numerusform><numerusform>%n foto</numerusform></translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="588" />
+        <location filename="../ui/session_screen.py" line="777" />
         <source>Estimate with “%1”: %2 per photo</source>
         <translation>Stima con “%1”: %2 a foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="658" />
+        <location filename="../ui/session_screen.py" line="851" />
         <source>Still picked: %1 of %2</source>
         <translation>Ancora scelte: %1 di %2</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="660" />
+        <location filename="../ui/session_screen.py" line="853" />
         <source>Selected in this group: %1</source>
         <translation>Scelte in questo gruppo: %1</translation>
     </message>

@@ -92,7 +92,7 @@ def test_confirm_copies_and_advances(qtbot, session, photos):
     )
     session.next_button.click()  # nothing picked in the last group
     assert session.pages.currentWidget() is session.end_page
-    assert "Photos to print: <b>1</b>" in session.end_label.text()
+    assert "Photos to print: <b>1</b>" in session.picks_summary.total_label.text()
     session.previous_group()
     assert session.index == 1 and session.pages.currentWidget() is session.groups_page
 
@@ -131,9 +131,10 @@ def test_review_picked_photos_and_unpick(qtbot, session, photos):
     pick(session, 0)
     session.next_button.click()
     assert session.pages.currentWidget() is session.end_page
-    assert session.review_button.isEnabled()
+    review = session.picks_summary.review_buttons[(session.source.id, None)]
+    assert review.isEnabled()
 
-    session.review_button.click()
+    review.click()
     assert session.pages.currentWidget() is session.groups_page
     assert [p.name for p in session.group_view.photo_model.photos] == ["a1.jpg", "a2.jpg", "b.jpg"]
     assert session.group_view.picked() == {"a1.jpg", "a2.jpg", "b.jpg"}
@@ -142,7 +143,7 @@ def test_review_picked_photos_and_unpick(qtbot, session, photos):
     session.next_button.click()
     assert session.pages.currentWidget() is session.end_page
     assert exported(session) == ["Foto - a1.jpg", "Foto - b.jpg"]
-    assert "Photos to print: <b>2</b>" in session.end_label.text()
+    assert "Photos to print: <b>2</b>" in session.picks_summary.total_label.text()
 
     # Going back from the end page still shows the last group, not the review.
     session.previous_group()
@@ -156,7 +157,8 @@ def test_review_disabled_without_picks(qtbot, session, photos):
     session.next_button.click()
     session.next_button.click()
     assert session.pages.currentWidget() is session.end_page
-    assert not session.review_button.isEnabled()
+    assert not session.picks_summary.review_buttons[(session.source.id, None)].isEnabled()
+    assert not session.continue_button.isVisible()
 
 
 def test_best_cell_size():
@@ -395,7 +397,154 @@ def test_summary_shows_pages(qtbot, tmp_path, monkeypatch):
     qtbot.addWidget(screen)
     counts = iter([5, 8, 10])
     monkeypatch.setattr(screen.selection, "exported_count", lambda: next(counts))
-    assert "(" not in screen.summary_text().split("·")[0]
-    assert "<b>8</b> (1 page(s))" in screen.summary_text()
-    assert "<b>10</b> (1 page(s) + 2 photo(s))" in screen.summary_text()
+    assert "page" not in screen.summary_text()
+    gap = "&nbsp;" * 8
+    assert f"<b>8</b>{gap}1 page(s){gap}~" in screen.summary_text()
+    assert f"<b>10</b>{gap}1 page(s) + 2 photo(s){gap}~" in screen.summary_text()
     screen.close_selection()
+
+
+@pytest.fixture
+def nested(tmp_path):
+    src = tmp_path / "Album"
+    make_photo(src / "x" / "a1.jpg", pattern=1)
+    make_photo(src / "x" / "a2.jpg", pattern=1, color=(0, 0, 0))
+    make_photo(src / "y" / "b.jpg", pattern=2)
+    return src
+
+
+def test_pause_between_folders(qtbot, session, nested):
+    from PySide6.QtCore import Qt
+
+    session.show()
+    session.add_source(nested)
+    wait_groups(qtbot, session)
+    assert [g.folder for g in session.groups] == ["x", "y"]
+    assert "group 1 of 1 · folder 1 of 2" in session.group_title.text()
+    pick(session, 0)
+    session.next_button.click()
+    assert session.pages.currentWidget() is session.end_page
+    assert session.end_mode == "folder" and session.pause == 1
+    assert session.continue_button.isVisible() and "“y”" in session.continue_button.text()
+    assert not session.add_button.isVisible()
+    assert session.picks_summary.counts[(session.source.id, "x")] == 1
+
+    qtbot.waitUntil(lambda: session.end_page.isAncestorOf(session.focusWidget()))
+    qtbot.keyClick(session.focusWidget(), Qt.Key.Key_Backspace)
+    assert session.index == 0 and session.pages.currentWidget() is session.groups_page
+    assert session.group_view.picked() == {"x/a1.jpg"}
+
+    session.next_button.click()
+    qtbot.waitUntil(lambda: session.end_page.isAncestorOf(session.focusWidget()))
+    qtbot.keyClick(session.focusWidget(), Qt.Key.Key_Return)
+    assert session.index == 1 and session.pages.currentWidget() is session.groups_page
+    assert "<b>y</b> — group 1 of 1 · folder 2 of 2" in session.group_title.text()
+
+    # Back across folders: the same pause, then the last group of x.
+    session.previous_button.click()
+    assert session.end_mode == "folder" and session.pause == 1
+    session.end_back_button.click()
+    assert session.index == 0 and session.pages.currentWidget() is session.groups_page
+
+    session.next_button.click()
+    session.end_forward()
+    session.next_button.click()  # last group: the end of the source, not a pause
+    assert session.end_mode == "end" and session.add_button.isVisible()
+
+
+def test_skip_to_end_does_not_pause(qtbot, session, nested):
+    session.add_source(nested)
+    wait_groups(qtbot, session)
+    session.last_button.click()
+    assert session.end_mode == "end"
+
+
+def test_review_one_folder_returns_to_pause(qtbot, session, nested):
+    session.add_source(nested)
+    wait_groups(qtbot, session)
+    pick(session, 0, 1)
+    session.next_button.click()
+    assert session.end_mode == "folder"
+    session.picks_summary.review_buttons[(session.source.id, "x")].click()
+    assert session.pages.currentWidget() is session.groups_page
+    assert [p.name for p in session.group_view.photo_model.photos] == ["a1.jpg", "a2.jpg"]
+    pick(session, 0)  # unpick a2
+    session.next_button.click()
+    assert session.end_mode == "folder" and session.pause == 1
+    assert exported(session) == ["x - a1.jpg"]
+    assert session.picks_summary.counts[(session.source.id, "x")] == 1
+
+
+def test_summary_button_saves_and_goes_back(qtbot, session, photos):
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    pick(session, 1)
+    session.summary_button.click()
+    assert session.pages.currentWidget() is session.end_page and session.end_mode == "summary"
+    assert exported(session) == ["Foto - a2.jpg"]
+    assert session.picks_summary.counts[(session.source.id, None)] == 1
+    assert not session.add_button.isVisible() and not session.continue_button.isVisible()
+    session.end_back_button.click()
+    assert session.index == 0 and session.pages.currentWidget() is session.groups_page
+    assert session.group_view.picked() == {"a2.jpg"}
+
+
+def test_summary_lists_sources_and_reviews_another(qtbot, session, photos, nested):
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    pick(session, 0)
+    session.next_button.click()
+    first = session.source
+    session.add_source(nested)
+    wait_groups(qtbot, session)
+    pick(session, 0)
+    session.next_button.click()  # pause after x
+    counts = session.picks_summary.counts
+    assert counts[(first.id, None)] == 1
+    assert counts[(session.source.id, None)] == 1
+    assert counts[(session.source.id, "x")] == 1
+    assert "Photos to print: <b>2</b>" in session.picks_summary.total_label.text()
+
+    session.picks_summary.review_buttons[(first.id, None)].click()
+    wait_groups(qtbot, session)
+    assert session.source.id == first.id and session.review is not None
+    assert [p.name for p in session.group_view.photo_model.photos] == ["a1.jpg"]
+    pick(session)  # unpick it
+    session.next_button.click()
+    assert session.end_mode == "summary"
+    assert session.picks_summary.counts[(first.id, None)] == 0
+    session.end_back_button.click()  # resumes the source switched to
+    assert session.pages.currentWidget() is session.groups_page and session.index == 1
+
+
+def test_held_key_does_not_skip_the_pause(qtbot, session, nested):
+    from PySide6.QtCore import QEvent, Qt
+    from PySide6.QtGui import QKeyEvent
+    from PySide6.QtWidgets import QApplication
+
+    session.show()
+    session.add_source(nested)
+    wait_groups(qtbot, session)
+    session.next_button.click()
+    assert session.end_mode == "folder"
+    assert not any(s.autoRepeat() for s in session.end_shortcuts)
+    qtbot.waitUntil(lambda: session.focusWidget() is session.continue_button)
+    for key in (Qt.Key.Key_Return, Qt.Key.Key_Right):
+        held = QKeyEvent(QEvent.Type.KeyPress, key, Qt.KeyboardModifier.NoModifier, "", True)
+        QApplication.sendEvent(session.continue_button, held)
+    assert session.end_mode == "folder" and session.pages.currentWidget() is session.end_page
+    qtbot.keyClick(session.continue_button, Qt.Key.Key_Return)  # pressed again
+    assert session.index == 1 and session.pages.currentWidget() is session.groups_page
+
+
+def test_total_follows_the_picks_live(qtbot, session, photos):
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    assert "Photos to print: <b>0</b>" in session.total_label.text()
+    pick(session, 0, 1)
+    assert "Photos to print: <b>2</b>" in session.total_label.text()
+    session.next_button.click()
+    assert "Photos to print: <b>2</b>" in session.total_label.text()
+    session.previous_button.click()
+    pick(session, 1)  # unpick a saved photo
+    assert "Photos to print: <b>1</b>" in session.total_label.text()

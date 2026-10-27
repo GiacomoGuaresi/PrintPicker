@@ -54,6 +54,7 @@ Servono solo a **guardare bene** le foto e scegliere la migliore: **non modifica
 ### Fine dell'origine
 
 - Visti tutti i gruppi di un'origine, l'app mostra un **messaggio di fine** con il totale (foto e costo stimato) e un pulsante per **aprire la cartella** della selezione.
+- **Rivedi le foto scelte**: dal messaggio di fine si apre una griglia con **solo le foto scelte** dell'origine, tutte spuntate. Un click toglie la foto; con *Fine* (→ / Invio) o *Indietro* (← / Backspace) le foto tolte vengono **rimosse dalla cartella della selezione** e si torna al messaggio di fine. Anteprima e scorciatoie funzionano come nei gruppi; il cursore della soglia è nascosto.
 
 ### Scorciatoie da tastiera
 

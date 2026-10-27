@@ -97,6 +97,42 @@ def test_confirm_copies_and_advances(qtbot, session, photos):
     assert session.index == 1 and session.pages.currentWidget() is session.groups_page
 
 
+def test_review_picked_photos_and_unpick(qtbot, session, photos):
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    pick(session, 0, 1)
+    session.next_button.click()
+    pick(session, 0)
+    session.next_button.click()
+    assert session.pages.currentWidget() is session.end_page
+    assert session.review_button.isEnabled()
+
+    session.review_button.click()
+    assert session.pages.currentWidget() is session.groups_page
+    assert [p.name for p in session.group_view.photo_model.photos] == ["a1.jpg", "a2.jpg", "b.jpg"]
+    assert session.group_view.picked() == {"a1.jpg", "a2.jpg", "b.jpg"}
+    assert not session.similarity.isVisible()
+    pick(session, 0, 2)  # unpick a2
+    session.next_button.click()
+    assert session.pages.currentWidget() is session.end_page
+    assert exported(session) == ["Foto - a1.jpg", "Foto - b.jpg"]
+    assert "Photos to print: <b>2</b>" in session.end_label.text()
+
+    # Going back from the end page still shows the last group, not the review.
+    session.previous_group()
+    assert session.index == 1 and session.review is None
+    assert session.next_button.text() == "Next group"
+
+
+def test_review_disabled_without_picks(qtbot, session, photos):
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    session.next_button.click()
+    session.next_button.click()
+    assert session.pages.currentWidget() is session.end_page
+    assert not session.review_button.isEnabled()
+
+
 def test_best_cell_size():
     from printpicker.ui.group_view import MIN_CELL, best_cell_size
 

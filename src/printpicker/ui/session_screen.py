@@ -90,6 +90,8 @@ class SessionScreen(QWidget):
         self.groups: list[Group] = []
         self.thread: AnalysisThread | None = None
         self.index = 0
+        # The picked photos of the source, while they are reviewed from the end page.
+        self.review: Group | None = None
 
         # Top bar.
         self.back_button = QPushButton(theme.icon("arrow-left"), self.tr("Selections"))
@@ -259,6 +261,7 @@ class SessionScreen(QWidget):
             return
         self.cancel_analysis()
         self.loader.reset()
+        self._set_reviewing(None)
         self.source = self.selection.source(source_id)
         self.selection.set_meta("last_source", str(source_id))
         if not self.source.is_available:
@@ -389,7 +392,9 @@ class SessionScreen(QWidget):
         self._regroup_timer.setSingleShot(True)
         self._regroup_timer.setInterval(120)
         self._regroup_timer.timeout.connect(self._threshold_changed)
-        similarity = QHBoxLayout()
+        self.similarity = QWidget()
+        similarity = QHBoxLayout(self.similarity)
+        similarity.setContentsMargins(0, 0, 0, 0)
         similarity.setSpacing(8)
         similarity.addWidget(theme.set_role(QLabel(self.tr("Grouping: strict")), "muted"))
         similarity.addWidget(self.threshold_slider)
@@ -406,7 +411,7 @@ class SessionScreen(QWidget):
         bottom.addSpacing(16)
         bottom.addWidget(self.picked_label)
         bottom.addStretch()
-        bottom.addLayout(similarity)
+        bottom.addWidget(self.similarity)
         bottom.addSpacing(20)
         bottom.addWidget(self.next_button)
 
@@ -427,8 +432,21 @@ class SessionScreen(QWidget):
             self.selection.thumb_path(self.source, photo.rel_path),
         )
 
+    def _set_reviewing(self, group: Group | None) -> None:
+        """Switch the groups page between the group-by-group review and the review of the
+        picked photos (no threshold, the buttons go back to the end page)."""
+        self.review = group
+        self.similarity.setVisible(group is None)
+        if group is None:
+            self.previous_button.setText(self.tr("Previous group"))
+            self.next_button.setText(self.tr("Next group"))
+        else:
+            self.previous_button.setText(self.tr("Back"))
+            self.next_button.setText(self.tr("Done"))
+
     def show_group(self, index: int) -> None:
         assert self.source is not None
+        self._set_reviewing(None)
         self.index = index
         if index >= len(self.groups):
             self.show_end()
@@ -450,7 +468,7 @@ class SessionScreen(QWidget):
         """Store the picks of the group on screen: picked photos are copied into the
         selection, unpicked ones removed. False if a copy failed."""
         assert self.source is not None
-        group = self.groups[self.index]
+        group = self.review or self.groups[self.index]
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
             self.selection.apply_choice(self.source, group, self.group_view.picked())
@@ -469,8 +487,34 @@ class SessionScreen(QWidget):
         return True
 
     def next_group(self) -> None:
-        if self.index < len(self.groups) and self.save_group():
+        if self.review is not None:
+            self.finish_review()
+        elif self.index < len(self.groups) and self.save_group():
             self.show_group(self.index + 1)
+
+    def show_review(self) -> None:
+        """Show only the photos picked from the source, to unpick some of them."""
+        assert self.source is not None
+        picked = self.selection.selected_photos(self.source)
+        photos = tuple(p for g in self.groups for p in g.photos if p.rel_path in picked)
+        if not photos:
+            return
+        self._set_reviewing(Group("", photos))
+        self.group_title.setText(
+            self.tr("<b>%1</b> — picked photos · %n photo(s)", "", len(photos)).replace(
+                "%1", self.source.name
+            )
+        )
+        self.group_view.set_photos(list(photos), self._paths_for, picked)
+        self.previous_button.setEnabled(True)
+        self.pages.setCurrentWidget(self.groups_page)
+        self.group_view.setFocus()
+
+    def finish_review(self) -> None:
+        """Save the review (unpicked photos leave the selection folder), back to the end."""
+        if self.save_group():
+            self._set_reviewing(None)
+            self.show_end()
 
     def _build_end_page(self) -> QWidget:
         self.end_title = theme.set_role(QLabel(self.tr("All done!")), "heading")
@@ -483,6 +527,9 @@ class SessionScreen(QWidget):
         open_button.clicked.connect(self.open_folder)
         back_button = QPushButton(theme.icon("arrow-left"), self.tr("Previous group"))
         back_button.clicked.connect(self.previous_group)
+        self.review_button = QPushButton(theme.icon("images"), self.tr("Review picked photos"))
+        self.review_button.setToolTip(self.tr("Only the picked photos, to unpick some of them"))
+        self.review_button.clicked.connect(self.show_review)
         add_button = QPushButton(theme.icon("folder-plus"), self.tr("Add another source…"))
         add_button.clicked.connect(self.choose_source)
         return _state_page(
@@ -490,7 +537,7 @@ class SessionScreen(QWidget):
             theme.ACCENT,
             self.end_title,
             self.end_label,
-            _button_row(back_button, add_button, open_button),
+            _button_row(back_button, self.review_button, add_button, open_button),
         )
 
     def show_end(self) -> None:
@@ -501,6 +548,7 @@ class SessionScreen(QWidget):
             .replace("%1", self.source.name)
             .replace("%2", self.summary_text())
         )
+        self.review_button.setEnabled(bool(self.selection.selected_photos(self.source)))
         self.pages.setCurrentWidget(self.end_page)
 
     def summary_text(self) -> str:
@@ -560,6 +608,8 @@ class SessionScreen(QWidget):
         self.selection.threshold = self.threshold_slider.value()
         if not self.items or self.source is None:
             return
+        if self.review is not None:
+            return  # the slider is hidden while reviewing the picked photos
         current = None
         if self.index < len(self.groups):
             row = max(self.group_view.currentIndex().row(), 0)
@@ -575,16 +625,21 @@ class SessionScreen(QWidget):
 
     def previous_group(self) -> None:
         """Go back, keeping the picks of the current group."""
-        if self.index >= len(self.groups):
+        if self.review is not None:
+            self.finish_review()
+        elif self.index >= len(self.groups):
             if self.groups:
                 self.show_group(len(self.groups) - 1)  # from the end page
         elif self.index > 0 and self.save_group():
             self.show_group(self.index - 1)
 
     def _update_counters(self) -> None:
-        self.picked_label.setText(
-            self.tr("Selected in this group: %1").replace("%1", str(len(self.group_view.picked())))
-        )
+        picked = str(len(self.group_view.picked()))
+        if self.review is not None:
+            text = self.tr("Still picked: %1 of %2").replace("%2", str(len(self.review.photos)))
+        else:
+            text = self.tr("Selected in this group: %1")
+        self.picked_label.setText(text.replace("%1", picked))
         self.total_label.setText(self.summary_text())
 
     # Lifecycle ---------------------------------------------------------------------------

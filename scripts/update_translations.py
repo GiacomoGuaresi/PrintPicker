@@ -161,6 +161,17 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "%n page(s)": ("%n pagina", "%n pagine"),
     "Estimate with “%1”: %2 per photo": "Stima con “%1”: %2 a foto",
     "Selected in this group: %1": "Scelte in questo gruppo: %1",
+    "Review picked photos": "Rivedi le foto scelte",
+    "Only the picked photos, to unpick some of them": (
+        "Solo le foto scelte, per toglierne qualcuna"
+    ),
+    "<b>%1</b> — picked photos · %n photo(s)": (
+        "<b>%1</b> — foto scelte · %n foto",
+        "<b>%1</b> — foto scelte · %n foto",
+    ),
+    "Still picked: %1 of %2": "Ancora scelte: %1 di %2",
+    "Back": "Indietro",
+    "Done": "Fine",
     # Settings
     "Settings": "Impostazioni",
     "Browse…": "Sfoglia…",

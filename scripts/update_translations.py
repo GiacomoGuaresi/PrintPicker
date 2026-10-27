@@ -103,6 +103,10 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
         "Al massimo una volta al giorno PrintPicker chiede a GitHub se c'è una nuova versione."
     ),
     "Updates:": "Aggiornamenti:",
+    "Photos per page:": "Foto per pagina:",
+    "Used to show how many pages the photos to print fill.": (
+        "Serve a mostrare quante pagine occupano le foto da stampare."
+    ),
     "Add a folder of your photo archive to start choosing photos.": (
         "Aggiungi una cartella del tuo archivio di foto per iniziare a scegliere."
     ),
@@ -154,6 +158,7 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
         "Ogni foto viene letta una volta sola, poi viene ricordata."
     ),
     "Photos to print: <b>%1</b>": "Foto da stampare: <b>%1</b>",
+    "%n page(s)": ("%n pagina", "%n pagine"),
     "Estimate with “%1”: %2 per photo": "Stima con “%1”: %2 a foto",
     "Selected in this group: %1": "Scelte in questo gruppo: %1",
     # Settings

@@ -540,13 +540,23 @@ Collega il disco e premi Riprova, oppure indica dove si trova ora la cartella.</
         <source>Photos to print: &lt;b&gt;%1&lt;/b&gt;</source>
         <translation>Foto da stampare: &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>
+    <message numerus="yes">
+        <location filename="../ui/session_screen.py" line="514" />
+        <source>%n page(s)</source>
+        <translation><numerusform>%n pagina</numerusform><numerusform>%n pagine</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../ui/session_screen.py" line="516" />
+        <source>%n photo(s)</source>
+        <translation><numerusform>%n foto</numerusform><numerusform>%n foto</numerusform></translation>
+    </message>
     <message>
-        <location filename="../ui/session_screen.py" line="515" />
+        <location filename="../ui/session_screen.py" line="521" />
         <source>Estimate with “%1”: %2 per photo</source>
         <translation>Stima con “%1”: %2 a foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="580" />
+        <location filename="../ui/session_screen.py" line="586" />
         <source>Selected in this group: %1</source>
         <translation>Scelte in questo gruppo: %1</translation>
     </message>
@@ -554,139 +564,149 @@ Collega il disco e premi Riprova, oppure indica dove si trova ora la cartella.</
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../ui/settings_dialog.py" line="59" />
+        <location filename="../ui/settings_dialog.py" line="60" />
         <source>Settings</source>
         <translation>Impostazioni</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="63" />
+        <location filename="../ui/settings_dialog.py" line="64" />
         <source>Browse…</source>
         <translation>Sfoglia…</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="65" />
+        <location filename="../ui/settings_dialog.py" line="66" />
         <source>Default</source>
         <translation>Predefinita</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="72" />
+        <location filename="../ui/settings_dialog.py" line="73" />
         <source>New selections are created here. Existing ones are not moved.</source>
         <translation>Le nuove selezioni vengono create qui. Quelle esistenti non vengono spostate.</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="76" />
+        <location filename="../ui/settings_dialog.py" line="78" />
         <source>General</source>
         <translation>Generali</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="79" />
+        <location filename="../ui/settings_dialog.py" line="81" />
         <source>Selections folder:</source>
         <translation>Cartella delle selezioni:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="81" />
+        <location filename="../ui/settings_dialog.py" line="83" />
         <source>Check for updates automatically</source>
         <translation>Controlla automaticamente gli aggiornamenti</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="84" />
+        <location filename="../ui/settings_dialog.py" line="86" />
         <source>At most once a day, PrintPicker asks GitHub whether a new version exists.</source>
         <translation>Al massimo una volta al giorno PrintPicker chiede a GitHub se c'è una nuova versione.</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="86" />
+        <location filename="../ui/settings_dialog.py" line="88" />
         <source>Updates:</source>
         <translation>Aggiornamenti:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="105" />
+        <location filename="../ui/settings_dialog.py" line="93" />
+        <source>Used to show how many pages the photos to print fill.</source>
+        <translation>Serve a mostrare quante pagine occupano le foto da stampare.</translation>
+    </message>
+    <message>
+        <location filename="../ui/settings_dialog.py" line="95" />
+        <source>Photos per page:</source>
+        <translation>Foto per pagina:</translation>
+    </message>
+    <message>
+        <location filename="../ui/settings_dialog.py" line="114" />
         <source>Print price list (for the cost estimate)</source>
         <translation>Listino di stampa (per la stima dei costi)</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="107" />
+        <location filename="../ui/settings_dialog.py" line="116" />
         <source>From photos</source>
         <translation>Da foto</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="107" />
+        <location filename="../ui/settings_dialog.py" line="116" />
         <source>Price per photo</source>
         <translation>Prezzo a foto</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="108" />
-        <location filename="../ui/settings_dialog.py" line="219" />
+        <location filename="../ui/settings_dialog.py" line="117" />
+        <location filename="../ui/settings_dialog.py" line="228" />
         <source>Fixed cost</source>
         <translation>Costo fisso</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="108" />
+        <location filename="../ui/settings_dialog.py" line="117" />
         <source>Amount</source>
         <translation>Importo</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="115" />
+        <location filename="../ui/settings_dialog.py" line="124" />
         <source>Add</source>
         <translation>Aggiungi</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="117" />
+        <location filename="../ui/settings_dialog.py" line="126" />
         <source>Remove</source>
         <translation>Rimuovi</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="125" />
+        <location filename="../ui/settings_dialog.py" line="134" />
         <source>Restore PhotoSì 10×15 prices</source>
         <translation>Ripristina prezzi PhotoSì 10×15</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="133" />
+        <location filename="../ui/settings_dialog.py" line="142" />
         <source>Shipping</source>
         <translation>Spedizione</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="139" />
+        <location filename="../ui/settings_dialog.py" line="148" />
         <source>Name:</source>
         <translation>Nome:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="145" />
+        <location filename="../ui/settings_dialog.py" line="154" />
         <source>The price of the tier reached applies to all the photos (e.g. 120 photos all at the “from 100” price).</source>
         <translation>Il prezzo dello scaglione raggiunto vale per tutte le foto (es. 120 foto tutte al prezzo “da 100”).</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="211" />
+        <location filename="../ui/settings_dialog.py" line="220" />
         <source>Row %1 of the tiers is not valid.</source>
         <translation>La riga %1 degli scaglioni non è valida.</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="222" />
+        <location filename="../ui/settings_dialog.py" line="231" />
         <source>Row %1 of the fixed costs is not valid.</source>
         <translation>La riga %1 dei costi fissi non è valida.</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="226" />
-        <location filename="../ui/settings_dialog.py" line="264" />
+        <location filename="../ui/settings_dialog.py" line="235" />
+        <location filename="../ui/settings_dialog.py" line="273" />
         <source>Price list</source>
         <translation>Listino</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="234" />
+        <location filename="../ui/settings_dialog.py" line="243" />
         <source>The tiers must start from 1 photo, with different quantities and non-negative prices.</source>
         <translation>Gli scaglioni devono partire da 1 foto, con quantità diverse e prezzi non negativi.</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="246" />
+        <location filename="../ui/settings_dialog.py" line="255" />
         <source>%1 photos ≈ %2</source>
         <translation>%1 foto ≈ %2</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="251" />
+        <location filename="../ui/settings_dialog.py" line="260" />
         <source>Examples: </source>
         <translation>Esempi: </translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="255" />
+        <location filename="../ui/settings_dialog.py" line="264" />
         <source>Selections folder</source>
         <translation>Cartella delle selezioni</translation>
     </message>
@@ -808,42 +828,42 @@ Le foto originali del tuo archivio non vengono toccate.</translation>
 <context>
     <name>UpdateDialog</name>
     <message>
-        <location filename="../ui/update_checker.py" line="111" />
+        <location filename="../ui/update_checker.py" line="141" />
         <source>Update available</source>
         <translation>Aggiornamento disponibile</translation>
     </message>
     <message>
-        <location filename="../ui/update_checker.py" line="122" />
+        <location filename="../ui/update_checker.py" line="152" />
         <source>%1 %2 is available</source>
         <translation>È disponibile %1 %2</translation>
     </message>
     <message>
-        <location filename="../ui/update_checker.py" line="129" />
+        <location filename="../ui/update_checker.py" line="159" />
         <source>You have version %1.</source>
         <translation>Hai la versione %1.</translation>
     </message>
     <message>
-        <location filename="../ui/update_checker.py" line="142" />
+        <location filename="../ui/update_checker.py" line="172" />
         <source>No release notes.</source>
         <translation>Nessuna nota di rilascio.</translation>
     </message>
     <message>
-        <location filename="../ui/update_checker.py" line="145" />
+        <location filename="../ui/update_checker.py" line="175" />
         <source>Skip this version</source>
         <translation>Salta questa versione</translation>
     </message>
     <message>
-        <location filename="../ui/update_checker.py" line="148" />
+        <location filename="../ui/update_checker.py" line="178" />
         <source>Later</source>
         <translation>Più tardi</translation>
     </message>
     <message>
-        <location filename="../ui/update_checker.py" line="151" />
+        <location filename="../ui/update_checker.py" line="181" />
         <source>Download</source>
         <translation>Scarica</translation>
     </message>
     <message>
-        <location filename="../ui/update_checker.py" line="166" />
+        <location filename="../ui/update_checker.py" line="196" />
         <source>What's new</source>
         <translation>Novità</translation>
     </message>

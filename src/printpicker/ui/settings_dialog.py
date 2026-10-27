@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QSpinBox,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -85,6 +86,13 @@ class SettingsDialog(QDialog):
             self.tr("At most once a day, PrintPicker asks GitHub whether a new version exists.")
         )
         form.addRow(self.tr("Updates:"), self.auto_updates)
+        self.photos_per_page = QSpinBox()
+        self.photos_per_page.setRange(1, 999)
+        self.photos_per_page.setValue(settings.photos_per_page)
+        self.photos_per_page.setToolTip(
+            self.tr("Used to show how many pages the photos to print fill.")
+        )
+        form.addRow(self.tr("Photos per page:"), self.photos_per_page)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -269,4 +277,5 @@ class SettingsDialog(QDialog):
         if text:
             self.settings.base_dir = Path(text)
         self.settings.auto_update_check = self.auto_updates.isChecked()
+        self.settings.photos_per_page = self.photos_per_page.value()
         super().accept()

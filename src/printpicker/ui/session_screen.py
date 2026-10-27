@@ -504,11 +504,17 @@ class SessionScreen(QWidget):
         self.pages.setCurrentWidget(self.end_page)
 
     def summary_text(self) -> str:
-        """Photos in the selection and their estimated cost, e.g. "34 photos · ~10,20 €"."""
+        """Photos in the selection, pages and cost, e.g. "34 (4 pages + 2 photos) · ~10,20 €"."""
         count = self.selection.exported_count()
         price_list = self.settings.price_list
         estimate = price_list.estimate(count)
         text = self.tr("Photos to print: <b>%1</b>").replace("%1", str(count))
+        pages, rest = divmod(count, self.settings.photos_per_page)
+        if pages:
+            text += " (" + self.tr("%n page(s)", "", pages)
+            if rest:
+                text += " + " + self.tr("%n photo(s)", "", rest)
+            text += ")"
         if count:
             text += " · ~" + format_money(estimate.total, price_list.currency)
         self.total_label.setToolTip(

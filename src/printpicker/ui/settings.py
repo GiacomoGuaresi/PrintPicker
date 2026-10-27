@@ -11,6 +11,8 @@ from PySide6.QtCore import QByteArray, QSettings, QStandardPaths
 from printpicker.about import APP_NAME
 from printpicker.core.pricing import DEFAULT_PRICE_LIST, PriceList
 
+DEFAULT_PHOTOS_PER_PAGE = 8
+
 
 def default_base_dir() -> Path:
     documents = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation)
@@ -43,6 +45,15 @@ class AppSettings:
     @price_list.setter
     def price_list(self, price_list: PriceList) -> None:
         self._s.setValue("pricing/price_list", json.dumps(price_list.to_dict()))
+
+    @property
+    def photos_per_page(self) -> int:
+        value = self._s.value("pricing/photos_per_page", DEFAULT_PHOTOS_PER_PAGE, type=int)
+        return max(1, int(value))
+
+    @photos_per_page.setter
+    def photos_per_page(self, count: int) -> None:
+        self._s.setValue("pricing/photos_per_page", count)
 
     @property
     def window_geometry(self) -> QByteArray:

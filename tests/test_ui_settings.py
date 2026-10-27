@@ -88,3 +88,12 @@ def test_parse_decimal():
     assert parse_decimal(" 4.90 € ") == Decimal("4.90")
     with pytest.raises(ValueError):
         parse_decimal("abc")
+
+
+def test_photos_per_page_default_and_saved(qtbot, tmp_path):
+    s, dialog = make_dialog(qtbot, tmp_path)
+    assert s.photos_per_page == 8
+    assert dialog.photos_per_page.value() == 8
+    dialog.photos_per_page.setValue(12)
+    dialog.accept()
+    assert s.photos_per_page == 12

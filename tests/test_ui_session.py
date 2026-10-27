@@ -320,3 +320,20 @@ def test_group_view_shortcuts(qtbot, session, photos):
 def test_key_hints_are_chips(session):
     keys = [chip.text() for chip in session.help_label.chips]
     assert {"A", "←", "→", "F", "C"} <= set(keys)
+
+
+def test_summary_shows_pages(qtbot, tmp_path, monkeypatch):
+    from PySide6.QtCore import QSettings
+
+    from printpicker.ui.settings import AppSettings
+
+    settings = AppSettings(QSettings(str(tmp_path / "s.ini"), QSettings.Format.IniFormat))
+    Selection.create(tmp_path, "P").close()
+    screen = SessionScreen(tmp_path / "P", settings)
+    qtbot.addWidget(screen)
+    counts = iter([5, 8, 10])
+    monkeypatch.setattr(screen.selection, "exported_count", lambda: next(counts))
+    assert "(" not in screen.summary_text().split("·")[0]
+    assert "<b>8</b> (1 page(s))" in screen.summary_text()
+    assert "<b>10</b> (1 page(s) + 2 photo(s))" in screen.summary_text()
+    screen.close_selection()

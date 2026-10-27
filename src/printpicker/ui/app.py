@@ -9,6 +9,7 @@ from PySide6.QtCore import QLibraryInfo, QLocale, QTranslator
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
+from printpicker import crashlog
 from printpicker.about import APP_NAME, __version__
 from printpicker.ui.main_window import MainWindow
 from printpicker.ui.theme import apply_theme
@@ -46,6 +47,7 @@ def create_application(argv: list[str] | None = None) -> QApplication:
 
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv if argv is None else argv)
+    crashlog.install()
     app = create_application(argv)
     if "--self-test" in argv:
         from printpicker.ui.selftest import run_self_test

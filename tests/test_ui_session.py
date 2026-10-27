@@ -97,6 +97,21 @@ def test_confirm_copies_and_advances(qtbot, session, photos):
     assert session.index == 1 and session.pages.currentWidget() is session.groups_page
 
 
+@pytest.mark.parametrize("key", ["Left", "Backspace"])
+def test_back_key_on_end_page(qtbot, session, photos, key):
+    from PySide6.QtCore import Qt
+
+    session.show()
+    session.add_source(photos)
+    wait_groups(qtbot, session)
+    session.next_button.click()
+    session.next_button.click()
+    assert session.pages.currentWidget() is session.end_page
+    qtbot.waitUntil(lambda: session.end_page.isAncestorOf(session.focusWidget()))
+    qtbot.keyClick(session.focusWidget(), getattr(Qt.Key, f"Key_{key}"))
+    assert session.index == 1 and session.pages.currentWidget() is session.groups_page
+
+
 def test_review_picked_photos_and_unpick(qtbot, session, photos):
     session.add_source(photos)
     wait_groups(qtbot, session)

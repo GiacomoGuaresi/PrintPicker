@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, QUrl, Signal
-from PySide6.QtGui import QColor, QDesktopServices
+from PySide6.QtGui import QColor, QDesktopServices, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -532,13 +532,20 @@ class SessionScreen(QWidget):
         self.review_button.clicked.connect(self.show_review)
         add_button = QPushButton(theme.icon("folder-plus"), self.tr("Add another source…"))
         add_button.clicked.connect(self.choose_source)
-        return _state_page(
+        page = _state_page(
             "circle-check",
             theme.ACCENT,
             self.end_title,
             self.end_label,
             _button_row(back_button, self.review_button, add_button, open_button),
         )
+        # ← / Backspace go back to the last group, as in the group review.
+        for key in (Qt.Key.Key_Left, Qt.Key.Key_Backspace):
+            shortcut = QShortcut(QKeySequence(key), page)
+            shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
+            shortcut.activated.connect(self.previous_group)
+        self.end_focus = open_button
+        return page
 
     def show_end(self) -> None:
         assert self.source is not None
@@ -550,6 +557,7 @@ class SessionScreen(QWidget):
         )
         self.review_button.setEnabled(bool(self.selection.selected_photos(self.source)))
         self.pages.setCurrentWidget(self.end_page)
+        self.end_focus.setFocus()  # keep the focus on the page, for its shortcuts
 
     def summary_text(self) -> str:
         """Photos in the selection, pages and cost, e.g. "34 (4 pages + 2 photos) · ~10,20 €"."""

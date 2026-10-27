@@ -407,12 +407,12 @@ Collega il disco e premi Riprova, oppure indica dove si trova ora la cartella.</
 %1</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="369" />
+        <location filename="../ui/session_screen.py" line="372" />
         <source>← or Backspace · your picks are kept</source>
         <translation>← o Backspace · le scelte restano salvate</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="370" />
+        <location filename="../ui/session_screen.py" line="373" />
         <source>→ or Enter · your picks are kept</source>
         <translation>→ o Invio · le scelte restano salvate</translation>
     </message>
@@ -434,161 +434,166 @@ Collega il disco e premi Riprova, oppure indica dove si trova ora la cartella.</
     </message>
     <message>
         <location filename="../ui/session_screen.py" line="361" />
-        <location filename="../ui/session_screen.py" line="442" />
+        <location filename="../ui/session_screen.py" line="447" />
         <source>Next group</source>
         <translation>Gruppo successivo</translation>
     </message>
     <message>
         <location filename="../ui/session_screen.py" line="368" />
-        <location filename="../ui/session_screen.py" line="441" />
-        <location filename="../ui/session_screen.py" line="528" />
+        <source>Skip to the end of the album · your picks are kept</source>
+        <translation>Salta alla fine dell'album · le scelte restano salvate</translation>
+    </message>
+    <message>
+        <location filename="../ui/session_screen.py" line="371" />
+        <location filename="../ui/session_screen.py" line="446" />
+        <location filename="../ui/session_screen.py" line="539" />
         <source>Previous group</source>
         <translation>Gruppo precedente</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="373" />
+        <location filename="../ui/session_screen.py" line="376" />
         <source>Click</source>
         <translation>Clic</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="373" />
+        <location filename="../ui/session_screen.py" line="376" />
         <source>Space</source>
         <translation>Spazio</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="373" />
+        <location filename="../ui/session_screen.py" line="376" />
         <source>pick</source>
         <translation>scegli</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="374" />
+        <location filename="../ui/session_screen.py" line="377" />
         <source>all / none</source>
         <translation>tutte / nessuna</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="375" />
+        <location filename="../ui/session_screen.py" line="378" />
         <source>groups</source>
         <translation>gruppi</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="376" />
+        <location filename="../ui/session_screen.py" line="379" />
         <source>photos</source>
         <translation>foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="377" />
+        <location filename="../ui/session_screen.py" line="380" />
         <source>preview</source>
         <translation>anteprima</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="378" />
+        <location filename="../ui/session_screen.py" line="381" />
         <source>crop</source>
         <translation>ritaglio</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="388" />
+        <location filename="../ui/session_screen.py" line="391" />
         <source>How different two photos can be to end up in the same group</source>
         <translation>Quanto possono essere diverse due foto per finire nello stesso gruppo</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="399" />
+        <location filename="../ui/session_screen.py" line="402" />
         <source>Grouping: strict</source>
         <translation>Raggruppamento: rigido</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="401" />
+        <location filename="../ui/session_screen.py" line="404" />
         <source>loose</source>
         <translation>permissivo</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="444" />
+        <location filename="../ui/session_screen.py" line="449" />
         <source>Back</source>
         <translation>Indietro</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="445" />
+        <location filename="../ui/session_screen.py" line="450" />
         <source>Done</source>
         <translation>Fine</translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/session_screen.py" line="456" />
+        <location filename="../ui/session_screen.py" line="461" />
         <source>&lt;b&gt;%1&lt;/b&gt; — group %2 of %3 · %n photo(s)</source>
         <translation><numerusform>&lt;b&gt;%1&lt;/b&gt; — gruppo %2 di %3 · %n foto</numerusform><numerusform>&lt;b&gt;%1&lt;/b&gt; — gruppo %2 di %3 · %n foto</numerusform></translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="482" />
+        <location filename="../ui/session_screen.py" line="487" />
         <source>Copy failed</source>
         <translation>Copia non riuscita</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="483" />
+        <location filename="../ui/session_screen.py" line="488" />
         <source>Could not copy the photo:
 %1</source>
         <translation>Impossibile copiare la foto:
 %1</translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/session_screen.py" line="504" />
+        <location filename="../ui/session_screen.py" line="515" />
         <source>&lt;b&gt;%1&lt;/b&gt; — picked photos · %n photo(s)</source>
         <translation><numerusform>&lt;b&gt;%1&lt;/b&gt; — foto scelte · %n foto</numerusform><numerusform>&lt;b&gt;%1&lt;/b&gt; — foto scelte · %n foto</numerusform></translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="520" />
+        <location filename="../ui/session_screen.py" line="531" />
         <source>All done!</source>
         <translation>Fatto!</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="523" />
+        <location filename="../ui/session_screen.py" line="534" />
         <source>Open the selection folder</source>
         <translation>Apri la cartella della selezione</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="530" />
+        <location filename="../ui/session_screen.py" line="541" />
         <source>Review picked photos</source>
         <translation>Rivedi le foto scelte</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="531" />
+        <location filename="../ui/session_screen.py" line="542" />
         <source>Only the picked photos, to unpick some of them</source>
         <translation>Solo le foto scelte, per toglierne qualcuna</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="533" />
+        <location filename="../ui/session_screen.py" line="544" />
         <source>Add another source…</source>
         <translation>Aggiungi un'altra origine…</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="547" />
+        <location filename="../ui/session_screen.py" line="565" />
         <source>All the photos of “%1” have been reviewed.&lt;br&gt;%2</source>
         <translation>Hai visto tutte le foto di “%1”.&lt;br&gt;%2</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="559" />
+        <location filename="../ui/session_screen.py" line="578" />
         <source>Photos to print: &lt;b&gt;%1&lt;/b&gt;</source>
         <translation>Foto da stampare: &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/session_screen.py" line="562" />
+        <location filename="../ui/session_screen.py" line="581" />
         <source>%n page(s)</source>
         <translation><numerusform>%n pagina</numerusform><numerusform>%n pagine</numerusform></translation>
     </message>
     <message numerus="yes">
-        <location filename="../ui/session_screen.py" line="564" />
+        <location filename="../ui/session_screen.py" line="583" />
         <source>%n photo(s)</source>
         <translation><numerusform>%n foto</numerusform><numerusform>%n foto</numerusform></translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="569" />
+        <location filename="../ui/session_screen.py" line="588" />
         <source>Estimate with “%1”: %2 per photo</source>
         <translation>Stima con “%1”: %2 a foto</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="639" />
+        <location filename="../ui/session_screen.py" line="658" />
         <source>Still picked: %1 of %2</source>
         <translation>Ancora scelte: %1 di %2</translation>
     </message>
     <message>
-        <location filename="../ui/session_screen.py" line="641" />
+        <location filename="../ui/session_screen.py" line="660" />
         <source>Selected in this group: %1</source>
         <translation>Scelte in questo gruppo: %1</translation>
     </message>

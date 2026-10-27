@@ -364,6 +364,9 @@ class SessionScreen(QWidget):
         theme.set_role(self.next_button, "primary")
         self.next_button.setDefault(True)
         self.next_button.clicked.connect(self.next_group)
+        self.last_button = QPushButton(theme.icon("chevrons-right"), "")
+        self.last_button.setToolTip(self.tr("Skip to the end of the album · your picks are kept"))
+        self.last_button.clicked.connect(self.skip_to_end)
 
         self.previous_button = QPushButton(theme.icon("arrow-left"), self.tr("Previous group"))
         self.previous_button.setToolTip(self.tr("← or Backspace · your picks are kept"))
@@ -414,6 +417,7 @@ class SessionScreen(QWidget):
         bottom.addWidget(self.similarity)
         bottom.addSpacing(20)
         bottom.addWidget(self.next_button)
+        bottom.addWidget(self.last_button)
 
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -437,6 +441,7 @@ class SessionScreen(QWidget):
         picked photos (no threshold, the buttons go back to the end page)."""
         self.review = group
         self.similarity.setVisible(group is None)
+        self.last_button.setVisible(group is None)
         if group is None:
             self.previous_button.setText(self.tr("Previous group"))
             self.next_button.setText(self.tr("Next group"))
@@ -491,6 +496,12 @@ class SessionScreen(QWidget):
             self.finish_review()
         elif self.index < len(self.groups) and self.save_group():
             self.show_group(self.index + 1)
+
+    def skip_to_end(self) -> None:
+        """Save the group on screen and go straight to the end page; the groups skipped
+        stay unreviewed, so the next session resumes from them."""
+        if self.review is None and self.index < len(self.groups) and self.save_group():
+            self.show_end()
 
     def show_review(self) -> None:
         """Show only the photos picked from the source, to unpick some of them."""

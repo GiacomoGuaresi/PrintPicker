@@ -139,6 +139,9 @@ ITALIAN: dict[str, str | tuple[str, str]] = {
     "Previous group": "Gruppo precedente",
     "← or Backspace · your picks are kept": "← o Backspace · le scelte restano salvate",
     "→ or Enter · your picks are kept": "→ o Invio · le scelte restano salvate",
+    "Skip to the end of the album · your picks are kept": (
+        "Salta alla fine dell'album · le scelte restano salvate"
+    ),
     "How different two photos can be to end up in the same group": (
         "Quanto possono essere diverse due foto per finire nello stesso gruppo"
     ),

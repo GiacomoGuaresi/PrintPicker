@@ -106,7 +106,7 @@ Legenda stato: ⬜ da fare · 🔄 in corso · ✅ fatto
 | 7.4 | **README**: download, istruzioni d'uso, scorciatoie | `docs: usage guide` | ✅ |
 | 7.4b | **Screenshot** nel README con foto libere (`scripts/make_samples.py`, `scripts/make_screenshots.py`) | `docs: screenshots` | ✅ |
 | 7.4c | **Pacchetti nativi**: installer Windows (Inno Setup), DMG macOS, AppImage Linux | `ci: native installers` | ✅ |
-| 7.5 | Prova manuale completa e tag `v1.0.0` → prima release pubblica | `chore: release 1.0.0` | ⬜ |
+| 7.5 | Prova manuale completa e tag `v1.0.0` → prima release pubblica | `chore: release 1.0.0` | ✅ |
 
 ## M8 — UI/UX
 

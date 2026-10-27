@@ -1,7 +1,14 @@
 name: Release
 
 # Pushing a tag like v1.0.0 builds the app on every platform and publishes a GitHub release.
-# Running the workflow by hand only builds and keeps the archives as workflow artifacts.
+# Running the workflow by hand only builds and keeps the packages as workflow artifacts.
+#
+# What each platform ships:
+#   macOS    PrintPicker-macos-arm64.dmg          disk image, drag the app to Applications
+#   Windows  PrintPicker-windows-x64-setup.exe    installer (per user, no admin needed)
+#            PrintPicker-windows-x64-portable.zip  same app, no install
+#   Linux    PrintPicker-linux-x86_64.AppImage    single executable file
+#            PrintPicker-linux-x64.tar.gz         folder + application menu script
 on:
   push:
     tags: ["v*"]
@@ -15,13 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: macos-latest
-            archive: PrintPicker-macos-arm64.zip
-          - os: windows-latest
-            archive: PrintPicker-windows-x64.zip
-          - os: ubuntu-latest
-            archive: PrintPicker-linux-x64.tar.gz
+        os: [macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     env:
       QT_QPA_PLATFORM: offscreen
@@ -31,6 +32,18 @@ jobs:
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libxkbcommon0 libfontconfig1 libdbus-1-3
       - run: uv sync --locked --all-groups
+
+      - name: Read version
+        id: version
+        shell: bash
+        run: |
+          version=$(uv run python -c "from printpicker import __version__; print(__version__)")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF" == refs/tags/v* && "$GITHUB_REF_NAME" != "v$version" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the app version $version (src/printpicker/__init__.py)"
+            exit 1
+          fi
+
       - uses: actions/cache@v4
         with:
           path: src/printpicker/resources/models/*.onnx
@@ -38,29 +51,56 @@ jobs:
       - run: uv run python scripts/fetch_model.py
       - run: uv run pyinstaller packaging/printpicker.spec --noconfirm
 
-      - name: Self-test and archive (macOS)
+      - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
           dist/PrintPicker.app/Contents/MacOS/PrintPicker --self-test
-          ditto -c -k --keepParent dist/PrintPicker.app "${{ matrix.archive }}"
-      - name: Self-test and archive (Windows)
+          packaging/macos/make-dmg.sh out/PrintPicker-macos-arm64.dmg
+          # Check the app inside the disk image, as users will get it.
+          mnt=$(mktemp -d)
+          hdiutil attach out/PrintPicker-macos-arm64.dmg -nobrowse -readonly -mountpoint "$mnt"
+          "$mnt/PrintPicker.app/Contents/MacOS/PrintPicker" --self-test
+          hdiutil detach "$mnt"
+
+      - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $p = Start-Process dist/PrintPicker/PrintPicker.exe -ArgumentList "--self-test" -Wait -PassThru -NoNewWindow
           if ($p.ExitCode -ne 0) { exit 1 }
-          Compress-Archive -Path dist/PrintPicker -DestinationPath "${{ matrix.archive }}"
-      - name: Self-test and archive (Linux)
+          New-Item -ItemType Directory -Force out | Out-Null
+          Compress-Archive -Path dist/PrintPicker -DestinationPath out/PrintPicker-windows-x64-portable.zip
+
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup --no-progress -y; if ($LASTEXITCODE -ne 0) { exit 1 } }
+          & $iscc "/DAppVersion=${{ steps.version.outputs.version }}" packaging/windows/printpicker.iss
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+          # Install silently, run the installed app, uninstall: the installer must work end to end.
+          $dir = "$env:RUNNER_TEMP\PrintPickerInstall"
+          $p = Start-Process out/PrintPicker-windows-x64-setup.exe -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/CURRENTUSER", "/DIR=`"$dir`"" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { exit 1 }
+          $p = Start-Process "$dir\PrintPicker.exe" -ArgumentList "--self-test" -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) { exit 1 }
+          $p = Start-Process "$dir\unins000.exe" -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { exit 1 }
+
+      - name: Package (Linux)
         if: runner.os == 'Linux'
         run: |
           dist/PrintPicker/PrintPicker --self-test
-          cp packaging/linux/* packaging/icons/printpicker.png dist/PrintPicker/
-          tar -czf "${{ matrix.archive }}" -C dist PrintPicker
+          packaging/linux/make-appimage.sh out/PrintPicker-linux-x86_64.AppImage
+          # No FUSE on the runner: let the AppImage extract itself instead of mounting.
+          APPIMAGE_EXTRACT_AND_RUN=1 out/PrintPicker-linux-x86_64.AppImage --self-test
+          cp packaging/linux/printpicker.desktop packaging/linux/install-desktop-entry.sh \
+            packaging/icons/printpicker.png dist/PrintPicker/
+          tar -czf out/PrintPicker-linux-x64.tar.gz -C dist PrintPicker
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.archive }}
-          path: ${{ matrix.archive }}
+          name: PrintPicker-${{ runner.os }}
+          path: out/*
+          if-no-files-found: error
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -69,9 +109,10 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          path: archives
+          path: packages
           merge-multiple: true
+      - run: cd packages && sha256sum * > SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
-          files: archives/*
+          files: packages/*
           generate_release_notes: true

@@ -118,6 +118,24 @@ dist/PrintPicker.app/Contents/MacOS/PrintPicker --self-test   # macOS
 dist/PrintPicker/PrintPicker --self-test                      # Linux (PrintPicker.exe su Windows)
 ```
 
+### Pacchetti di distribuzione
+
+A partire dalla build, ogni sistema ha il suo pacchetto (in `out/`):
+
+```sh
+packaging/macos/make-dmg.sh out/PrintPicker-macos-arm64.dmg              # macOS: disk image
+packaging/linux/make-appimage.sh out/PrintPicker-linux-x86_64.AppImage   # Linux: AppImage (scarica appimagetool)
+iscc /DAppVersion=1.0.0 packaging/windows/printpicker.iss                # Windows: installer Inno Setup
+```
+
+### Rilascio
+
+Aggiornare `__version__` in `src/printpicker/__init__.py`, fare il commit e pushare il tag `vX.Y.Z`
+(deve coincidere con la versione, altrimenti la pipeline si ferma). `.github/workflows/release.yml`
+costruisce i pacchetti sui tre sistemi, li prova con `--self-test` (su Windows installando e
+disinstallando davvero, su macOS dall'interno del DMG) e pubblica la release con `SHA256SUMS.txt`.
+Lanciato a mano (*Run workflow*) costruisce solo, lasciando i pacchetti come artifact.
+
 ## Interfaccia: regole
 
 - Colori, font e icone vengono solo da `src/printpicker/ui/theme.py` (token, `set_role`, `icon`): un test vieta i colori esadecimali negli altri file dell'interfaccia.

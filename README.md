@@ -69,15 +69,17 @@ Get the latest build for your system from the [Releases](https://github.com/Giac
 
 | System | File |
 |---|---|
-| macOS (Apple Silicon) | `PrintPicker-macos-arm64.zip` |
-| Windows (64-bit) | `PrintPicker-windows-x64.zip` |
-| Linux (x86-64) | `PrintPicker-linux-x64.tar.gz` |
+| macOS (Apple Silicon) | [`PrintPicker-macos-arm64.dmg`](https://github.com/GiacomoGuaresi/PrintPicker/releases/latest/download/PrintPicker-macos-arm64.dmg) |
+| Windows (64-bit) | [`PrintPicker-windows-x64-setup.exe`](https://github.com/GiacomoGuaresi/PrintPicker/releases/latest/download/PrintPicker-windows-x64-setup.exe) (installer) or `PrintPicker-windows-x64-portable.zip` |
+| Linux (x86-64) | [`PrintPicker-linux-x86_64.AppImage`](https://github.com/GiacomoGuaresi/PrintPicker/releases/latest/download/PrintPicker-linux-x86_64.AppImage) or `PrintPicker-linux-x64.tar.gz` |
 
 The builds are not signed, so the first launch needs one extra step:
 
-- **macOS** — unzip, move `PrintPicker.app` to Applications, then right-click it and choose **Open** (or run `xattr -dr com.apple.quarantine /Applications/PrintPicker.app`).
-- **Windows** — unzip and run `PrintPicker.exe`; if SmartScreen appears, click **More info → Run anyway**.
-- **Linux** — extract and run `PrintPicker/PrintPicker`; `PrintPicker/install-desktop-entry.sh` adds it to the application menu.
+- **macOS** — open the `.dmg`, drag `PrintPicker.app` to Applications, then right-click it and choose **Open** (or run `xattr -dr com.apple.quarantine /Applications/PrintPicker.app`).
+- **Windows** — run the installer (no admin rights needed; it adds PrintPicker to the Start menu and to *Installed apps* for uninstalling). If SmartScreen appears, click **More info → Run anyway**. The portable zip runs without installing: unzip and start `PrintPicker.exe`.
+- **Linux** — make the AppImage executable (`chmod +x PrintPicker-linux-x86_64.AppImage`) and run it. Alternatively extract the tar.gz and run `PrintPicker/PrintPicker`; `PrintPicker/install-desktop-entry.sh` adds it to the application menu.
+
+`SHA256SUMS.txt` on the release page lists the checksums of every file.
 
 PrintPicker tells you when a new version is out (*Help → Check for updates…*, or automatically once a day — you can turn it off in *Settings*).
 

@@ -37,4 +37,4 @@ The specification and the development notes are in [`docs/`](docs/README.md) (in
 
 ## Releases
 
-Bump `__version__` in `src/printpicker/__init__.py`, then push a `vX.Y.Z` tag: GitHub Actions builds macOS, Windows and Linux and publishes the release. The app picks it up through its update check.
+Bump `__version__` in `src/printpicker/__init__.py`, commit, then push a matching `vX.Y.Z` tag: GitHub Actions builds the macOS disk image, the Windows installer and portable zip, the Linux AppImage and tarball, self-tests them and publishes the release. The app picks it up through its update check.

@@ -1,5 +1,8 @@
 import json
+import socket
+import threading
 from datetime import datetime, timedelta
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 from PySide6.QtWidgets import QMessageBox
@@ -7,7 +10,7 @@ from PySide6.QtWidgets import QMessageBox
 from printpicker import about
 from printpicker.ui import main_window as main_window_module
 from printpicker.ui.main_window import MainWindow
-from printpicker.ui.update_checker import UpdateChecker, UpdateDialog
+from printpicker.ui.update_checker import UpdateChecker, UpdateDialog, UrllibFetcher, ssl_context
 
 
 class FakeFetcher:
@@ -139,3 +142,65 @@ def test_auto_check_is_scheduled_once_a_day(window, monkeypatch):
     window.settings.last_update_check = datetime.now() - timedelta(days=2)
     window.schedule_update_check()
     assert len(scheduled) == 1
+
+
+# Real requests against a local HTTP server -------------------------------------------------
+
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/release":
+            body = release("v9.0.0")
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        else:
+            self.send_error(404)
+
+    def log_message(self, *args):
+        pass
+
+
+@pytest.fixture
+def server():
+    httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    yield f"http://127.0.0.1:{httpd.server_address[1]}"
+    httpd.shutdown()
+    httpd.server_close()
+
+
+def fetch(qtbot, url):
+    replies = []
+    fetcher = UrllibFetcher()
+    fetcher.get(url, lambda *reply: replies.append((*reply, threading.current_thread())))
+    qtbot.waitUntil(lambda: bool(replies), timeout=15_000)
+    return replies[0]
+
+
+def test_fetch_delivers_the_reply_in_the_gui_thread(qtbot, server):
+    status, body, error, thread = fetch(qtbot, f"{server}/release")
+    assert (status, error) == (200, "")
+    assert json.loads(body)["tag_name"] == "v9.0.0"
+    assert thread is threading.main_thread()
+
+
+def test_fetch_reports_http_errors(qtbot, server):
+    status, body, error, _ = fetch(qtbot, f"{server}/missing")
+    assert (status, body) == (404, None)
+    assert error
+
+
+def test_fetch_reports_unreachable_server(qtbot):
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]  # free port, nothing listening once closed
+    status, body, error, _ = fetch(qtbot, f"http://127.0.0.1:{port}/")
+    assert (status, body) == (0, None)
+    assert error
+
+
+def test_tls_context_has_certificates():
+    assert ssl_context().cert_store_stats()["x509_ca"] > 0

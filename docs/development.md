@@ -118,6 +118,13 @@ dist/PrintPicker.app/Contents/MacOS/PrintPicker --self-test   # macOS
 dist/PrintPicker/PrintPicker --self-test                      # Linux (PrintPicker.exe su Windows)
 ```
 
+### Log dei crash
+
+L'app scrive avvii, eccezioni non gestite (anche nei thread e negli slot Qt), crash nativi
+(`faulthandler`) e avvisi di Qt in `printpicker.log` (`src/printpicker/crashlog.py`):
+`%LOCALAPPDATA%\PrintPicker\` su Windows, `~/Library/Logs/PrintPicker/` su macOS,
+`~/.local/state/PrintPicker/` su Linux. È la prima cosa da chiedere quando una build si chiude da sola.
+
 ### Pacchetti di distribuzione
 
 A partire dalla build, ogni sistema ha il suo pacchetto (in `out/`):

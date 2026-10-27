@@ -21,7 +21,8 @@ QT_EXCLUDES = [
     for m in (
         "Qt3DAnimation", "Qt3DCore", "Qt3DExtras", "Qt3DInput", "Qt3DLogic", "Qt3DRender",
         "QtBluetooth", "QtCharts", "QtConcurrent", "QtDataVisualization", "QtDesigner",
-        "QtGraphs", "QtHelp", "QtLocation", "QtMultimedia", "QtMultimediaWidgets", "QtNetworkAuth",
+        "QtGraphs", "QtHelp", "QtLocation", "QtMultimedia", "QtMultimediaWidgets", "QtNetwork",
+        "QtNetworkAuth",
         "QtNfc", "QtOpenGL", "QtOpenGLWidgets", "QtPdf", "QtPdfWidgets", "QtPositioning",
         "QtQml", "QtQuick", "QtQuick3D", "QtQuickControls2", "QtQuickWidgets", "QtRemoteObjects",
         "QtScxml", "QtSensors", "QtSerialBus", "QtSerialPort", "QtSpatialAudio", "QtSql",

@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import json
+import ssl
+import threading
+import urllib.error
+import urllib.request
 from collections.abc import Callable
 from typing import Protocol
 
-from PySide6.QtCore import QObject, Qt, QUrl, Signal
-from PySide6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
+import certifi
+from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -22,7 +26,7 @@ from printpicker import about
 from printpicker.core.updates import ReleaseFormatError, ReleaseInfo, is_newer, parse_release
 from printpicker.ui import theme
 
-TIMEOUT_MS = 10_000
+TIMEOUT_S = 10
 
 # callback(status, body, error): HTTP status (0 without a reply), body (None when the request
 # failed) and a short error text.
@@ -33,31 +37,52 @@ class Fetcher(Protocol):
     def get(self, url: str, callback: Callback) -> None: ...
 
 
-class NetworkFetcher(QObject):
-    """HTTP GET with Qt's network stack (system TLS on every platform)."""
+def ssl_context() -> ssl.SSLContext:
+    """Python's OpenSSL with certifi's CA bundle: the same certificates on every platform."""
+    return ssl.create_default_context(cafile=certifi.where())
+
+
+def fetch(url: str) -> tuple[int, bytes | None, str]:
+    """Blocking HTTP GET; returns the callback's (status, body, error)."""
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": f"{about.APP_NAME}/{about.__version__}",
+            "Accept": "application/vnd.github+json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT_S, context=ssl_context()) as reply:
+            return reply.status, reply.read(), ""
+    except urllib.error.HTTPError as exc:
+        return exc.code, None, str(exc)
+    except urllib.error.URLError as exc:
+        return 0, None, str(exc.reason)
+    except (OSError, ValueError) as exc:  # timeouts, broken connections, bad URLs
+        return 0, None, str(exc) or type(exc).__name__
+
+
+class UrllibFetcher(QObject):
+    """HTTP GET with Python's urllib in a background thread; the callback runs in the GUI thread.
+
+    Not QtNetwork: on Windows 11 25H2 its TLS (schannel) crashed the app in Qt's HTTP thread.
+    """
+
+    _done = Signal(object, int, object, str)  # callback, status, body, error
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
-        self.manager = QNetworkAccessManager(self)
+        # Emitted from the worker thread, delivered (queued) in this object's thread.
+        self._done.connect(self._deliver)
 
     def get(self, url: str, callback: Callback) -> None:
-        request = QNetworkRequest(QUrl(url))
-        request.setHeader(
-            QNetworkRequest.KnownHeaders.UserAgentHeader, f"{about.APP_NAME}/{about.__version__}"
-        )
-        request.setRawHeader(b"Accept", b"application/vnd.github+json")
-        request.setTransferTimeout(TIMEOUT_MS)
-        reply = self.manager.get(request)
+        def run() -> None:
+            self._done.emit(callback, *fetch(url))
 
-        def finished() -> None:
-            status = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute) or 0
-            if reply.error() == QNetworkReply.NetworkError.NoError:
-                callback(status, bytes(reply.readAll().data()), "")
-            else:
-                callback(status, None, reply.errorString())
-            reply.deleteLater()
+        threading.Thread(target=run, name="update-check", daemon=True).start()
 
-        reply.finished.connect(finished)
+    def _deliver(self, callback: Callback, status: int, body: bytes | None, error: str) -> None:
+        callback(status, body, error)
 
 
 class UpdateChecker(QObject):
@@ -74,7 +99,7 @@ class UpdateChecker(QObject):
         parent: QObject | None = None,
     ) -> None:
         super().__init__(parent)
-        self.fetcher = fetcher or NetworkFetcher(self)
+        self.fetcher = fetcher or UrllibFetcher(self)
         self.current_version = current_version
         self.busy = False
 

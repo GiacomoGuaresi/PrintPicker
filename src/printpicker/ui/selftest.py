@@ -71,11 +71,15 @@ def run_self_test(app: QApplication) -> int:
         checks.append(("inter font", theme.load_fonts()))
     except Exception:
         checks.append(("svg icons", False))
-    from PySide6.QtNetwork import QSslSocket
+    try:
+        import ssl
 
-    checks.append(
-        ("TLS for update check (" + QSslSocket.activeBackend() + ")", QSslSocket.supportsSsl())
-    )
+        from printpicker.ui.update_checker import ssl_context
+
+        has_certificates = ssl_context().cert_store_stats()["x509_ca"] > 0
+        checks.append((f"TLS for update check ({ssl.OPENSSL_VERSION})", has_certificates))
+    except Exception:
+        checks.append(("TLS for update check", False))
     try:
         MainWindow().close()
         checks.append(("main window", True))
